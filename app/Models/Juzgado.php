@@ -38,4 +38,13 @@ class Juzgado extends Model
     {
         return $this->belongsTo(Distrito::class, 'distrito_id');
     }
+    /**
+     * Get all of the comments for the Juzgado
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function tribunales()
+    {
+        return $this->hasMany(Tribunal::class, 'juzgado_id');
+    }
 }

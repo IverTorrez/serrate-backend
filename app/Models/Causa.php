@@ -48,4 +48,18 @@ class Causa extends Model
     {
         return $this->belongsTo(Categoria::class, 'categoria_id');
     }
+    /**
+     * Get all of the comments for the Causa
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function tribunales()
+    {
+        return $this->hasMany(Tribunal::class, 'causa_id');
+    }
+
+    public function participantes()
+    {
+        return $this->hasMany(Participante::class, 'causa_id');
+    }
 }
