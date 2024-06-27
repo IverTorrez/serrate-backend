@@ -29,6 +29,9 @@ class DatabaseSeeder extends Seeder
            JuzgadoSeeder::class,
            ClaseTribunalSeeder::class,
            CausaSeeder::class,
+           TribunalSeeder::class,
+           CuerpoExpedienteSeeder::class,
+           ParticipanteSeeder::class,
         ]);
     }
 }

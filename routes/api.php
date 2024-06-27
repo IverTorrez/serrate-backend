@@ -4,11 +4,14 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\CausaController;
 use App\Http\Controllers\ClaseTribunalController;
+use App\Http\Controllers\CuerpoExpedienteController;
 use App\Http\Controllers\DistritoController;
 use App\Http\Controllers\JuzgadoController;
 use App\Http\Controllers\MateriaController;
+use App\Http\Controllers\ParticipanteController;
 use App\Http\Controllers\PisoController;
 use App\Http\Controllers\TipoLegalController;
+use App\Http\Controllers\TribunalController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -76,7 +79,24 @@ Route::group(['prefix'=>'v1','namespace'=>'App\Http\Controllers'],function(){
         Route::get('causa/{causa}',[CausaController::class,'show']);
         Route::patch('causa/{causa}',[CausaController::class,'update']);
         Route::patch('causa/eliminar/{causa}',[CausaController::class,'destroy']);
-
+        //Tribunal
+        Route::get('tribunal',[TribunalController::class,'index']);
+        Route::post('tribunal',[TribunalController::class,'store']);
+        Route::get('tribunal/{tribunal}',[TribunalController::class,'show']);
+        Route::patch('tribunal/{tribunal}',[TribunalController::class,'update']);
+        Route::patch('tribunal/eliminar/{tribunal}',[TribunalController::class,'destroy']);
+        //Cuerpo Expediente
+        Route::get('cuerpoexpediente',[CuerpoExpedienteController::class,'index']);
+        Route::post('cuerpoexpediente',[CuerpoExpedienteController::class,'store']);
+        Route::get('cuerpoexpediente/{cuerpoExpediente}',[CuerpoExpedienteController::class,'show']);
+        Route::patch('cuerpoexpediente/{cuerpoExpediente}',[CuerpoExpedienteController::class,'update']);
+        Route::patch('cuerpoexpediente/eliminar/{cuerpoExpediente}',[CuerpoExpedienteController::class,'destroy']);
+        //Participante
+        Route::get('participante',[ParticipanteController::class,'index']);
+        Route::post('participante',[ParticipanteController::class,'store']);
+        Route::get('participante/{participante}',[ParticipanteController::class,'show']);
+        Route::patch('participante/{participante}',[ParticipanteController::class,'update']);
+        Route::patch('participante/eliminar/{participante}',[ParticipanteController::class,'destroy']);
 
     });
 
