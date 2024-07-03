@@ -62,4 +62,20 @@ class Causa extends Model
     {
         return $this->hasMany(Participante::class, 'causa_id');
     }
+    public function depositos()
+    {
+        return $this->hasMany(Deposito::class, 'causa_id');
+    }
+    public function devolucionesSaldo()
+    {
+        return $this->hasMany(DevolucionSaldo::class, 'causa_id');
+    }
+    public function agendaApuntes()
+    {
+        return $this->hasMany(AgendaApunte::class, 'causa_id');
+    }
+    public function causaPostas()
+    {
+        return $this->hasMany(CausaPosta::class, 'causa_id');
+    }
 }
