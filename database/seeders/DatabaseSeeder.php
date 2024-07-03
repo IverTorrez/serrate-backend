@@ -32,6 +32,15 @@ class DatabaseSeeder extends Seeder
            TribunalSeeder::class,
            CuerpoExpedienteSeeder::class,
            ParticipanteSeeder::class,
+           DepositoSeeder::class,
+           DevolucionSaldoSeeder::class,
+           TablaConfigSeeder::class,
+           AvancePlantillaSeeder::class,
+           PostaSeeder::class,
+           AgendaApunteSeeder::class,
+           CausaPostaSeeder::class,
+           TipoPostaSeeder::class,
+           InformePostaSeeder::class,
         ]);
     }
 }
