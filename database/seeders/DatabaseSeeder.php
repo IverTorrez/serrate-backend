@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
            MateriaSeeder::class,
            TipoLegalSeeder::class,
-           UsuarioSeeder::class,
+           UsuarioSeeder::class,//Siempre se carga
            CategoriaSeeder::class,
            PisoSeeder::class,
            DistritoSeeder::class,
@@ -34,13 +34,18 @@ class DatabaseSeeder extends Seeder
            ParticipanteSeeder::class,
            DepositoSeeder::class,
            DevolucionSaldoSeeder::class,
-           TablaConfigSeeder::class,
+           TablaConfigSeeder::class, //Siempre se carga
            AvancePlantillaSeeder::class,
            PostaSeeder::class,
            AgendaApunteSeeder::class,
            CausaPostaSeeder::class,
            TipoPostaSeeder::class,
            InformePostaSeeder::class,
+           MatrizCotizacionSeeder::class, //Siempre se carga
+           OrdenSeeder::class,
+           CotizacionSeeder::class,
+           PresupuestoSeeder::class,
+           ProcuraduriaDesacargaSeeder::class,
         ]);
     }
 }

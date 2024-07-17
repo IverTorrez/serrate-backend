@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\CausaController;
 use App\Http\Controllers\CausaPostaController;
 use App\Http\Controllers\ClaseTribunalController;
+use App\Http\Controllers\ConfirmacionController;
 use App\Http\Controllers\CuerpoExpedienteController;
 use App\Http\Controllers\DepositoController;
 use App\Http\Controllers\DevolucionSaldoController;
@@ -14,9 +15,13 @@ use App\Http\Controllers\DistritoController;
 use App\Http\Controllers\InformePostaController;
 use App\Http\Controllers\JuzgadoController;
 use App\Http\Controllers\MateriaController;
+use App\Http\Controllers\MatrizCotizacionController;
+use App\Http\Controllers\OrdenController;
 use App\Http\Controllers\ParticipanteController;
 use App\Http\Controllers\PisoController;
 use App\Http\Controllers\PostaController;
+use App\Http\Controllers\PresupuestoController;
+use App\Http\Controllers\ProcuraduriaDescargaController;
 use App\Http\Controllers\TipoLegalController;
 use App\Http\Controllers\TipoPostaController;
 use App\Http\Controllers\TribunalController;
@@ -153,6 +158,33 @@ Route::group(['prefix'=>'v1','namespace'=>'App\Http\Controllers'],function(){
         Route::get('informe-posta/{informePosta}',[InformePostaController::class,'show']);
         Route::patch('informe-posta/{informePosta}',[InformePostaController::class,'update']);
         Route::patch('informe-posta/eliminar/{informePosta}',[InformePostaController::class,'destroy']);
+        //Matriz cotizacion
+        Route::get('matriz-cotizacion',[MatrizCotizacionController::class,'index']);
+        Route::get('matriz-cotizacion/{matrizCotizacion}',[MatrizCotizacionController::class,'show']);
+        Route::patch('matriz-cotizacion/{matrizCotizacion}',[MatrizCotizacionController::class,'update']);
+        //Orden
+        Route::get('orden',[OrdenController::class,'index']);
+        Route::post('orden',[OrdenController::class,'store']);
+        Route::get('orden/{orden}',[OrdenController::class,'show']);
+        Route::patch('orden/{orden}',[OrdenController::class,'update']);
+        Route::patch('orden/eliminar/{orden}',[OrdenController::class,'destroy']);
+        Route::patch('orden/aceptar/{orden}',[OrdenController::class,'aceptarOrden']);
+        //Cotizacion
+
+       //Presupuesto
+       Route::get('presupuesto',[PresupuestoController::class,'index']);
+       Route::post('presupuesto',[PresupuestoController::class,'store']);
+       Route::get('presupuesto/{presupuesto}',[PresupuestoController::class,'show']);
+       Route::patch('presupuesto/{presupuesto}',[PresupuestoController::class,'update']);
+       Route::patch('presupuesto/eliminar/{presupuesto}',[PresupuestoController::class,'destroy']);
+       Route::patch('presupuesto/entregar/{presupuesto}',[PresupuestoController::class,'entregarPresupuesto']);
+       //Procuraduria Descarga
+       Route::get('descarga',[ProcuraduriaDescargaController::class,'index']);
+       Route::post('descarga',[ProcuraduriaDescargaController::class,'store']);
+
+       //Confirmacion
+       Route::patch('confirmacion/pronuncio-abogado/{confirmacion}',[ConfirmacionController::class,'pronuncioAbogado']);
+       Route::patch('confirmacion/pronuncio-contador/{confirmacion}',[ConfirmacionController::class,'pronuncioContador']);
 
 
     });
