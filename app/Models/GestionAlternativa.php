@@ -5,16 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TablaConfig extends Model
+class GestionAlternativa extends Model
 {
     use HasFactory;
     protected $fillable=[
-        'caja_contador',
-        'deuda_extarna',
-        'ganancia_procesal_procuraduria',
-        'imagen_index',
-        'doc_aranceles',
-        'doc_normas',
+        'solicitud_gestion',
+        'fecha_solicitud',
+        'detalle_gestion',
+        'fecha_respuesta',
+        'orden_id',
         'estado',
         'es_eliminado'
     ];

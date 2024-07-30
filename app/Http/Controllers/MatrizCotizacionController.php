@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MatrizCotizacion;
-use Illuminate\Http\Request;
 use App\Constants\Estado;
-use App\Http\Requests\UpdateMatrizCotizacionRequest;
-use App\Http\Resources\MatrizCotizacionCollection;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Models\MatrizCotizacion;
 use App\Services\MatrizCotizacionService;
+use App\Http\Resources\MatrizCotizacionCollection;
+use App\Http\Requests\UpdateMatrizCotizacionRequest;
 
 class MatrizCotizacionController extends Controller
 {
@@ -50,7 +51,7 @@ class MatrizCotizacionController extends Controller
     public function show(MatrizCotizacion $matrizCotizacion)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$matrizCotizacion
         ];
         return response()->json($data);
@@ -78,7 +79,7 @@ class MatrizCotizacionController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$matrizCotizacion
         ];
         return response()->json($data);
@@ -88,7 +89,7 @@ class MatrizCotizacionController extends Controller
         $matrizCotizacion = $this->matrizCotizacionService->obtenerIdDePrioridadYCondicion($prioridad, $condicion);
 
         $data = [
-            'message' => 'Registro obtenido correctamente',
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data' => $matrizCotizacion
         ];
 

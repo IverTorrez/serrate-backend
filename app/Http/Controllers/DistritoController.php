@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Distrito;
-use Illuminate\Http\Request;
 use App\Constants\Estado;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Http\Resources\DistritoCollection;
 use App\Http\Requests\StoreDistritoRequest;
 use App\Http\Requests\UpdateDistritoRequest;
-use App\Http\Resources\DistritoCollection;
 
 class DistritoController extends Controller
 {
@@ -43,7 +44,7 @@ class DistritoController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$distrito
          ];
          return response()
@@ -56,7 +57,7 @@ class DistritoController extends Controller
     public function show(Distrito $distrito)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$distrito
         ];
         return response()->json($data);
@@ -81,7 +82,7 @@ class DistritoController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$distrito
         ];
         return response()->json($data);
@@ -95,7 +96,7 @@ class DistritoController extends Controller
         $distrito->es_eliminado   =1;
          $distrito->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$distrito
         ];
         return response()->json($data);

@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Piso;
-use Illuminate\Http\Request;
 use App\Constants\Estado;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Http\Resources\PisoCollection;
 use App\Http\Requests\StorePisoRequest;
 use App\Http\Requests\UpdatePisoRequest;
-use App\Http\Resources\PisoCollection;
 
 class PisoController extends Controller
 {
@@ -42,7 +43,7 @@ class PisoController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$piso
          ];
          return response()
@@ -55,7 +56,7 @@ class PisoController extends Controller
     public function show(Piso $piso)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$piso
         ];
         return response()->json($data);
@@ -79,7 +80,7 @@ class PisoController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$piso
         ];
         return response()->json($data);
@@ -93,7 +94,7 @@ class PisoController extends Controller
         $piso->es_eliminado   =1;
          $piso->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$piso
         ];
         return response()->json($data);

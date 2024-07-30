@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ClaseTribunalCollection;
-use App\Models\ClaseTribunal;
-use Illuminate\Http\Request;
 use App\Constants\Estado;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Models\ClaseTribunal;
+use App\Http\Resources\ClaseTribunalCollection;
 use App\Http\Requests\StoreClaseTribunalRequest;
 use App\Http\Requests\UpdateClaseTribunalRequest;
 
@@ -42,7 +43,7 @@ class ClaseTribunalController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$claseTribunal
          ];
          return response()
@@ -55,7 +56,7 @@ class ClaseTribunalController extends Controller
     public function show(ClaseTribunal $claseTribunal)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$claseTribunal
         ];
         return response()->json($data);
@@ -79,7 +80,7 @@ class ClaseTribunalController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$claseTribunal
         ];
         return response()->json($data);
@@ -93,7 +94,7 @@ class ClaseTribunalController extends Controller
         $claseTribunal->es_eliminado   =1;
          $claseTribunal->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$claseTribunal
         ];
         return response()->json($data);

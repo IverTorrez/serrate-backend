@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\Estado;
+use App\Enums\MessageHttp;
 use App\Models\Participante;
 use Illuminate\Http\Request;
-use App\Constants\Estado;
+use App\Http\Resources\ParticipanteCollection;
 use App\Http\Requests\StoreParticipanteRequest;
 use App\Http\Requests\UpdateParticpanteRequest;
-use App\Http\Resources\ParticipanteCollection;
 
 class ParticipanteController extends Controller
 {
@@ -45,7 +46,7 @@ class ParticipanteController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$participante
          ];
          return response()
@@ -58,7 +59,7 @@ class ParticipanteController extends Controller
     public function show(Participante $participante)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$participante
         ];
         return response()->json($data);
@@ -86,7 +87,7 @@ class ParticipanteController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$participante
         ];
         return response()->json($data);
@@ -100,7 +101,7 @@ class ParticipanteController extends Controller
         $participante->es_eliminado   =1;
          $participante->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$participante
         ];
         return response()->json($data);

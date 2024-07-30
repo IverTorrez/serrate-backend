@@ -46,6 +46,7 @@ class DatabaseSeeder extends Seeder
            CotizacionSeeder::class,
            PresupuestoSeeder::class,
            ProcuraduriaDesacargaSeeder::class,
+           PaqueteSeeder::class
         ]);
     }
 }

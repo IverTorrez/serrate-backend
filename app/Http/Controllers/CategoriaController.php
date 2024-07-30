@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\CategoriaCollection;
-use App\Models\Categoria;
-use Illuminate\Http\Request;
 use App\Constants\Estado;
+use App\Models\Categoria;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Http\Resources\CategoriaCollection;
 use App\Http\Requests\StoreCategoriaRequest;
 use App\Http\Requests\UpdateCategoriaRequest;
 
@@ -43,7 +44,7 @@ class CategoriaController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$categoria
          ];
          return response()
@@ -56,7 +57,7 @@ class CategoriaController extends Controller
     public function show(Categoria $categoria)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$categoria
         ];
         return response()->json($data);
@@ -81,7 +82,7 @@ class CategoriaController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$categoria
         ];
         return response()->json($data);
@@ -95,7 +96,7 @@ class CategoriaController extends Controller
         $categoria->es_eliminado   =1;
          $categoria->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$categoria
         ];
         return response()->json($data);

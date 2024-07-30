@@ -30,6 +30,7 @@ return new class extends Migration
             $table->integer('abogado_id')->comment('id del usuario abogado');
             $table->integer('procurador_id')->comment('id del usuario procurador, por defecto es el procurador maestro');
             $table->integer('usuario_id')->comment('id del usuario que hizo el registro');
+            $table->integer('plantilla_id')->nullable()->comment('id de la tabla avance_plantillas, (puede ser null)');
             $table->string('estado', 20)->comment('estado de la causa,ACTIVA,CONGELADA,FINALIZADA');
             $table->integer('es_eliminado')->comment('1 es eliminado, 0 no es eliminado');
             $table->timestamps();

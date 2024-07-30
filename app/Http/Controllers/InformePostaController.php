@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use App\Constants\Estado;
+use App\Enums\MessageHttp;
 use App\Models\InformePosta;
 use Illuminate\Http\Request;
-use App\Constants\Estado;
+use App\Http\Resources\InformePostaCollection;
 use App\Http\Requests\StoreInformePostaRequest;
 use App\Http\Requests\UpdateInformePostaRequest;
-use App\Http\Resources\InformePostaCollection;
-use Carbon\Carbon;
 
 class InformePostaController extends Controller
 {
@@ -57,7 +58,7 @@ class InformePostaController extends Controller
          ]);
 
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$materia
          ];
          return response()
@@ -70,7 +71,7 @@ class InformePostaController extends Controller
     public function show(InformePosta $informePosta)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$informePosta
         ];
         return response()->json($data);
@@ -103,7 +104,7 @@ class InformePostaController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$informePosta
         ];
         return response()->json($data);
@@ -117,7 +118,7 @@ class InformePostaController extends Controller
         $informePosta->es_eliminado   =1;
          $informePosta->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$informePosta
         ];
         return response()->json($data);

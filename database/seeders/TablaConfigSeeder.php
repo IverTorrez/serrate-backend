@@ -20,6 +20,8 @@ class TablaConfigSeeder extends Seeder
             'deuda_extarna'=>0,
             'ganancia_procesal_procuraduria'=>0,
             'imagen_index'=>'logo.png',
+            'doc_aranceles'=>'aranceles_abogado.pdf',
+            'doc_normas'=>'normas.pdf',
             'estado' => $estado,
             'es_eliminado' => 0,
         ]);

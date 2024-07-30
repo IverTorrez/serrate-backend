@@ -2,17 +2,46 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\UserController;
-use App\Http\Requests\StoreCausaRequest;
-use App\Http\Resources\CausaCollection;
+use Exception;
 use App\Models\Causa;
+use App\Enums\MessageHttp;
 use Illuminate\Http\Request;
+use App\Services\UserService;
 use App\Constants\EstadoCausa;
-use App\Http\Requests\UpdateCausaRequest;
+use App\Services\CausaService;
+use App\Services\PostaService;
+use Illuminate\Support\Facades\DB;
+use App\Services\CausaPostaService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+
+use App\Http\Resources\CausaCollection;
+use App\Http\Requests\StoreCausaRequest;
+use App\Services\AvancePlantillaService;
+use App\Http\Requests\UpdateCausaRequest;
 
 class CausaController extends Controller
 {
+    protected $causaService;
+    protected $avancePlantillaService;
+    protected $postaService;
+    protected $causaPostaService;
+    protected $userService;
+
+    public function __construct(
+                                 CausaService $causaService,
+                                 AvancePlantillaService $avancePlantillaService,
+                                 PostaService $postaService,
+                                 CausaPostaService $causaPostaService,
+                                 UserService $userService
+                                )
+    {
+        $this->causaService = $causaService;
+        $this->avancePlantillaService = $avancePlantillaService;
+        $this->postaService = $postaService;
+        $this->causaPostaService = $causaPostaService;
+        $this->userService = $userService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -36,37 +65,53 @@ class CausaController extends Controller
      */
     public function store(StoreCausaRequest $request)
     {
-        $userController = new UserController();
-        $usuarioPmaestro = $userController->obtenerUnPMaestro();
-        //$estado=Estado::ACTIVO;
-        $idUser=Auth::user()->id;
-        $causa=Causa::create([
-            'nombre'=>$request->nombre,
-            'observacion'=>$request->observacion,
-            'objetivos'=>$request->objetivos,
-            'estrategia'=>$request->estrategia,
-            'informacion'=>$request->informacion,
-            'apuntes_juridicos'=>$request->apuntes_juridicos,
-            'apuntes_honorarios'=>$request->apuntes_honorarios,
-            'tiene_billetera'=>$request->tiene_billetera,
-            'billetera'=>0,
-            'saldo_devuelto'=>0,
-            'color'=>$request->color,
-            'materia_id'=>$request->materia_id,
-            'tipolegal_id'=>$request->tipolegal_id,
-            'categoria_id'=>$request->categoria_id,
-            'abogado_id'=>$idUser,
-            'procurador_id'=>$usuarioPmaestro->id,
-            'usuario_id'=>$idUser,
-            'estado'=>EstadoCausa::ACTIVA,
-            'es_eliminado'=>0
-         ]);
-         $data=[
-            'message'=>'Registro creado exitosamente',
-            'data'=>$causa
-         ];
-         return response()
-               ->json($data);
+        DB::beginTransaction();
+        try{
+            $usuarioPmaestro = $this->userService->obtenerUnPMaestro();
+            $idUser=Auth::user()->id;
+            $data = [
+                'nombre' => $request->nombre,
+                'observacion' => $request->observacion,
+                'objetivos' => $request->objetivos,
+                'estrategia' => $request->estrategia,
+                'informacion' => $request->informacion,
+                'apuntes_juridicos' => $request->apuntes_juridicos,
+                'apuntes_honorarios' => $request->apuntes_honorarios,
+                'tiene_billetera' => $request->tiene_billetera,
+                'billetera' => 0,
+                'saldo_devuelto' => 0,
+                'color' => $request->color,
+                'materia_id' => $request->materia_id,
+                'tipolegal_id' => $request->tipolegal_id,
+                'categoria_id' => $request->categoria_id,
+                'abogado_id' => $idUser,
+                'procurador_id' => $usuarioPmaestro->id,
+                'usuario_id' => $idUser,
+            ];
+            $data['plantilla_id'] = $request->has('plantilla_id') ? $request->plantilla_id : 0;
+            $causa = $this->causaService->store($data);
+
+            //SI ELIGIO UNA PLANTILLA DE AVANCE SE REGISTRA EN LA TABLA causa_postas
+            if ($request->has('plantilla_id') && $request->plantilla_id > 0) {
+                $plantilla_id = $request->plantilla_id;
+                $causaPosta = $this->guardarCausaPosta($causa->id, $plantilla_id);
+            }
+
+            DB::commit();
+            return response()->json([
+                    'message' => MessageHttp::CREADO_CORRECTAMENTE,
+                    'data' => $causa
+                ], 200);
+
+        }catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error registrar causa: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error registrar causa',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -75,7 +120,7 @@ class CausaController extends Controller
     public function show(Causa $causa)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$causa
         ];
         return response()->json($data);
@@ -94,28 +139,52 @@ class CausaController extends Controller
      */
     public function update(UpdateCausaRequest $request, Causa $causa)
     {
-        $causa->update($request->only([
-            'nombre',
-            'observacion',
-            'objetivos',
-            'estrategia',
-            'informacion',
-            'apuntes_juridicos',
-            'apuntes_honorarios',
-           // 'tiene_billetera',
-            'color',
-            'materia_id',
-            'tipolegal_id',
-            'categoria_id',
-            'abogado_id',
-            'procurador_id',
-            'estado',
-            'es_eliminado']));
-        $data=[
-        'message'=>'Registro actualizado correctamente',
-        'data'=>$causa
-        ];
-        return response()->json($data);
+        DB::beginTransaction();
+        try{
+            $data = $request->only([
+                'nombre',
+                'observacion',
+                'objetivos',
+                'estrategia',
+                'informacion',
+                'apuntes_juridicos',
+                'apuntes_honorarios',
+
+                'color',
+                'materia_id',
+                'tipolegal_id',
+                'categoria_id',
+                'abogado_id',
+                'procurador_id',
+                'estado',
+                'es_eliminado'
+            ]);
+            $plantillaId = $request->plantilla_id;
+            //Pregunta si plantilla_id que esta en el request es diferente al valor de plantilla_id de la causa (si eligio otra plantilla)
+            if ($request->has('plantilla_id') && $plantillaId > 0 && $plantillaId != $causa->plantilla_id){
+                    $data['plantilla_id'] = $plantillaId;
+                    if ($causa->plantilla_id > 0){
+                        $this->causaPostaService->eliminarPorCausaId($causa->id);
+                    }
+                    $causaPosta = $this->guardarCausaPosta($causa->id,$plantillaId);
+            }
+            $causa = $this->causaService->update($data,$causa->id);
+
+            DB::commit();
+            return response()->json([
+                'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+                'data' => $causa
+            ], 200);
+
+        }catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error actualizado causa: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error actualizado causa',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -126,9 +195,36 @@ class CausaController extends Controller
         $causa->es_eliminado =1;
          $causa->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$causa
         ];
         return response()->json($data);
+    }
+    public function guardarCausaPosta($causaId,$pantillaId)
+    {
+        $avancePlantilla = $this->avancePlantillaService->obtenerUno($pantillaId);
+        //Causa Posta cero, (INICIO)
+        $dataCausaPostaInicio = [
+            'nombre' => 'INICIO',
+            'numero_posta' => 0,
+            'copia_nombre_plantilla' => $avancePlantilla->nombre,
+            'tiene_informe' => 0,
+            'causa_id' => $causaId,
+        ];
+        $causaPosta = $this->causaPostaService->store($dataCausaPostaInicio);
+
+        $postas = $this->postaService->listarPorAvancePlantillaId($avancePlantilla->id);
+        foreach ($postas as $posta) {
+            $data = [
+                'nombre' => $posta->nombre,
+                'numero_posta' => $posta->numero_posta,
+                'copia_nombre_plantilla' => $avancePlantilla->nombre,
+                'tiene_informe' => 0,
+                'causa_id' => $causaId,
+            ];
+            // Llama a la función store de CausaPostaService
+            $causaPosta = $this->causaPostaService->store($data);
+        }
+        return $causaPosta;
     }
 }

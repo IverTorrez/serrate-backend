@@ -5,5 +5,6 @@ class EstadoCausa
 {
     const ACTIVA = 'ACTIVA';
     const CONGELADA = 'CONGELADA';
-    const FINALIZADA = 'FINALIZADA';
+    const TERMINADA = 'TERMINADA';
+    const INACTIVA = 'INACTIVA';
 }
