@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\PostaCollection;
 use App\Models\Posta;
-use Illuminate\Http\Request;
 use App\Constants\Estado;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Http\Resources\PostaCollection;
 use App\Http\Requests\StorePostaRequest;
 use App\Http\Requests\UpdatePostaRequest;
 
@@ -43,7 +44,7 @@ class PostaController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$posta
          ];
          return response()
@@ -56,7 +57,7 @@ class PostaController extends Controller
     public function show(Posta $posta)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$posta
         ];
         return response()->json($data);
@@ -82,7 +83,7 @@ class PostaController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$posta
         ];
         return response()->json($data);
@@ -96,7 +97,7 @@ class PostaController extends Controller
         $posta->es_eliminado   =1;
          $posta->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$posta
         ];
         return response()->json($data);

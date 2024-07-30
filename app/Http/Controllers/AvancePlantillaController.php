@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AvancePlantilla;
-use Illuminate\Http\Request;
 use App\Constants\Estado;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Models\AvancePlantilla;
+use App\Http\Resources\AvancePlantillaCollection;
 use App\Http\Requests\StoreAvancePlantillaRequest;
 use App\Http\Requests\UpdateAvancePlantillaRequest;
-use App\Http\Resources\AvancePlantillaCollection;
 
 class AvancePlantillaController extends Controller
 {
@@ -41,7 +42,7 @@ class AvancePlantillaController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$avancePlantilla
          ];
          return response()
@@ -54,7 +55,7 @@ class AvancePlantillaController extends Controller
     public function show(AvancePlantilla $avancePlantilla)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$avancePlantilla
         ];
         return response()->json($data);
@@ -78,7 +79,7 @@ class AvancePlantillaController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$avancePlantilla
         ];
         return response()->json($data);
@@ -92,7 +93,7 @@ class AvancePlantillaController extends Controller
         $avancePlantilla->es_eliminado   =1;
          $avancePlantilla->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$avancePlantilla
         ];
         return response()->json($data);

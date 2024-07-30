@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DevolucionSaldo;
-use Illuminate\Http\Request;
-use App\Constants\Estado;
-use App\Http\Requests\StoreDevolucionSaldoRequest;
-use App\Http\Resources\DevolucionSaldoCollection;
 use Carbon\Carbon;
+use App\Constants\Estado;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Models\DevolucionSaldo;
+use App\Http\Resources\DevolucionSaldoCollection;
+use App\Http\Requests\StoreDevolucionSaldoRequest;
 
 class DevolucionSaldoController extends Controller
 {
@@ -46,7 +47,7 @@ class DevolucionSaldoController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$deposito
          ];
          return response()
@@ -59,7 +60,7 @@ class DevolucionSaldoController extends Controller
     public function show(DevolucionSaldo $devolucionSaldo)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$devolucionSaldo
         ];
         return response()->json($data);
@@ -85,7 +86,7 @@ class DevolucionSaldoController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$devolucionSaldo
         ];
         return response()->json($data);
@@ -99,7 +100,7 @@ class DevolucionSaldoController extends Controller
         $devolucionSaldo->es_eliminado   =1;
          $devolucionSaldo->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$devolucionSaldo
         ];
         return response()->json($data);

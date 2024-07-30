@@ -36,6 +36,8 @@ class StoreCausaRequest extends FormRequest
             'materia_id'=>['required'],
             'tipolegal_id'=>['required'],
             'categoria_id'=>['required'],
+            //Id de la la tabla avance_plantillas
+            'plantilla_id'=>['sometimes'],
         ];
     }
 }

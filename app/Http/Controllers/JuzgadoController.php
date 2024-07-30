@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Juzgado;
-use Illuminate\Http\Request;
 use App\Constants\Estado;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Http\Resources\JuzgadoCollection;
 use App\Http\Requests\StoreJuzgadoRequest;
 use App\Http\Requests\UpdateJuzgadoRequest;
-use App\Http\Resources\JuzgadoCollection;
 
 class JuzgadoController extends Controller
 {
@@ -52,7 +53,7 @@ class JuzgadoController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$juzgado
          ];
          return response()
@@ -65,7 +66,7 @@ class JuzgadoController extends Controller
     public function show(Juzgado $juzgado)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$juzgado
         ];
         return response()->json($data);
@@ -99,7 +100,7 @@ class JuzgadoController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$juzgado
         ];
         return response()->json($data);
@@ -113,7 +114,7 @@ class JuzgadoController extends Controller
         $juzgado->es_eliminado   =1;
          $juzgado->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$juzgado
         ];
         return response()->json($data);

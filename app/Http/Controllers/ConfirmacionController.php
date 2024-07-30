@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\UpdateConfirmacionRequest;
-use App\Models\Confirmacion;
-use App\Services\ConfirmacionService;
-use App\Services\OrdenService;
-use Illuminate\Http\Request;
+use Exception;
 use Carbon\Carbon;
+use App\Enums\MessageHttp;
+use App\Models\Confirmacion;
+use Illuminate\Http\Request;
 use App\Constants\EtapaOrden;
+use App\Services\OrdenService;
+use Illuminate\Support\Facades\DB;
 use App\Services\CotizacionService;
 use App\Services\FinalCostoService;
-use App\Services\ProcuraduriaDescargaService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Exception;
+use App\Services\ConfirmacionService;
+use App\Services\ProcuraduriaDescargaService;
+use App\Http\Requests\UpdateConfirmacionRequest;
 
 class ConfirmacionController extends Controller
 {
@@ -127,7 +128,7 @@ class ConfirmacionController extends Controller
 
         DB::commit();
         return response()->json([
-            'message' => 'Registro actualizado correctamente',
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
             'data' => $confirmacion
         ], 200);
 
@@ -171,7 +172,7 @@ class ConfirmacionController extends Controller
 
             DB::commit();
             return response()->json([
-                'message' => 'Registro actualizado correctamente',
+                'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
                 'data' => $confirmacion
             ], 200);
 

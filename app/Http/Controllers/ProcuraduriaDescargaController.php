@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProcuraduriaDescarga;
-use Illuminate\Http\Request;
-use App\Constants\Estado;
-use App\Constants\EtapaOrden;
-use App\Http\Requests\StoreProcuraduriaDescargaRequest;
-use App\Http\Resources\ProcuraduriaDescargaCollection;
-use App\Services\ConfirmacionService;
-use App\Services\OrdenService;
-use App\Services\PresupuestoService;
-use App\Services\ProcuraduriaDescargaService;
+use Exception;
 use Carbon\Carbon;
-
+use App\Constants\Estado;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Constants\EtapaOrden;
+use App\Services\OrdenService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Exception;
+use App\Models\ProcuraduriaDescarga;
+use App\Services\PresupuestoService;
+
+use App\Services\ConfirmacionService;
+use App\Services\ProcuraduriaDescargaService;
+use App\Http\Resources\ProcuraduriaDescargaCollection;
+use App\Http\Requests\StoreProcuraduriaDescargaRequest;
 
 class ProcuraduriaDescargaController extends Controller
 {
@@ -97,7 +98,7 @@ class ProcuraduriaDescargaController extends Controller
 
             DB::commit();
             return response()->json([
-                'message' => 'Registro creado correctamente',
+                'message' => MessageHttp::CREADO_CORRECTAMENTE,
                 'data' => $descarga
             ], 201);
 

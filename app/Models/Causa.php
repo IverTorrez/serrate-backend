@@ -26,6 +26,7 @@ class Causa extends Model
         'abogado_id',
         'procurador_id',
         'usuario_id',
+        'plantilla_id',
         'estado',
         'es_eliminado'
     ];

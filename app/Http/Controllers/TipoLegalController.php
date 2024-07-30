@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\TipoLegalCollection;
-use App\Models\TipoLegal;
-use Illuminate\Http\Request;
 use App\Constants\Estado;
+use App\Models\TipoLegal;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Http\Resources\TipoLegalCollection;
 use App\Http\Requests\StoreTipoLegalRequest;
 use App\Http\Requests\UpdateTipoLegalRequest;
 
@@ -44,7 +45,7 @@ class TipoLegalController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$tipoLegal
          ];
          return response()
@@ -57,7 +58,7 @@ class TipoLegalController extends Controller
     public function show(TipoLegal $tipoLegal)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$tipoLegal
         ];
         return response()->json($data);
@@ -83,7 +84,7 @@ class TipoLegalController extends Controller
             'materia_id',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$tipoLegal
         ];
         return response()->json($data);
@@ -97,7 +98,7 @@ class TipoLegalController extends Controller
         $tipoLegal->es_eliminado   =1;
          $tipoLegal->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$tipoLegal
         ];
         return response()->json($data);

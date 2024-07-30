@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CuerpoExpediente;
-use Illuminate\Http\Request;
 use App\Constants\Estado;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Models\CuerpoExpediente;
+use App\Http\Resources\CuerpoExpedienteCollection;
 use App\Http\Requests\StoreCuerpoExpedienteRequest;
 use App\Http\Requests\UpdateCuerpoExpedienteRequest;
-use App\Http\Resources\CuerpoExpedienteCollection;
 
 class CuerpoExpedienteController extends Controller
 {
@@ -44,7 +45,7 @@ class CuerpoExpedienteController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$cuerpoExpediente
          ];
          return response()
@@ -57,7 +58,7 @@ class CuerpoExpedienteController extends Controller
     public function show(CuerpoExpediente $cuerpoExpediente)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$cuerpoExpediente
         ];
         return response()->json($data);
@@ -83,7 +84,7 @@ class CuerpoExpedienteController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$cuerpoExpediente
         ];
         return response()->json($data);
@@ -97,7 +98,7 @@ class CuerpoExpedienteController extends Controller
         $cuerpoExpediente->es_eliminado   =1;
          $cuerpoExpediente->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$cuerpoExpediente
         ];
         return response()->json($data);

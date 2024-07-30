@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tribunal;
-use Illuminate\Http\Request;
 use App\Constants\Estado;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Http\Resources\TribunalCollection;
 use App\Http\Requests\StoreTribunalRequest;
 use App\Http\Requests\UpdateTribunalRequest;
-use App\Http\Resources\TribunalCollection;
 
 class TribunalController extends Controller
 {
@@ -47,7 +48,7 @@ class TribunalController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$tribunal
          ];
          return response()
@@ -60,7 +61,7 @@ class TribunalController extends Controller
     public function show(Tribunal $tribunal)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$tribunal
         ];
         return response()->json($data);
@@ -89,7 +90,7 @@ class TribunalController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$tribunal
         ];
         return response()->json($data);
@@ -103,7 +104,7 @@ class TribunalController extends Controller
         $tribunal->es_eliminado   =1;
          $tribunal->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$tribunal
         ];
         return response()->json($data);

@@ -39,6 +39,7 @@ class UpdateCausaRequest extends FormRequest
             'categoria_id'=>['sometimes'],
             'abogado_id'=>['sometimes'],
             'procurador_id'=>['sometimes'],
+            'plantilla_id'=>['sometimes'],
           ];
     }
 }

@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TipoPosta;
-use Illuminate\Http\Request;
 use App\Constants\Estado;
+use App\Models\TipoPosta;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use App\Http\Resources\TipoPostaCollection;
 use App\Http\Requests\StoreTipoPostaRequest;
 use App\Http\Requests\UpdateTipoPostaRequest;
-use App\Http\Resources\TipoPostaCollection;
 
 class TipoPostaController extends Controller
 {
@@ -41,7 +42,7 @@ class TipoPostaController extends Controller
             'es_eliminado'=>0
          ]);
          $data=[
-            'message'=>'Registro creado exitosamente',
+            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$tipoPosta
          ];
          return response()
@@ -54,7 +55,7 @@ class TipoPostaController extends Controller
     public function show(TipoPosta $tipoPosta)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$tipoPosta
         ];
         return response()->json($data);
@@ -78,7 +79,7 @@ class TipoPostaController extends Controller
             'estado',
             'es_eliminado']));
         $data=[
-        'message'=>'Registro actualizado correctamente',
+        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$tipoPosta
         ];
         return response()->json($data);
@@ -92,7 +93,7 @@ class TipoPostaController extends Controller
         $tipoPosta->es_eliminado   =1;
          $tipoPosta->save();
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$tipoPosta
         ];
         return response()->json($data);

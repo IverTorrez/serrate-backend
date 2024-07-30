@@ -7,16 +7,19 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\CausaController;
 use App\Http\Controllers\CausaPostaController;
 use App\Http\Controllers\ClaseTribunalController;
+use App\Http\Controllers\CompraPaqueteController;
 use App\Http\Controllers\ConfirmacionController;
 use App\Http\Controllers\CuerpoExpedienteController;
 use App\Http\Controllers\DepositoController;
 use App\Http\Controllers\DevolucionSaldoController;
 use App\Http\Controllers\DistritoController;
+use App\Http\Controllers\GestionAlternativaController;
 use App\Http\Controllers\InformePostaController;
 use App\Http\Controllers\JuzgadoController;
 use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\MatrizCotizacionController;
 use App\Http\Controllers\OrdenController;
+use App\Http\Controllers\PaqueteController;
 use App\Http\Controllers\ParticipanteController;
 use App\Http\Controllers\PisoController;
 use App\Http\Controllers\PostaController;
@@ -45,11 +48,11 @@ Route::group(['prefix'=>'v1','namespace'=>'App\Http\Controllers'],function(){
     Route::middleware(['auth:sanctum'])->group(function (){
         Route::get('logout',[AuthController::class,'logout']);
         //Materia
-        Route::get('materia',[MateriaController::class,'index']);
-        Route::get('materia/{materia}',[MateriaController::class,'show']);
-        Route::post('materia',[MateriaController::class,'store']);
-        Route::patch('materia/{materia}',[MateriaController::class,'update']);
-        Route::patch('materia/eliminar/{materia}',[MateriaController::class,'destroy']);
+        Route::get('materias',[MateriaController::class,'index']);
+        Route::get('materias/{materia}',[MateriaController::class,'show']);
+        Route::post('materias',[MateriaController::class,'store']);
+        Route::patch('materias/{materia}',[MateriaController::class,'update']);
+        Route::patch('materias/eliminar/{materia}',[MateriaController::class,'destroy']);
         //TipoLegal
         Route::get('tipo-legal',[TipoLegalController::class,'index']);
         Route::post('tipo-legal',[TipoLegalController::class,'store']);
@@ -57,29 +60,29 @@ Route::group(['prefix'=>'v1','namespace'=>'App\Http\Controllers'],function(){
         Route::patch('tipo-legal/{tipoLegal}',[TipoLegalController::class,'update']);
         Route::patch('tipo-legal/eliminar/{tipoLegal}',[TipoLegalController::class,'destroy']);
         //Categoria
-        Route::get('categoria',[CategoriaController::class,'index']);
-        Route::post('categoria',[CategoriaController::class,'store']);
-        Route::get('categoria/{categoria}',[CategoriaController::class,'show']);
-        Route::patch('categoria/{categoria}',[CategoriaController::class,'update']);
-        Route::patch('categoria/eliminar/{categoria}',[CategoriaController::class,'destroy']);
+        Route::get('categorias',[CategoriaController::class,'index']);
+        Route::post('categorias',[CategoriaController::class,'store']);
+        Route::get('categorias/{categoria}',[CategoriaController::class,'show']);
+        Route::patch('categorias/{categoria}',[CategoriaController::class,'update']);
+        Route::patch('categorias/eliminar/{categoria}',[CategoriaController::class,'destroy']);
         //Piso
-        Route::get('piso',[PisoController::class,'index']);
-        Route::post('piso',[PisoController::class,'store']);
-        Route::get('piso/{piso}',[PisoController::class,'show']);
-        Route::patch('piso/{piso}',[PisoController::class,'update']);
-        Route::patch('piso/eliminar/{piso}',[PisoController::class,'destroy']);
+        Route::get('pisos',[PisoController::class,'index']);
+        Route::post('pisos',[PisoController::class,'store']);
+        Route::get('pisos/{piso}',[PisoController::class,'show']);
+        Route::patch('pisos/{piso}',[PisoController::class,'update']);
+        Route::patch('pisos/eliminar/{piso}',[PisoController::class,'destroy']);
         //Distrito
-        Route::get('distrito',[DistritoController::class,'index']);
-        Route::post('distrito',[DistritoController::class,'store']);
-        Route::get('distrito/{distrito}',[DistritoController::class,'show']);
-        Route::patch('distrito/{distrito}',[DistritoController::class,'update']);
-        Route::patch('distrito/eliminar/{distrito}',[DistritoController::class,'destroy']);
+        Route::get('distritos',[DistritoController::class,'index']);
+        Route::post('distritos',[DistritoController::class,'store']);
+        Route::get('distritos/{distrito}',[DistritoController::class,'show']);
+        Route::patch('distritos/{distrito}',[DistritoController::class,'update']);
+        Route::patch('distritos/eliminar/{distrito}',[DistritoController::class,'destroy']);
         //Juzgado
-        Route::get('juzgado',[JuzgadoController::class,'index']);
-        Route::post('juzgado',[JuzgadoController::class,'store']);
-        Route::get('juzgado/{juzgado}',[JuzgadoController::class,'show']);
-        Route::patch('juzgado/{juzgado}',[JuzgadoController::class,'update']);
-        Route::patch('juzgado/eliminar/{juzgado}',[JuzgadoController::class,'destroy']);
+        Route::get('juzgados',[JuzgadoController::class,'index']);
+        Route::post('juzgados',[JuzgadoController::class,'store']);
+        Route::get('juzgados/{juzgado}',[JuzgadoController::class,'show']);
+        Route::patch('juzgados/{juzgado}',[JuzgadoController::class,'update']);
+        Route::patch('juzgados/eliminar/{juzgado}',[JuzgadoController::class,'destroy']);
         //Clase Tribunal
         Route::get('clase-tribunal',[ClaseTribunalController::class,'index']);
         Route::post('clase-tribunal',[ClaseTribunalController::class,'store']);
@@ -87,11 +90,11 @@ Route::group(['prefix'=>'v1','namespace'=>'App\Http\Controllers'],function(){
         Route::patch('clase-tribunal/{claseTribunal}',[ClaseTribunalController::class,'update']);
         Route::patch('clase-tribunal/eliminar/{claseTribunal}',[ClaseTribunalController::class,'destroy']);
         //Causa
-        Route::get('causa',[CausaController::class,'index']);
-        Route::post('causa',[CausaController::class,'store']);
-        Route::get('causa/{causa}',[CausaController::class,'show']);
-        Route::patch('causa/{causa}',[CausaController::class,'update']);
-        Route::patch('causa/eliminar/{causa}',[CausaController::class,'destroy']);
+        Route::get('causas',[CausaController::class,'index']);
+        Route::post('causas',[CausaController::class,'store']);
+        Route::get('causas/{causa}',[CausaController::class,'show']);
+        Route::patch('causas/{causa}',[CausaController::class,'update']);
+        Route::patch('causas/eliminar/{causa}',[CausaController::class,'destroy']);
         //Tribunal
         Route::get('tribunal',[TribunalController::class,'index']);
         Route::post('tribunal',[TribunalController::class,'store']);
@@ -105,17 +108,17 @@ Route::group(['prefix'=>'v1','namespace'=>'App\Http\Controllers'],function(){
         Route::patch('cuerpo-expediente/{cuerpoExpediente}',[CuerpoExpedienteController::class,'update']);
         Route::patch('cuerpo-expediente/eliminar/{cuerpoExpediente}',[CuerpoExpedienteController::class,'destroy']);
         //Participante
-        Route::get('participante',[ParticipanteController::class,'index']);
-        Route::post('participante',[ParticipanteController::class,'store']);
-        Route::get('participante/{participante}',[ParticipanteController::class,'show']);
-        Route::patch('participante/{participante}',[ParticipanteController::class,'update']);
-        Route::patch('participante/eliminar/{participante}',[ParticipanteController::class,'destroy']);
+        Route::get('participantes',[ParticipanteController::class,'index']);
+        Route::post('participantes',[ParticipanteController::class,'store']);
+        Route::get('participantes/{participante}',[ParticipanteController::class,'show']);
+        Route::patch('participantes/{participante}',[ParticipanteController::class,'update']);
+        Route::patch('participantes/eliminar/{participante}',[ParticipanteController::class,'destroy']);
         //Depositos
-        Route::get('deposito',[DepositoController::class,'index']);
-        Route::post('deposito',[DepositoController::class,'store']);
-        Route::get('deposito/{deposito}',[DepositoController::class,'show']);
-        Route::patch('deposito/{deposito}',[DepositoController::class,'update']);
-        Route::patch('deposito/eliminar/{deposito}',[DepositoController::class,'destroy']);
+        Route::get('depositos',[DepositoController::class,'index']);
+        Route::post('depositos',[DepositoController::class,'store']);
+        Route::get('depositos/{deposito}',[DepositoController::class,'show']);
+        Route::patch('depositos/{deposito}',[DepositoController::class,'update']);
+        Route::patch('depositos/eliminar/{deposito}',[DepositoController::class,'destroy']);
         //Devolucion Saldo
         Route::get('devolucion-saldo',[DevolucionSaldoController::class,'index']);
         Route::post('devolucion-saldo',[DevolucionSaldoController::class,'store']);
@@ -123,41 +126,41 @@ Route::group(['prefix'=>'v1','namespace'=>'App\Http\Controllers'],function(){
         Route::patch('devolucion-saldo/{devolucionSaldo}',[DevolucionSaldoController::class,'update']);
         Route::patch('devolucion-saldo/eliminar/{devolucionSaldo}',[DevolucionSaldoController::class,'destroy']);
         //Avance plantilla
-        Route::get('avance-plantilla',[AvancePlantillaController::class,'index']);
-        Route::post('avance-plantilla',[AvancePlantillaController::class,'store']);
-        Route::get('avance-plantilla/{avancePlantilla}',[AvancePlantillaController::class,'show']);
-        Route::patch('avance-plantilla/{avancePlantilla}',[AvancePlantillaController::class,'update']);
-        Route::patch('avance-plantilla/eliminar/{avancePlantilla}',[AvancePlantillaController::class,'destroy']);
+        Route::get('avance-plantillas',[AvancePlantillaController::class,'index']);
+        Route::post('avance-plantillas',[AvancePlantillaController::class,'store']);
+        Route::get('avance-plantillas/{avancePlantilla}',[AvancePlantillaController::class,'show']);
+        Route::patch('avance-plantillas/{avancePlantilla}',[AvancePlantillaController::class,'update']);
+        Route::patch('avance-plantillas/eliminar/{avancePlantilla}',[AvancePlantillaController::class,'destroy']);
         //Posta
-        Route::get('posta',[PostaController::class,'index']);
-        Route::post('posta',[PostaController::class,'store']);
-        Route::get('posta/{posta}',[PostaController::class,'show']);
-        Route::patch('posta/{posta}',[PostaController::class,'update']);
-        Route::patch('posta/eliminar/{posta}',[PostaController::class,'destroy']);
+        Route::get('postas',[PostaController::class,'index']);
+        Route::post('postas',[PostaController::class,'store']);
+        Route::get('postas/{posta}',[PostaController::class,'show']);
+        Route::patch('postas/{posta}',[PostaController::class,'update']);
+        Route::patch('postas/eliminar/{posta}',[PostaController::class,'destroy']);
         //Agenda apunte
-        Route::get('agenda-apunte',[AgendaApunteController::class,'index']);
-        Route::post('agenda-apunte',[AgendaApunteController::class,'store']);
-        Route::get('agenda-apunte/{agendaApunte}',[AgendaApunteController::class,'show']);
-        Route::patch('agenda-apunte/{agendaApunte}',[AgendaApunteController::class,'update']);
-        Route::patch('agenda-apunte/eliminar/{agendaApunte}',[AgendaApunteController::class,'destroy']);
+        Route::get('agenda-apuntes',[AgendaApunteController::class,'index']);
+        Route::post('agenda-apuntes',[AgendaApunteController::class,'store']);
+        Route::get('agenda-apuntes/{agendaApunte}',[AgendaApunteController::class,'show']);
+        Route::patch('agenda-apuntes/{agendaApunte}',[AgendaApunteController::class,'update']);
+        Route::patch('agenda-apuntes/eliminar/{agendaApunte}',[AgendaApunteController::class,'destroy']);
         //Causa Posta
-        Route::get('causa-posta',[CausaPostaController::class,'index']);
-        Route::post('causa-posta',[CausaPostaController::class,'store']);
-        Route::get('causa-posta/{causaPosta}',[CausaPostaController::class,'show']);
-        Route::patch('causa-posta/{causaPosta}',[CausaPostaController::class,'update']);
-        Route::patch('causa-posta/eliminar/{causaPosta}',[CausaPostaController::class,'destroy']);
+        Route::get('causa-postas',[CausaPostaController::class,'index']);
+        Route::post('causa-postas',[CausaPostaController::class,'store']);
+        Route::get('causa-postas/{causaPosta}',[CausaPostaController::class,'show']);
+        Route::patch('causa-postas/{causaPosta}',[CausaPostaController::class,'update']);
+        Route::patch('causa-postas/eliminar/{causaPosta}',[CausaPostaController::class,'destroy']);
         //Tipo posta
-        Route::get('tipo-posta',[TipoPostaController::class,'index']);
-        Route::post('tipo-posta',[TipoPostaController::class,'store']);
-        Route::get('tipo-posta/{tipoPosta}',[TipoPostaController::class,'show']);
-        Route::patch('tipo-posta/{tipoPosta}',[TipoPostaController::class,'update']);
-        Route::patch('tipo-posta/eliminar/{tipoPosta}',[TipoPostaController::class,'destroy']);
+        Route::get('tipo-postas',[TipoPostaController::class,'index']);
+        Route::post('tipo-postas',[TipoPostaController::class,'store']);
+        Route::get('tipo-postas/{tipoPosta}',[TipoPostaController::class,'show']);
+        Route::patch('tipo-postas/{tipoPosta}',[TipoPostaController::class,'update']);
+        Route::patch('tipo-postas/eliminar/{tipoPosta}',[TipoPostaController::class,'destroy']);
         //Informe Posta
-        Route::get('informe-posta',[InformePostaController::class,'index']);
-        Route::post('informe-posta',[InformePostaController::class,'store']);
-        Route::get('informe-posta/{informePosta}',[InformePostaController::class,'show']);
-        Route::patch('informe-posta/{informePosta}',[InformePostaController::class,'update']);
-        Route::patch('informe-posta/eliminar/{informePosta}',[InformePostaController::class,'destroy']);
+        Route::get('informe-postas',[InformePostaController::class,'index']);
+        Route::post('informe-postas',[InformePostaController::class,'store']);
+        Route::get('informe-postas/{informePosta}',[InformePostaController::class,'show']);
+        Route::patch('informe-postas/{informePosta}',[InformePostaController::class,'update']);
+        Route::patch('informe-postas/eliminar/{informePosta}',[InformePostaController::class,'destroy']);
         //Matriz cotizacion
         Route::get('matriz-cotizacion',[MatrizCotizacionController::class,'index']);
         Route::get('matriz-cotizacion/{matrizCotizacion}',[MatrizCotizacionController::class,'show']);
@@ -172,19 +175,35 @@ Route::group(['prefix'=>'v1','namespace'=>'App\Http\Controllers'],function(){
         //Cotizacion
 
        //Presupuesto
-       Route::get('presupuesto',[PresupuestoController::class,'index']);
-       Route::post('presupuesto',[PresupuestoController::class,'store']);
-       Route::get('presupuesto/{presupuesto}',[PresupuestoController::class,'show']);
-       Route::patch('presupuesto/{presupuesto}',[PresupuestoController::class,'update']);
-       Route::patch('presupuesto/eliminar/{presupuesto}',[PresupuestoController::class,'destroy']);
-       Route::patch('presupuesto/entregar/{presupuesto}',[PresupuestoController::class,'entregarPresupuesto']);
+       Route::get('presupuestos',[PresupuestoController::class,'index']);
+       Route::post('presupuestos',[PresupuestoController::class,'store']);
+       Route::get('presupuestos/{presupuesto}',[PresupuestoController::class,'show']);
+       Route::patch('presupuestos/{presupuesto}',[PresupuestoController::class,'update']);
+       Route::patch('presupuestos/eliminar/{presupuesto}',[PresupuestoController::class,'destroy']);
+       Route::patch('presupuestos/entregar/{presupuesto}',[PresupuestoController::class,'entregarPresupuesto']);
        //Procuraduria Descarga
-       Route::get('descarga',[ProcuraduriaDescargaController::class,'index']);
-       Route::post('descarga',[ProcuraduriaDescargaController::class,'store']);
+       Route::get('descargas',[ProcuraduriaDescargaController::class,'index']);
+       Route::post('descargas',[ProcuraduriaDescargaController::class,'store']);
 
        //Confirmacion
        Route::patch('confirmacion/pronuncio-abogado/{confirmacion}',[ConfirmacionController::class,'pronuncioAbogado']);
        Route::patch('confirmacion/pronuncio-contador/{confirmacion}',[ConfirmacionController::class,'pronuncioContador']);
+       //Gestion Alternativa
+       Route::post('gestion-alternativa',[GestionAlternativaController::class,'store']);
+       Route::patch('gestion-alternativa/{gestionAlternativa}',[GestionAlternativaController::class,'update']);
+       Route::patch('gestion-alternativa/eliminar/{gestionAlternativa}',[GestionAlternativaController::class,'destroy']);
+       Route::get('gestion-alternativa/orden/{ordenId}',[GestionAlternativaController::class,'obtenerPorOrdenId']);
+       //Paquetes
+       Route::get('paquetes',[PaqueteController::class,'index']);
+       Route::post('paquetes',[PaqueteController::class,'store']);
+       Route::patch('paquetes/{paquete}',[PaqueteController::class,'update']);
+       Route::patch('paquetes/eliminar/{paquete}',[PaqueteController::class,'destroy']);
+       Route::get('paquetes/{paquete}',[PaqueteController::class,'show']);
+       //Compra paquetes
+       Route::post('compra-paquetes',[CompraPaqueteController::class,'store']);
+       Route::get('compra-paquetes',[CompraPaqueteController::class,'index']);
+       Route::get('compra-paquetes/{compraPaquete}',[CompraPaqueteController::class,'show']);
+
 
 
     });

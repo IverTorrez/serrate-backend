@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StorePresupuestoRequest;
-use App\Http\Resources\PresupuestoCollection;
-use App\Models\Presupuesto;
-use Illuminate\Http\Request;
-use App\Services\PresupuestoService;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Constants\Estado;
+use App\Enums\MessageHttp;
+use App\Models\Presupuesto;
+use Illuminate\Http\Request;
 use App\Constants\EtapaOrden;
-use App\Http\Requests\UpdatePresupuestoRequest;
-use App\Services\CotizacionService;
-use App\Services\MatrizCotizacionService;
 use App\Services\OrdenService;
+use App\Services\CotizacionService;
+use App\Services\PresupuestoService;
+use Illuminate\Support\Facades\Auth;
+use App\Services\MatrizCotizacionService;
+use App\Http\Resources\PresupuestoCollection;
+use App\Http\Requests\StorePresupuestoRequest;
+use App\Http\Requests\UpdatePresupuestoRequest;
 
 class PresupuestoController extends Controller
 {
@@ -91,9 +92,9 @@ class PresupuestoController extends Controller
         $cotizacion= $this->cotizacionService->update($dataCotizacion,$cotizacion->id);
 
         return response()->json([
-            'message' => 'Registro creado correctamente',
+            'message' => MessageHttp::CREADO_CORRECTAMENTE,
             'data' => $presupuesto
-        ], 201);
+        ], 200);
     }
 
     /**
@@ -102,7 +103,7 @@ class PresupuestoController extends Controller
     public function show(Presupuesto $presupuesto)
     {
         $data=[
-            'message'=>'Resultado obtenido exitosamente',
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data'=>$presupuesto
         ];
         return response()->json($data);
@@ -152,7 +153,7 @@ class PresupuestoController extends Controller
         }
 
         $data=[
-            'message'=>'Registro actualizado correctamente',
+            'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
             'data'=>$presupuesto
             ];
             return response()->json($data);
@@ -165,7 +166,7 @@ class PresupuestoController extends Controller
     {
         $presupuesto = $this->presupuestoService->destroy($presupuesto);
          $data=[
-            'message'=>'Registro eliminado correctamente',
+            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data'=>$presupuesto
         ];
         return response()->json($data);
