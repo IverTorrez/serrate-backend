@@ -15,12 +15,27 @@ class PisoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    
+    public function index(Request $request)
     {
-        $piso = Piso::where('es_eliminado', 0)
-                           ->where('estado', Estado::ACTIVO)
-                           ->paginate();
-        return new PisoCollection($piso);
+        $query = Piso::active();
+    
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+    
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+    
+        $perPage = $request->input('perPage', 10);
+        $pisos = $query->paginate($perPage);
+    
+        return new PisoCollection($pisos);
     }
 
     /**
@@ -53,12 +68,23 @@ class PisoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Piso $piso)
+    public function show(Piso $piso = null)
     {
-        $data=[
-            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
-            'data'=>$piso
-        ];
+        if ($piso) {
+           
+            $data = [
+                'message' => 'Piso obtenido correctamente',
+                'data' => $piso
+            ];
+        } else {
+            
+            $pisos = Piso::all();
+            $data = [
+                'message' => 'Pisos obtenidos correctamente',
+                'data' => $pisos
+            ];
+        }
+
         return response()->json($data);
     }
 

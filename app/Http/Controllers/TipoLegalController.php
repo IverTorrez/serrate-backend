@@ -15,12 +15,27 @@ class TipoLegalController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    
+    public function index(Request $request)
     {
-        $tipoLegal = TipoLegal::where('es_eliminado', 0)
-                           ->where('estado', Estado::ACTIVO)
-                           ->paginate();
-        return new TipoLegalCollection($tipoLegal);
+        $query = TipoLegal::active();
+    
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+    
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+    
+        $perPage = $request->input('perPage', 10);
+        $tiposLegales = $query->paginate($perPage);
+    
+        return new TipoLegalCollection($tiposLegales);
     }
 
     /**
@@ -55,12 +70,24 @@ class TipoLegalController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(TipoLegal $tipoLegal)
+    
+    public function show(TipoLegal $tipoLegal = null)
     {
-        $data=[
-            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
-            'data'=>$tipoLegal
-        ];
+        if ($tipoLegal) {
+           
+            $data = [
+                'message' => 'Tipo Legal obtenido correctamente',
+                'data' => $tipoLegal
+            ];
+        } else {
+            
+            $tiposLegales = TipoLegal::all();
+            $data = [
+                'message' => 'Tipos Legales obtenidos correctamente',
+                'data' => $tiposLegales
+            ];
+        }
+
         return response()->json($data);
     }
 
