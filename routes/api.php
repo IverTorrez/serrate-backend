@@ -29,6 +29,7 @@ use App\Http\Controllers\TipoLegalController;
 use App\Http\Controllers\TipoPostaController;
 use App\Http\Controllers\TribunalController;
 use App\Models\Categoria;
+use App\Models\Piso;
 use App\Models\TipoLegal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -70,7 +71,7 @@ Route::group(['prefix'=>'v1','namespace'=>'App\Http\Controllers'],function(){
         //Piso
         Route::get('pisos',[PisoController::class,'index']);
         Route::post('pisos',[PisoController::class,'store']);
-        Route::get('pisos/{piso}',[PisoController::class,'show']);
+        Route::get('pisos/listar/{piso?}', [PisoController::class, 'show']);
         Route::patch('pisos/{piso}',[PisoController::class,'update']);
         Route::patch('pisos/eliminar/{piso}',[PisoController::class,'destroy']);
         //Distrito
