@@ -28,6 +28,7 @@ use App\Http\Controllers\ProcuraduriaDescargaController;
 use App\Http\Controllers\TipoLegalController;
 use App\Http\Controllers\TipoPostaController;
 use App\Http\Controllers\TribunalController;
+use App\Models\Categoria;
 use App\Models\TipoLegal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -63,7 +64,7 @@ Route::group(['prefix'=>'v1','namespace'=>'App\Http\Controllers'],function(){
         //Categoria
         Route::get('categorias',[CategoriaController::class,'index']);
         Route::post('categorias',[CategoriaController::class,'store']);
-        Route::get('categorias/{categoria}',[CategoriaController::class,'show']);
+        Route::get('categoria/listar/{categoria?}', [CategoriaController::class, 'show']);
         Route::patch('categorias/{categoria}',[CategoriaController::class,'update']);
         Route::patch('categorias/eliminar/{categoria}',[CategoriaController::class,'destroy']);
         //Piso

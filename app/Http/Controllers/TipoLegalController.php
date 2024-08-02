@@ -33,9 +33,9 @@ class TipoLegalController extends Controller
         }
     
         $perPage = $request->input('perPage', 10);
-        $materias = $query->paginate($perPage);
+        $tiposLegales = $query->paginate($perPage);
     
-        return new TipoLegalCollection($materias);
+        return new TipoLegalCollection($tiposLegales);
     }
 
     /**
