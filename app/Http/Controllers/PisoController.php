@@ -9,32 +9,38 @@ use Illuminate\Http\Request;
 use App\Http\Resources\PisoCollection;
 use App\Http\Requests\StorePisoRequest;
 use App\Http\Requests\UpdatePisoRequest;
+use App\Services\PisoService;
 
 class PisoController extends Controller
 {
+    protected $pisoService;
+    public function __construct(PisoService $pisoService)
+    {
+        $this->pisoService = $pisoService;
+    }
     /**
      * Display a listing of the resource.
      */
-    
+
     public function index(Request $request)
     {
         $query = Piso::active();
-    
+
         // Manejo de búsqueda
         if ($request->has('search')) {
             $search = json_decode($request->input('search'), true);
             $query->search($search);
         }
-    
+
         // Manejo de ordenamiento
         if ($request->has('sort')) {
             $sort = json_decode($request->input('sort'), true);
             $query->sort($sort);
         }
-    
+
         $perPage = $request->input('perPage', 10);
         $pisos = $query->paginate($perPage);
-    
+
         return new PisoCollection($pisos);
     }
 
@@ -71,14 +77,12 @@ class PisoController extends Controller
     public function show(Piso $piso = null)
     {
         if ($piso) {
-           
             $data = [
                 'message' => 'Piso obtenido correctamente',
                 'data' => $piso
             ];
         } else {
-            
-            $pisos = Piso::all();
+            $pisos = $this->pisoService->listarActivos();
             $data = [
                 'message' => 'Pisos obtenidos correctamente',
                 'data' => $pisos
