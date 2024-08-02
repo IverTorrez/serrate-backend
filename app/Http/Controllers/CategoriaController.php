@@ -19,7 +19,7 @@ class CategoriaController extends Controller
     {
         $categoria = Categoria::where('es_eliminado', 0)
                            ->where('estado', Estado::ACTIVO)
-                           ->paginate();
+                           ->paginate(10);
         return new CategoriaCollection($categoria);
     }
 

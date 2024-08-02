@@ -19,7 +19,7 @@ class PisoController extends Controller
     {
         $piso = Piso::where('es_eliminado', 0)
                            ->where('estado', Estado::ACTIVO)
-                           ->paginate();
+                           ->paginate(10);
         return new PisoCollection($piso);
     }
 

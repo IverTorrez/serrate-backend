@@ -18,20 +18,27 @@ class MateriaController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-    {
-        // $materias = Materia::where('es_eliminado', 0)
-        //                    ->where('estado', Estado::ACTIVO)
-        //                    ->paginate();
-        // return new MateriaCollection($materias);
+{
+    $query = Materia::active();
 
-        $filter = new MateriaFilter();
-        $queryItems = $filter->transform($request);
-        $materias= Materia::where($queryItems)
-                           ->where('estado', Estado::ACTIVO)
-                           ->where('es_eliminado', 0);
-
-        return new MateriaCollection($materias->paginate(10)->appends($request->query()));
+    // Manejo de búsqueda
+    if ($request->has('search')) {
+        $search = json_decode($request->input('search'), true);
+        $query->search($search);
     }
+
+    // Manejo de ordenamiento
+    if ($request->has('sort')) {
+        $sort = json_decode($request->input('sort'), true);
+        $query->sort($sort);
+    }
+
+    $perPage = $request->input('perPage', 10);
+    $materias = $query->paginate($perPage);
+
+    return new MateriaCollection($materias);
+}
+
 
     /**
      * Show the form for creating a new resource.
@@ -65,12 +72,23 @@ class MateriaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Materia $materia)
+    public function show(Materia $materia = null)
     {
-        $data=[
-            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
-            'data'=>$materia
-        ];
+        if ($materia) {
+           
+            $data = [
+                'message' => 'Materia obtenida correctamente',
+                'data' => $materia
+            ];
+        } else {
+            
+            $materias = Materia::all();
+            $data = [
+                'message' => 'Materias obtenidas correctamente',
+                'data' => $materias
+            ];
+        }
+
         return response()->json($data);
     }
 

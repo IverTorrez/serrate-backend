@@ -28,6 +28,7 @@ use App\Http\Controllers\ProcuraduriaDescargaController;
 use App\Http\Controllers\TipoLegalController;
 use App\Http\Controllers\TipoPostaController;
 use App\Http\Controllers\TribunalController;
+use App\Models\TipoLegal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -49,14 +50,14 @@ Route::group(['prefix'=>'v1','namespace'=>'App\Http\Controllers'],function(){
         Route::get('logout',[AuthController::class,'logout']);
         //Materia
         Route::get('materias',[MateriaController::class,'index']);
-        Route::get('materias/{materia}',[MateriaController::class,'show']);
+        Route::get('materias/listar/{materia?}', [MateriaController::class, 'show']);
         Route::post('materias',[MateriaController::class,'store']);
         Route::patch('materias/{materia}',[MateriaController::class,'update']);
         Route::patch('materias/eliminar/{materia}',[MateriaController::class,'destroy']);
         //TipoLegal
         Route::get('tipo-legal',[TipoLegalController::class,'index']);
         Route::post('tipo-legal',[TipoLegalController::class,'store']);
-        Route::get('tipo-legal/{tipoLegal}',[TipoLegalController::class,'show']);
+        Route::get('tipo-legal/listar/{tipoLegal?}', [TipoLegalController::class, 'show']);
         Route::patch('tipo-legal/{tipoLegal}',[TipoLegalController::class,'update']);
         Route::patch('tipo-legal/eliminar/{tipoLegal}',[TipoLegalController::class,'destroy']);
         //Categoria

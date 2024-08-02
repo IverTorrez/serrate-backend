@@ -19,7 +19,7 @@ class TipoLegalController extends Controller
     {
         $tipoLegal = TipoLegal::where('es_eliminado', 0)
                            ->where('estado', Estado::ACTIVO)
-                           ->paginate();
+                           ->paginate(10);
         return new TipoLegalCollection($tipoLegal);
     }
 
