@@ -77,13 +77,13 @@ Route::group(['prefix'=>'v1','namespace'=>'App\Http\Controllers'],function(){
         //Distrito
         Route::get('distritos',[DistritoController::class,'index']);
         Route::post('distritos',[DistritoController::class,'store']);
-        Route::get('distritos/{distrito}',[DistritoController::class,'show']);
+        Route::get('distritos/listar/{distrito?}', [DistritoController::class, 'show']);
         Route::patch('distritos/{distrito}',[DistritoController::class,'update']);
         Route::patch('distritos/eliminar/{distrito}',[DistritoController::class,'destroy']);
         //Juzgado
         Route::get('juzgados',[JuzgadoController::class,'index']);
         Route::post('juzgados',[JuzgadoController::class,'store']);
-        Route::get('juzgados/{juzgado}',[JuzgadoController::class,'show']);
+        Route::get('juzgados/listar/{juzgado?}', [JuzgadoController::class, 'show']);
         Route::patch('juzgados/{juzgado}',[JuzgadoController::class,'update']);
         Route::patch('juzgados/eliminar/{juzgado}',[JuzgadoController::class,'destroy']);
         //Clase Tribunal

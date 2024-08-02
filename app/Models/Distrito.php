@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\CommonScopes;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Distrito extends Model
 {
-    use HasFactory;
+    use CommonScopes, HasFactory;
     protected $fillable=[
         'nombre',
         'abreviatura',

@@ -9,18 +9,39 @@ use Illuminate\Http\Request;
 use App\Http\Resources\JuzgadoCollection;
 use App\Http\Requests\StoreJuzgadoRequest;
 use App\Http\Requests\UpdateJuzgadoRequest;
+use App\Services\JuzgadoService;
 
 class JuzgadoController extends Controller
 {
+    protected $juzgadoService;
+
+    public function __construct(JuzgadoService $juzgadoService)
+    {
+        $this->juzgadoService = $juzgadoService;
+    }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $juzgado = Juzgado::where('es_eliminado', 0)
-                           ->where('estado', Estado::ACTIVO)
-                           ->paginate();
-        return new JuzgadoCollection($juzgado);
+        $query = Juzgado::active();
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $juzgados = $query->paginate($perPage);
+
+        return new JuzgadoCollection($juzgados);
     }
 
     /**
@@ -63,12 +84,21 @@ class JuzgadoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Juzgado $juzgado)
+    public function show(Juzgado $juzgado = null)
     {
-        $data=[
-            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
-            'data'=>$juzgado
-        ];
+        if ($juzgado) {
+            $data = [
+                'message' => 'Juzgado obtenido correctamente',
+                'data' => $juzgado
+            ];
+        } else {
+            $juzgados = $this->juzgadoService->listarActivos();
+            $data = [
+                'message' => 'Juzgados obtenidos correctamente',
+                'data' => $juzgados
+            ];
+        }
+
         return response()->json($data);
     }
 

@@ -9,9 +9,16 @@ use Illuminate\Http\Request;
 use App\Http\Resources\CategoriaCollection;
 use App\Http\Requests\StoreCategoriaRequest;
 use App\Http\Requests\UpdateCategoriaRequest;
+use App\Services\CategoriaService;
 
 class CategoriaController extends Controller
 {
+    protected $categoriaService;
+
+    public function __construct(CategoriaService $categoriaService)
+    {
+        $this->categoriaService = $categoriaService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -19,22 +26,22 @@ class CategoriaController extends Controller
     public function index(Request $request)
     {
         $query = Categoria::active();
-    
+
         // Manejo de búsqueda
         if ($request->has('search')) {
             $search = json_decode($request->input('search'), true);
             $query->search($search);
         }
-    
+
         // Manejo de ordenamiento
         if ($request->has('sort')) {
             $sort = json_decode($request->input('sort'), true);
             $query->sort($sort);
         }
-    
+
         $perPage = $request->input('perPage', 10);
         $categorias = $query->paginate($perPage);
-    
+
         return new CategoriaCollection($categorias);
     }
 
@@ -72,14 +79,14 @@ class CategoriaController extends Controller
     public function show(Categoria $categoria = null)
     {
         if ($categoria) {
-           
+
             $data = [
                 'message' => 'Categoria obtenida correctamente',
                 'data' => $categoria
             ];
         } else {
-            
-            $categorias = Categoria::all();
+
+            $categorias = $this->categoriaService->listarActivos();
             $data = [
                 'message' => 'Categorias obtenidas correctamente',
                 'data' => $categorias

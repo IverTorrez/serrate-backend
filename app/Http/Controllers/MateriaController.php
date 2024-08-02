@@ -11,9 +11,16 @@ use App\Http\Resources\MateriaCollection;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreMateriaRequest;
 use App\Http\Requests\UpdateMateriaRequest;
+use App\Services\MateriaService;
 
 class MateriaController extends Controller
 {
+    protected $materiaService;
+
+    public function __construct(MateriaService $materiaService)
+    {
+        $this->materiaService = $materiaService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -75,14 +82,13 @@ class MateriaController extends Controller
     public function show(Materia $materia = null)
     {
         if ($materia) {
-           
             $data = [
                 'message' => 'Materia obtenida correctamente',
                 'data' => $materia
             ];
         } else {
-            
-            $materias = Materia::all();
+
+            $materias = $this->materiaService->listarActivos();
             $data = [
                 'message' => 'Materias obtenidas correctamente',
                 'data' => $materias
