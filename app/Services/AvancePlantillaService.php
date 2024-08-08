@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Constants\Estado;
@@ -18,5 +19,11 @@ class AvancePlantillaService
         $avancePlantillaId = AvancePlantilla::findOrFail($plantillaId);
         return $avancePlantillaId;
     }
-
+    public function listarActivos()
+    {
+        $avancePlantilla = AvancePlantilla::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->get();
+        return $avancePlantilla;
+    }
 }
