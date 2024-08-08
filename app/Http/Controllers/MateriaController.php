@@ -25,26 +25,26 @@ class MateriaController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-{
-    $query = Materia::active();
+    {
+        $query = Materia::active();
 
-    // Manejo de búsqueda
-    if ($request->has('search')) {
-        $search = json_decode($request->input('search'), true);
-        $query->search($search);
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $materias = $query->paginate($perPage);
+
+        return new MateriaCollection($materias);
     }
-
-    // Manejo de ordenamiento
-    if ($request->has('sort')) {
-        $sort = json_decode($request->input('sort'), true);
-        $query->sort($sort);
-    }
-
-    $perPage = $request->input('perPage', 10);
-    $materias = $query->paginate($perPage);
-
-    return new MateriaCollection($materias);
-}
 
 
     /**
@@ -60,20 +60,20 @@ class MateriaController extends Controller
      */
     public function store(StoreMateriaRequest $request)
     {
-        $estado=Estado::ACTIVO;
-        $materia=Materia::create([
-            'nombre'=>$request->nombre,
-            'abreviatura'=>$request->abreviatura,
-            'estado'=>$estado,
-            'es_eliminado'=>0
-         ]);
+        $estado = Estado::ACTIVO;
+        $materia = Materia::create([
+            'nombre' => $request->nombre,
+            'abreviatura' => $request->abreviatura,
+            'estado' => $estado,
+            'es_eliminado' => 0
+        ]);
 
-         $data=[
-            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
-            'data'=>$materia
-         ];
-         return response()
-               ->json($data);
+        $data = [
+            'message' => MessageHttp::CREADO_CORRECTAMENTE,
+            'data' => $materia
+        ];
+        return response()
+            ->json($data);
     }
 
     /**
@@ -115,13 +115,14 @@ class MateriaController extends Controller
         // $materia->abreviatura   =$request->abreviatura;
         // $materia->save();
         $materia->update($request->only([
-                                   'nombre',
-                                   'abreviatura',
-                                   'estado',
-                                   'es_eliminado']));
-        $data=[
-            'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-            'data'=>$materia
+            'nombre',
+            'abreviatura',
+            'estado',
+            'es_eliminado'
+        ]));
+        $data = [
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $materia
         ];
         return response()->json($data);
     }
@@ -130,11 +131,11 @@ class MateriaController extends Controller
      */
     public function destroy(Materia $materia)
     {
-         $materia->es_eliminado   =1;
-         $materia->save();
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$materia
+        $materia->es_eliminado   = 1;
+        $materia->save();
+        $data = [
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $materia
         ];
         return response()->json($data);
     }

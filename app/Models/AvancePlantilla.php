@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\CommonScopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class AvancePlantilla extends Model
 {
-    use HasFactory;
-    protected $fillable=[
+    use CommonScopes, HasFactory;
+    protected $fillable = [
         'nombre',
         'estado',
         'es_eliminado'
