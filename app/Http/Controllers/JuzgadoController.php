@@ -10,6 +10,7 @@ use App\Http\Resources\JuzgadoCollection;
 use App\Http\Requests\StoreJuzgadoRequest;
 use App\Http\Requests\UpdateJuzgadoRequest;
 use App\Services\JuzgadoService;
+use Illuminate\Support\Facades\Log;
 
 class JuzgadoController extends Controller
 {
@@ -57,22 +58,27 @@ class JuzgadoController extends Controller
      */
     public function store(StoreJuzgadoRequest $request)
     {
-        $estado=Estado::ACTIVO;
-        $juzgado=Juzgado::create([
+        if ($request->hasFile('foto_url')) {
+            $file = $request->file('foto_url');
+            $path = $file->store('uploads/img', 'public');
+        } else {
+            $path = null;
+        }
+
+         $data = [
             'nombre_numerico'=>$request->nombre_numerico,
             'jerarquia'=>$request->jerarquia,
             'materia_juzgado'=>$request->materia_juzgado,
             'coordenadas'=>$request->coordenadas,
-            'foto_url'=>$request->foto_url,
+            'foto_url'=> $path,
             'contacto1'=>$request->contacto1,
             'contacto2'=>$request->contacto2,
             'contacto3'=>$request->contacto3,
             'contacto4'=>$request->contacto4,
             'distrito_id'=>$request->distrito_id,
-            'piso_id'=>$request->piso_id,
-            'estado'=>$estado,
-            'es_eliminado'=>0
-         ]);
+            'piso_id'=>$request->piso_id
+        ];
+        $juzgado = $this->juzgadoService->store($data);
          $data=[
             'message'=> MessageHttp::CREADO_CORRECTAMENTE,
             'data'=>$juzgado
@@ -115,20 +121,27 @@ class JuzgadoController extends Controller
      */
     public function update(UpdateJuzgadoRequest $request, Juzgado $juzgado)
     {
-        $juzgado->update($request->only([
+        $data = $request->only([
             'nombre_numerico',
             'jerarquia',
             'materia_juzgado',
             'coordenadas',
-            'foto_url',
             'contacto1',
             'contacto2',
             'contacto3',
             'contacto4',
             'distrito_id',
             'piso_id',
-            'estado',
-            'es_eliminado']));
+            ]);
+
+            if ($request->hasFile('foto_url')) {
+                $file = $request->file('foto_url');
+                $path = $file->store('uploads/img', 'public');
+                $data['foto_url'] = $path;
+            } else {
+                $path = null;
+            }
+            $juzgado=$this->juzgadoService->update($data,$juzgado->id);
         $data=[
         'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
         'data'=>$juzgado

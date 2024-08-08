@@ -27,7 +27,7 @@ class UpdateJuzgadoRequest extends FormRequest
           'jerarquia'=>['sometimes','string','max:50'],
           'materia_juzgado'=>['sometimes','string','max:50'],
           'coordenadas'=>['sometimes','string','max:200'],
-          'foto_url'=>['sometimes','string','max:200'],
+          'foto_url'=>['nullable', 'image'],
           'contacto1'=>['sometimes','string','max:100'],
           'contacto2'=>['sometimes','string','max:100'],
           'contacto3'=>['sometimes','string','max:100'],
