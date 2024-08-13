@@ -6,9 +6,17 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Constants\TipoUsuario;
 use App\Constants\Estado;
+use App\Enums\MessageHttp;
+use App\Services\UserService;
 
 class UserController extends Controller
 {
+    protected $userService;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -36,12 +44,21 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(User $user = null)
     {
-        $data=[
-            'message'=>'Resultado obtenido exitosamente',
-            'data'=>$user
-        ];
+        if ($user){
+            $data = [
+              'message'=>MessageHttp::OBTENIDO_CORRECTAMENTE,
+              'data'=>$user
+            ];
+        }else {
+            $usuarios = $this->userService->listarActivos();
+            $data = [
+                'message'=>MessageHttp::OBTENIDOS_CORRECTAMENTE,
+                'data'=>$usuarios
+            ];
+        }
+
         return response()->json($data);
     }
 
@@ -80,5 +97,25 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+    public function listarAbogados()
+    {
+        $usuarios = $this->userService->listarAbogados();
+        $data=[
+            'message'=> MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data'=>$usuarios
+        ];
+        return response()->json($data);
+
+    }
+    public function listarProcuradores()
+    {
+        $usuarios = $this->userService->listarProcuradores();
+        $data=[
+            'message'=> MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data'=>$usuarios
+        ];
+        return response()->json($data);
+
     }
 }

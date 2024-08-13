@@ -9,32 +9,38 @@ use Illuminate\Http\Request;
 use App\Http\Resources\TipoLegalCollection;
 use App\Http\Requests\StoreTipoLegalRequest;
 use App\Http\Requests\UpdateTipoLegalRequest;
+use App\Services\TipoLegalService;
 
 class TipoLegalController extends Controller
 {
+    protected $tipoLegalService;
+    public function __construct(TipoLegalService $tipoLegalService)
+    {
+        $this->tipoLegalService = $tipoLegalService;
+    }
     /**
      * Display a listing of the resource.
      */
-    
+
     public function index(Request $request)
     {
         $query = TipoLegal::active();
-    
+
         // Manejo de búsqueda
         if ($request->has('search')) {
             $search = json_decode($request->input('search'), true);
             $query->search($search);
         }
-    
+
         // Manejo de ordenamiento
         if ($request->has('sort')) {
             $sort = json_decode($request->input('sort'), true);
             $query->sort($sort);
         }
-    
+
         $perPage = $request->input('perPage', 10);
         $tiposLegales = $query->paginate($perPage);
-    
+
         return new TipoLegalCollection($tiposLegales);
     }
 
@@ -70,20 +76,19 @@ class TipoLegalController extends Controller
     /**
      * Display the specified resource.
      */
-    
+
     public function show(TipoLegal $tipoLegal = null)
     {
         if ($tipoLegal) {
-           
+
             $data = [
-                'message' => 'Tipo Legal obtenido correctamente',
+                'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
                 'data' => $tipoLegal
             ];
         } else {
-            
-            $tiposLegales = TipoLegal::all();
+            $tiposLegales = $this->tipoLegalService->listarActivos();
             $data = [
-                'message' => 'Tipos Legales obtenidos correctamente',
+                'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
                 'data' => $tiposLegales
             ];
         }
@@ -126,6 +131,15 @@ class TipoLegalController extends Controller
          $tipoLegal->save();
          $data=[
             'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data'=>$tipoLegal
+        ];
+        return response()->json($data);
+    }
+    public function listarPorMateriaId($materiaId)
+    {
+        $tipoLegal = $this->tipoLegalService->listarPorMateriaId($materiaId);
+        $data=[
+            'message'=> MessageHttp::OBTENIDOS_CORRECTAMENTE,
             'data'=>$tipoLegal
         ];
         return response()->json($data);

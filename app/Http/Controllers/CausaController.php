@@ -8,6 +8,7 @@ use App\Enums\MessageHttp;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use App\Constants\EstadoCausa;
+use App\Constants\TipoUsuario;
 use App\Services\CausaService;
 use App\Services\PostaService;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,7 @@ use App\Http\Resources\CausaCollection;
 use App\Http\Requests\StoreCausaRequest;
 use App\Services\AvancePlantillaService;
 use App\Http\Requests\UpdateCausaRequest;
+use App\Models\TipoLegal;
 
 class CausaController extends Controller
 {
@@ -45,11 +47,36 @@ class CausaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $causa = Causa::where('es_eliminado', 0)
+        /*$causa = Causa::where('es_eliminado', 0)
+                       ->with(['procurador.persona'])
                            ->paginate();
-        return new CausaCollection($causa);
+        return new CausaCollection($causa);*/
+
+        $query = Causa::active();
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $causas = $query->paginate($perPage);
+
+        $causas->load('materia');
+        $causas->load('tipoLegal');
+        $causas->load('categoria');
+        $causas->load('abogado.persona');
+        $causas->load('procurador.persona');
+        return new CausaCollection($causas);
     }
 
     /**
@@ -69,14 +96,23 @@ class CausaController extends Controller
         try{
             $usuarioPmaestro = $this->userService->obtenerUnPMaestro();
             $idUser=Auth::user()->id;
+
+            if(Auth::user()->tipo === TipoUsuario::ADMINISTRADOR){
+                $procuradorId = $request->procurador_id;
+                $abogadoId = $request->abogado_id;
+            }else{
+                $procuradorId = $usuarioPmaestro->id;
+                $abogadoId = $idUser;
+            }
+
             $data = [
                 'nombre' => $request->nombre,
                 'observacion' => $request->observacion,
-                'objetivos' => $request->objetivos,
-                'estrategia' => $request->estrategia,
-                'informacion' => $request->informacion,
-                'apuntes_juridicos' => $request->apuntes_juridicos,
-                'apuntes_honorarios' => $request->apuntes_honorarios,
+                'objetivos' => '',
+                'estrategia' => '',
+                'informacion' => '',
+                'apuntes_juridicos' => '',
+                'apuntes_honorarios' => '',
                 'tiene_billetera' => $request->tiene_billetera,
                 'billetera' => 0,
                 'saldo_devuelto' => 0,
@@ -84,8 +120,8 @@ class CausaController extends Controller
                 'materia_id' => $request->materia_id,
                 'tipolegal_id' => $request->tipolegal_id,
                 'categoria_id' => $request->categoria_id,
-                'abogado_id' => $idUser,
-                'procurador_id' => $usuarioPmaestro->id,
+                'abogado_id' => $abogadoId,
+                'procurador_id' => $procuradorId,
                 'usuario_id' => $idUser,
             ];
             $data['plantilla_id'] = $request->has('plantilla_id') ? $request->plantilla_id : 0;

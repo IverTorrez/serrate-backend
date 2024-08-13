@@ -31,7 +31,7 @@ class CausaSeeder extends Seeder
             'tipolegal_id'=>1,
             'categoria_id'=>1,
             'abogado_id'=>2,
-            'procurador_id'=>3,
+            'procurador_id'=>6,
             'usuario_id'=>2,
             'estado' => $estadoCausa,
             'es_eliminado' => 0,

@@ -24,12 +24,12 @@ class StoreCausaRequest extends FormRequest
         return [
             'nombre'=>['required','string','max:200'],
             'observacion'=>['required','string'],
-            'objetivos'=>['required','string'],
+           // 'objetivos'=>['required','string'],
 
-            'estrategia'=>['required','string'],
-            'informacion'=>['required','string'],
-            'apuntes_juridicos'=>['required','string'],
-            'apuntes_honorarios'=>['required','string'],
+           // 'estrategia'=>['required','string'],
+           // 'informacion'=>['required','string'],
+            //'apuntes_juridicos'=>['required','string'],
+            //'apuntes_honorarios'=>['required','string'],
             'tiene_billetera'=>['required'],
 
             'color'=>['string','max:10'],
@@ -38,6 +38,8 @@ class StoreCausaRequest extends FormRequest
             'categoria_id'=>['required'],
             //Id de la la tabla avance_plantillas
             'plantilla_id'=>['sometimes'],
+            'procurador_id' => ['sometimes'],
+            'abogado_id' => ['sometimes']
         ];
     }
 }
