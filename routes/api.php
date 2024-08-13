@@ -28,6 +28,7 @@ use App\Http\Controllers\ProcuraduriaDescargaController;
 use App\Http\Controllers\TipoLegalController;
 use App\Http\Controllers\TipoPostaController;
 use App\Http\Controllers\TribunalController;
+use App\Http\Controllers\UserController;
 use App\Models\AvancePlantilla;
 use App\Models\Categoria;
 use App\Models\Piso;
@@ -63,10 +64,11 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('tipo-legal/listar/{tipoLegal?}', [TipoLegalController::class, 'show']);
         Route::patch('tipo-legal/{tipoLegal}', [TipoLegalController::class, 'update']);
         Route::patch('tipo-legal/eliminar/{tipoLegal}', [TipoLegalController::class, 'destroy']);
+        Route::get('tipo-legal/materia/{materiaId}', [TipoLegalController::class, 'listarPorMateriaId']);
         //Categoria
         Route::get('categorias', [CategoriaController::class, 'index']);
         Route::post('categorias', [CategoriaController::class, 'store']);
-        Route::get('categoria/listar/{categoria?}', [CategoriaController::class, 'show']);
+        Route::get('categorias/listar/{categoria?}', [CategoriaController::class, 'show']);
         Route::patch('categorias/{categoria}', [CategoriaController::class, 'update']);
         Route::patch('categorias/eliminar/{categoria}', [CategoriaController::class, 'destroy']);
         //Piso
@@ -207,5 +209,9 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::post('compra-paquetes', [CompraPaqueteController::class, 'store']);
         Route::get('compra-paquetes', [CompraPaqueteController::class, 'index']);
         Route::get('compra-paquetes/{compraPaquete}', [CompraPaqueteController::class, 'show']);
+        //Usuarios
+        Route::get('usuarios/abogados', [UserController::class, 'listarAbogados']);
+        Route::get('usuarios/procuradores', [UserController::class, 'listarProcuradores']);
+        Route::get('usuarios/listar/{user?}', [UserController::class, 'show']);
     });
 });

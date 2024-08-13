@@ -5,6 +5,7 @@ namespace App\Enums;
 enum MessageHttp: string
 {
     case OBTENIDO_CORRECTAMENTE = 'Registro obtenido correctamente.';
+    case OBTENIDOS_CORRECTAMENTE = 'Registros obtenidos correctamente.';
     case ERROR_OBTENER_DATOS = 'Error al obtener datos.';
     case CREADO_CORRECTAMENTE = 'Registro creado correctamente.';
     case ACTUALIZADO_CORRECTAMENTE = 'Registro actualizado correctamente.';

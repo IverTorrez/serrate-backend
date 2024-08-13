@@ -25,12 +25,12 @@ class UpdateCausaRequest extends FormRequest
         return [
             'nombre'=>['sometimes','string','max:200'],
             'observacion'=>['sometimes','string'],
-            'objetivos'=>['sometimes','string'],
+          //  'objetivos'=>['sometimes','string'],
 
-            'estrategia'=>['sometimes','string'],
-            'informacion'=>['sometimes','string'],
-            'apuntes_juridicos'=>['sometimes','string'],
-            'apuntes_honorarios'=>['sometimes','string'],
+          //  'estrategia'=>['sometimes','string'],
+          //  'informacion'=>['sometimes','string'],
+          //  'apuntes_juridicos'=>['sometimes','string'],
+         //   'apuntes_honorarios'=>['sometimes','string'],
           //  'tiene_billetera'=>['sometimes'],
 
             'color'=>['sometimes','string','max:10'],
