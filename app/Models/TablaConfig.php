@@ -13,8 +13,7 @@ class TablaConfig extends Model
         'deuda_extarna',
         'ganancia_procesal_procuraduria',
         'imagen_index',
-        'doc_aranceles',
-        'doc_normas',
+        'imagen_logo',
         'estado',
         'es_eliminado'
     ];

@@ -19,9 +19,8 @@ class TablaConfigSeeder extends Seeder
             'caja_contador' =>0,
             'deuda_extarna'=>0,
             'ganancia_procesal_procuraduria'=>0,
-            'imagen_index'=>'logo.png',
-            'doc_aranceles'=>'aranceles_abogado.pdf',
-            'doc_normas'=>'normas.pdf',
+            'imagen_index'=>'inicio.png',
+            'imagen_logo'=>'logo.png',
             'estado' => $estado,
             'es_eliminado' => 0,
         ]);
