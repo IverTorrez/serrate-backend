@@ -95,6 +95,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('clase-tribunal', [ClaseTribunalController::class, 'index']);
         Route::post('clase-tribunal', [ClaseTribunalController::class, 'store']);
         Route::get('clase-tribunal/{claseTribunal}', [ClaseTribunalController::class, 'show']);
+        Route::get('clase-tribunal/listar', [ClaseTribunalController::class, 'listarActivos']);
         Route::patch('clase-tribunal/{claseTribunal}', [ClaseTribunalController::class, 'update']);
         Route::patch('clase-tribunal/eliminar/{claseTribunal}', [ClaseTribunalController::class, 'destroy']);
         //Causa
@@ -107,14 +108,16 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('tribunal', [TribunalController::class, 'index']);
         Route::post('tribunal', [TribunalController::class, 'store']);
         Route::get('tribunal/{tribunal}', [TribunalController::class, 'show']);
+        Route::get('tribunal/causa/listar/{causaId}', [TribunalController::class, 'listarActivosPorCausa']);
         Route::patch('tribunal/{tribunal}', [TribunalController::class, 'update']);
         Route::patch('tribunal/eliminar/{tribunal}', [TribunalController::class, 'destroy']);
         //Cuerpo Expediente
-        Route::get('cuerpo-expediente', [CuerpoExpedienteController::class, 'index']);
-        Route::post('cuerpo-expediente', [CuerpoExpedienteController::class, 'store']);
-        Route::get('cuerpo-expediente/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'show']);
-        Route::patch('cuerpo-expediente/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'update']);
-        Route::patch('cuerpo-expediente/eliminar/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'destroy']);
+        Route::get('cuerpo-expedientes', [CuerpoExpedienteController::class, 'index']);
+        Route::get('cuerpo-expedientes/tribunal/listar/{tribunalId}', [CuerpoExpedienteController::class, 'listadoPorTribunal']);
+        Route::post('cuerpo-expedientes', [CuerpoExpedienteController::class, 'store']);
+        Route::get('cuerpo-expedientes/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'show']);
+        Route::post('cuerpo-expedientes/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'update']);
+        Route::patch('cuerpo-expedientes/eliminar/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'destroy']);
         //Participante
         Route::get('participantes', [ParticipanteController::class, 'index']);
         Route::post('participantes', [ParticipanteController::class, 'store']);

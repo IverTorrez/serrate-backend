@@ -9,18 +9,40 @@ use Illuminate\Http\Request;
 use App\Http\Resources\TribunalCollection;
 use App\Http\Requests\StoreTribunalRequest;
 use App\Http\Requests\UpdateTribunalRequest;
+use App\Models\Causa;
+use App\Services\TribunalService;
 
 class TribunalController extends Controller
 {
+    protected $tribunalService;
+
+    public function __construct(TribunalService $tribunalService)
+    {
+        $this->tribunalService = $tribunalService;
+    }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tribunal = Tribunal::where('es_eliminado', 0)
-                           ->where('estado', Estado::ACTIVO)
-                           ->paginate();
-        return new TribunalCollection($tribunal);
+        $query = Tribunal::active();
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $tribunales = $query->paginate($perPage);
+
+        return new TribunalCollection($tribunales);
     }
 
     /**
@@ -36,23 +58,21 @@ class TribunalController extends Controller
      */
     public function store(StoreTribunalRequest $request)
     {
-        $estado=Estado::ACTIVO;
-        $tribunal=Tribunal::create([
-            'expediente'=>$request->expediente,
-            'codnurejianuj'=>$request->codnurejianuj,
-            'link_carpeta'=>$request->link_carpeta,
-            'clasetribunal_id'=>$request->clasetribunal_id,
-            'causa_id'=>$request->causa_id,
-            'juzgado_id'=>$request->juzgado_id,
-            'estado'=>$estado,
-            'es_eliminado'=>0
-         ]);
-         $data=[
-            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
-            'data'=>$tribunal
-         ];
-         return response()
-               ->json($data);
+        $data = ([
+            'expediente' => $request->expediente,
+            'codnurejianuj' => $request->codnurejianuj,
+            'link_carpeta' => $request->link_carpeta,
+            'clasetribunal_id' => $request->clasetribunal_id,
+            'causa_id' => $request->causa_id,
+            'juzgado_id' => $request->juzgado_id,
+        ]);
+        $tribunal = $this->tribunalService->store($data);
+
+        return response()
+            ->json([
+                'message' => MessageHttp::CREADO_CORRECTAMENTE,
+                'data' => $tribunal
+            ]);
     }
 
     /**
@@ -60,9 +80,23 @@ class TribunalController extends Controller
      */
     public function show(Tribunal $tribunal)
     {
-        $data=[
-            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
-            'data'=>$tribunal
+        $tribunal = $this->tribunalService->obtenerUno($tribunal->id);
+        $data = [
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $tribunal
+        ];
+        return response()->json($data);
+    }
+
+    public function listarActivosPorCausa($causaId)
+    {
+        $tribunales = $this->tribunalService->listarActivosPorCausa($causaId);
+        if ($tribunales->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron tribunales activos'], 404);
+        }
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $tribunales
         ];
         return response()->json($data);
     }
@@ -80,7 +114,7 @@ class TribunalController extends Controller
      */
     public function update(UpdateTribunalRequest $request, Tribunal $tribunal)
     {
-        $tribunal->update($request->only([
+        $data = $request->only([
             'expediente',
             'codnurejianuj',
             'link_carpeta',
@@ -88,12 +122,14 @@ class TribunalController extends Controller
             'causa_id',
             'juzgado_id',
             'estado',
-            'es_eliminado']));
-        $data=[
-        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-        'data'=>$tribunal
-        ];
-        return response()->json($data);
+            'es_eliminado'
+        ]);
+        $tribunal = $this->tribunalService->update($data, $tribunal->id);
+
+        return response()->json([
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $tribunal
+        ]);
     }
 
     /**
@@ -101,11 +137,10 @@ class TribunalController extends Controller
      */
     public function destroy(Tribunal $tribunal)
     {
-        $tribunal->es_eliminado   =1;
-         $tribunal->save();
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$tribunal
+        $tribunal = $this->tribunalService->destroy($tribunal);
+        $data = [
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $tribunal
         ];
         return response()->json($data);
     }

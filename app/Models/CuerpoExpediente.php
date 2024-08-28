@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\CommonScopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class CuerpoExpediente extends Model
 {
-    use HasFactory;
+    use CommonScopes, HasFactory;
     protected $fillable=[
         'nombre',
         'link_cuerpo',

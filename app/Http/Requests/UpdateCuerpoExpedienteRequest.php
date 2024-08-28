@@ -24,7 +24,7 @@ class UpdateCuerpoExpedienteRequest extends FormRequest
         //por PATCH
         return [
             'nombre'=>['sometimes','string','max:50'],
-            'link_cuerpo'=>['sometimes','string'],
+            'link_cuerpo'=>['sometimes'],
             'tribunal_id'=>['sometimes']
           ];
     }

@@ -31,13 +31,12 @@ class CausaController extends Controller
     protected $userService;
 
     public function __construct(
-                                 CausaService $causaService,
-                                 AvancePlantillaService $avancePlantillaService,
-                                 PostaService $postaService,
-                                 CausaPostaService $causaPostaService,
-                                 UserService $userService
-                                )
-    {
+        CausaService $causaService,
+        AvancePlantillaService $avancePlantillaService,
+        PostaService $postaService,
+        CausaPostaService $causaPostaService,
+        UserService $userService
+    ) {
         $this->causaService = $causaService;
         $this->avancePlantillaService = $avancePlantillaService;
         $this->postaService = $postaService;
@@ -93,14 +92,14 @@ class CausaController extends Controller
     public function store(StoreCausaRequest $request)
     {
         DB::beginTransaction();
-        try{
+        try {
             $usuarioPmaestro = $this->userService->obtenerUnPMaestro();
-            $idUser=Auth::user()->id;
+            $idUser = Auth::user()->id;
 
-            if(Auth::user()->tipo === TipoUsuario::ADMINISTRADOR){
+            if (Auth::user()->tipo === TipoUsuario::ADMINISTRADOR) {
                 $procuradorId = $request->procurador_id;
                 $abogadoId = $request->abogado_id;
-            }else{
+            } else {
                 $procuradorId = $usuarioPmaestro->id;
                 $abogadoId = $idUser;
             }
@@ -135,11 +134,10 @@ class CausaController extends Controller
 
             DB::commit();
             return response()->json([
-                    'message' => MessageHttp::CREADO_CORRECTAMENTE,
-                    'data' => $causa
-                ], 200);
-
-        }catch (Exception $e) {
+                'message' => MessageHttp::CREADO_CORRECTAMENTE,
+                'data' => $causa
+            ], 200);
+        } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error registrar causa: ' . $e->getMessage());
 
@@ -155,9 +153,19 @@ class CausaController extends Controller
      */
     public function show(Causa $causa)
     {
-        $data=[
-            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
-            'data'=>$causa
+        $causa = $this->causaService->obtenerUno($causa->id);
+        $data = [
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $causa
+        ];
+        return response()->json($data);
+    }
+    public function listarActivos()
+    {
+        $causas = $this->causaService->listarActivos();
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $causas
         ];
         return response()->json($data);
     }
@@ -176,7 +184,7 @@ class CausaController extends Controller
     public function update(UpdateCausaRequest $request, Causa $causa)
     {
         DB::beginTransaction();
-        try{
+        try {
             $data = $request->only([
                 'nombre',
                 'observacion',
@@ -197,22 +205,21 @@ class CausaController extends Controller
             ]);
             $plantillaId = $request->plantilla_id;
             //Pregunta si plantilla_id que esta en el request es diferente al valor de plantilla_id de la causa (si eligio otra plantilla)
-            if ($request->has('plantilla_id') && $plantillaId > 0 && $plantillaId != $causa->plantilla_id){
-                    $data['plantilla_id'] = $plantillaId;
-                    if ($causa->plantilla_id > 0){
-                        $this->causaPostaService->eliminarPorCausaId($causa->id);
-                    }
-                    $causaPosta = $this->guardarCausaPosta($causa->id,$plantillaId);
+            if ($request->has('plantilla_id') && $plantillaId > 0 && $plantillaId != $causa->plantilla_id) {
+                $data['plantilla_id'] = $plantillaId;
+                if ($causa->plantilla_id > 0) {
+                    $this->causaPostaService->eliminarPorCausaId($causa->id);
+                }
+                $causaPosta = $this->guardarCausaPosta($causa->id, $plantillaId);
             }
-            $causa = $this->causaService->update($data,$causa->id);
+            $causa = $this->causaService->update($data, $causa->id);
 
             DB::commit();
             return response()->json([
                 'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
                 'data' => $causa
             ], 200);
-
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error actualizado causa: ' . $e->getMessage());
 
@@ -228,15 +235,15 @@ class CausaController extends Controller
      */
     public function destroy(Causa $causa)
     {
-        $causa->es_eliminado =1;
-         $causa->save();
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$causa
+        $causa->es_eliminado = 1;
+        $causa->save();
+        $data = [
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $causa
         ];
         return response()->json($data);
     }
-    public function guardarCausaPosta($causaId,$pantillaId)
+    public function guardarCausaPosta($causaId, $pantillaId)
     {
         $avancePlantilla = $this->avancePlantillaService->obtenerUno($pantillaId);
         //Causa Posta cero, (INICIO)
