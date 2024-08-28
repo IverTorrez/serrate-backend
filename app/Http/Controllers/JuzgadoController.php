@@ -41,6 +41,8 @@ class JuzgadoController extends Controller
 
         $perPage = $request->input('perPage', 10);
         $juzgados = $query->paginate($perPage);
+        $juzgados->load('piso');
+        $juzgados->load('distrito');
 
         return new JuzgadoCollection($juzgados);
     }

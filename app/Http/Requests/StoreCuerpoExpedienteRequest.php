@@ -23,7 +23,7 @@ class StoreCuerpoExpedienteRequest extends FormRequest
     {
         return [
             'nombre'=>['required','string','max:50'],
-            'link_cuerpo'=>['required','string'],
+            'link_cuerpo'=>['required'],
             'tribunal_id'=>['required'],
         ];
     }

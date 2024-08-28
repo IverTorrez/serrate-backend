@@ -9,17 +9,38 @@ use App\Models\ClaseTribunal;
 use App\Http\Resources\ClaseTribunalCollection;
 use App\Http\Requests\StoreClaseTribunalRequest;
 use App\Http\Requests\UpdateClaseTribunalRequest;
+use App\Services\ClaseTribunalService;
 
 class ClaseTribunalController extends Controller
 {
+    protected $claseTribunalService;
+
+    public function __construct(ClaseTribunalService $claseTribunalService)
+    {
+        $this->claseTribunalService = $claseTribunalService;
+    }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $claseTribunal = ClaseTribunal::where('es_eliminado', 0)
-                           ->where('estado', Estado::ACTIVO)
-                           ->paginate();
+        $query = ClaseTribunal::active();
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $claseTribunal = $query->paginate($perPage);
+
         return new ClaseTribunalCollection($claseTribunal);
     }
 
@@ -36,18 +57,15 @@ class ClaseTribunalController extends Controller
      */
     public function store(StoreClaseTribunalRequest $request)
     {
-        $estado=Estado::ACTIVO;
-        $claseTribunal=ClaseTribunal::create([
-            'nombre'=>$request->nombre,
-            'estado'=>$estado,
-            'es_eliminado'=>0
-         ]);
-         $data=[
-            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
-            'data'=>$claseTribunal
-         ];
-         return response()
-               ->json($data);
+        $data = ([
+            'nombre' => $request->nombre,
+        ]);
+        $claseTribunal = $this->claseTribunalService->store($data);
+        return response()
+            ->json([
+                'message' => MessageHttp::CREADO_CORRECTAMENTE,
+                'data' => $claseTribunal
+            ]);
     }
 
     /**
@@ -55,9 +73,19 @@ class ClaseTribunalController extends Controller
      */
     public function show(ClaseTribunal $claseTribunal)
     {
-        $data=[
-            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
-            'data'=>$claseTribunal
+        $claseTribunal = $this->claseTribunalService->obtenerUno($claseTribunal->id);
+        $data = [
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $claseTribunal
+        ];
+        return response()->json($data);
+    }
+    public function listarActivos()
+    {
+        $claseTribunales = $this->claseTribunalService->listarActivos();
+        $data = [
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $claseTribunales
         ];
         return response()->json($data);
     }
@@ -78,10 +106,11 @@ class ClaseTribunalController extends Controller
         $claseTribunal->update($request->only([
             'nombre',
             'estado',
-            'es_eliminado']));
-        $data=[
-        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-        'data'=>$claseTribunal
+            'es_eliminado'
+        ]));
+        $data = [
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $claseTribunal
         ];
         return response()->json($data);
     }
@@ -91,11 +120,11 @@ class ClaseTribunalController extends Controller
      */
     public function destroy(ClaseTribunal $claseTribunal)
     {
-        $claseTribunal->es_eliminado   =1;
-         $claseTribunal->save();
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$claseTribunal
+        $claseTribunal->es_eliminado   = 1;
+        $claseTribunal->save();
+        $data = [
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $claseTribunal
         ];
         return response()->json($data);
     }

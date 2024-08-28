@@ -30,15 +30,16 @@ class Juzgado extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
+    public function distrito()
+    {
+        return $this->belongsTo(Distrito::class, 'distrito_id');
+    }
+
     public function piso()
     {
         return $this->belongsTo(Piso::class, 'piso_id');
     }
 
-    public function distrito()
-    {
-        return $this->belongsTo(Distrito::class, 'distrito_id');
-    }
     /**
      * Get all of the comments for the Juzgado
      *
