@@ -140,12 +140,14 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('avance-plantillas', [AvancePlantillaController::class, 'index']);
         Route::post('avance-plantillas', [AvancePlantillaController::class, 'store']);
         Route::get('avance-plantillas/listar/{avancePlantilla?}', [AvancePlantillaController::class, 'show']);
+        Route::get('avance-plantillas/listarPorId/{idPlantilla}', [AvancePlantillaController::class, 'listarPlantillaPorId']);
         Route::patch('avance-plantillas/{avancePlantilla}', [AvancePlantillaController::class, 'update']);
         Route::patch('avance-plantillas/eliminar/{avancePlantilla}', [AvancePlantillaController::class, 'destroy']);
         //Posta
         Route::get('postas', [PostaController::class, 'index']);
         Route::post('postas', [PostaController::class, 'store']);
-        Route::get('postas/{posta}', [PostaController::class, 'show']);
+        Route::get('postas/listar/{posta?}', [PostaController::class, 'show']);
+        Route::get('postas/listarPorId/{idPlantilla?}', [PostaController::class, 'listarPorIdPlantilla']);
         Route::patch('postas/{posta}', [PostaController::class, 'update']);
         Route::patch('postas/eliminar/{posta}', [PostaController::class, 'destroy']);
         //Agenda apunte

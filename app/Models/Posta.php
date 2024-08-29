@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\CommonScopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Posta extends Model
 {
-    use HasFactory;
-    protected $fillable=[
+    use CommonScopes, HasFactory;
+    protected $fillable = [
         'nombre',
         'numero_posta',
         'plantilla_id',
