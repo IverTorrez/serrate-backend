@@ -9,17 +9,59 @@ use App\Models\CuerpoExpediente;
 use App\Http\Resources\CuerpoExpedienteCollection;
 use App\Http\Requests\StoreCuerpoExpedienteRequest;
 use App\Http\Requests\UpdateCuerpoExpedienteRequest;
+use App\Models\Tribunal;
+use App\Services\CuerpoExpedienteService;
 
 class CuerpoExpedienteController extends Controller
 {
+    protected $cuerpoExpedienteService;
+
+    public function __construct(CuerpoExpedienteService $cuerpoExpedienteService)
+    {
+        $this->cuerpoExpedienteService = $cuerpoExpedienteService;
+    }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $cuerpoExpediente = CuerpoExpediente::where('es_eliminado', 0)
-                           ->where('estado', Estado::ACTIVO)
-                           ->paginate();
+        $query = CuerpoExpediente::active();
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $cuerpoExpediente = $query->paginate($perPage);
+
+        return new CuerpoExpedienteCollection($cuerpoExpediente);
+    }
+
+    public function listadoPorTribunal(Request $request, $tribunalId)
+    {
+        $query = CuerpoExpediente::active()
+            ->where('tribunal_id', $tribunalId);
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+        $perPage = $request->input('perPage', 10);
+        $cuerpoExpediente = $query->paginate($perPage);
+
         return new CuerpoExpedienteCollection($cuerpoExpediente);
     }
 
@@ -36,20 +78,27 @@ class CuerpoExpedienteController extends Controller
      */
     public function store(StoreCuerpoExpedienteRequest $request)
     {
-        $estado=Estado::ACTIVO;
-        $cuerpoExpediente=CuerpoExpediente::create([
-            'nombre'=>$request->nombre,
-            'link_cuerpo'=>$request->link_cuerpo,
-            'tribunal_id'=>$request->tribunal_id,
-            'estado'=>$estado,
-            'es_eliminado'=>0
-         ]);
-         $data=[
-            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
-            'data'=>$cuerpoExpediente
-         ];
-         return response()
-               ->json($data);
+        //Preguntamos si esta enviando un archivo
+        $tribunalId = $request->tribunal_id;
+        $linkCuerpo = '';
+        if ($request->hasFile('link_cuerpo')) {
+            $tribunal = Tribunal::findOrFail($tribunalId);
+            $file = $request->file('link_cuerpo');
+            $linkCuerpo = $file->store('uploads/expedientes/causa-' . $tribunal->causa_id . '/tribunal-' . $tribunalId, 'public');
+        } else {
+            $linkCuerpo = $request->link_cuerpo;
+        }
+        $data = ([
+            'nombre' => $request->nombre,
+            'link_cuerpo' => $linkCuerpo,
+            'tribunal_id' => $tribunalId
+        ]);
+        $cuerpoExpediente = $this->cuerpoExpedienteService->store($data);
+        return response()
+            ->json([
+                'message' => MessageHttp::CREADO_CORRECTAMENTE,
+                'data' => $cuerpoExpediente
+            ]);
     }
 
     /**
@@ -57,9 +106,9 @@ class CuerpoExpedienteController extends Controller
      */
     public function show(CuerpoExpediente $cuerpoExpediente)
     {
-        $data=[
-            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
-            'data'=>$cuerpoExpediente
+        $data = [
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $cuerpoExpediente
         ];
         return response()->json($data);
     }
@@ -77,17 +126,27 @@ class CuerpoExpedienteController extends Controller
      */
     public function update(UpdateCuerpoExpedienteRequest $request, CuerpoExpediente $cuerpoExpediente)
     {
-        $cuerpoExpediente->update($request->only([
+        $data = $request->only([
             'nombre',
-            'link_cuerpo',
             'tribunal_id',
-            'estado',
-            'es_eliminado']));
-        $data=[
-        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-        'data'=>$cuerpoExpediente
-        ];
-        return response()->json($data);
+        ]);
+        //Preguntamos si esta enviando un archivo
+        $tribunalId = $request->tribunal_id;
+        $linkCuerpo = '';
+        if ($request->hasFile('link_cuerpo')) {
+            $tribunal = Tribunal::findOrFail($tribunalId);
+            $file = $request->file('link_cuerpo');
+            $linkCuerpo = $file->store('uploads/expedientes/causa-' . $tribunal->causa_id . '/tribunal-' . $tribunalId, 'public');
+            $data['link_cuerpo'] = $linkCuerpo;
+        } else {
+            $linkCuerpo = $request->link_cuerpo;
+            $data['link_cuerpo'] = $linkCuerpo;
+        }
+        $cuerpoExpediente = $this->cuerpoExpedienteService->update($data, $cuerpoExpediente->id);
+        return response()->json([
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $cuerpoExpediente
+        ]);
     }
 
     /**
@@ -95,12 +154,10 @@ class CuerpoExpedienteController extends Controller
      */
     public function destroy(CuerpoExpediente $cuerpoExpediente)
     {
-        $cuerpoExpediente->es_eliminado   =1;
-         $cuerpoExpediente->save();
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$cuerpoExpediente
-        ];
-        return response()->json($data);
+        $cuerpoExpediente = $this->cuerpoExpedienteService->destroy($cuerpoExpediente->id);
+        return response()->json([
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $cuerpoExpediente
+        ]);
     }
 }

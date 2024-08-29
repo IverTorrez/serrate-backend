@@ -13,6 +13,8 @@ use App\Http\Controllers\CuerpoExpedienteController;
 use App\Http\Controllers\DepositoController;
 use App\Http\Controllers\DevolucionSaldoController;
 use App\Http\Controllers\DistritoController;
+use App\Http\Controllers\DocumentoController;
+use App\Http\Controllers\DocumentosCategoriaController;
 use App\Http\Controllers\GestionAlternativaController;
 use App\Http\Controllers\InformePostaController;
 use App\Http\Controllers\JuzgadoController;
@@ -28,6 +30,7 @@ use App\Http\Controllers\ProcuraduriaDescargaController;
 use App\Http\Controllers\TipoLegalController;
 use App\Http\Controllers\TipoPostaController;
 use App\Http\Controllers\TribunalController;
+use App\Http\Controllers\UserController;
 use App\Models\AvancePlantilla;
 use App\Models\Categoria;
 use App\Models\Piso;
@@ -63,10 +66,11 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('tipo-legal/listar/{tipoLegal?}', [TipoLegalController::class, 'show']);
         Route::patch('tipo-legal/{tipoLegal}', [TipoLegalController::class, 'update']);
         Route::patch('tipo-legal/eliminar/{tipoLegal}', [TipoLegalController::class, 'destroy']);
+        Route::get('tipo-legal/materia/{materiaId}', [TipoLegalController::class, 'listarPorMateriaId']);
         //Categoria
         Route::get('categorias', [CategoriaController::class, 'index']);
         Route::post('categorias', [CategoriaController::class, 'store']);
-        Route::get('categoria/listar/{categoria?}', [CategoriaController::class, 'show']);
+        Route::get('categorias/listar/{categoria?}', [CategoriaController::class, 'show']);
         Route::patch('categorias/{categoria}', [CategoriaController::class, 'update']);
         Route::patch('categorias/eliminar/{categoria}', [CategoriaController::class, 'destroy']);
         //Piso
@@ -85,12 +89,13 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('juzgados', [JuzgadoController::class, 'index']);
         Route::post('juzgados', [JuzgadoController::class, 'store']);
         Route::get('juzgados/listar/{juzgado?}', [JuzgadoController::class, 'show']);
-        Route::patch('juzgados/{juzgado}', [JuzgadoController::class, 'update']);
+        Route::post('juzgados/{juzgado}', [JuzgadoController::class, 'update']);//Actualiza
         Route::patch('juzgados/eliminar/{juzgado}', [JuzgadoController::class, 'destroy']);
         //Clase Tribunal
         Route::get('clase-tribunal', [ClaseTribunalController::class, 'index']);
         Route::post('clase-tribunal', [ClaseTribunalController::class, 'store']);
         Route::get('clase-tribunal/{claseTribunal}', [ClaseTribunalController::class, 'show']);
+        Route::get('clase-tribunal/listar', [ClaseTribunalController::class, 'listarActivos']);
         Route::patch('clase-tribunal/{claseTribunal}', [ClaseTribunalController::class, 'update']);
         Route::patch('clase-tribunal/eliminar/{claseTribunal}', [ClaseTribunalController::class, 'destroy']);
         //Causa
@@ -103,14 +108,16 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('tribunal', [TribunalController::class, 'index']);
         Route::post('tribunal', [TribunalController::class, 'store']);
         Route::get('tribunal/{tribunal}', [TribunalController::class, 'show']);
+        Route::get('tribunal/causa/listar/{causaId}', [TribunalController::class, 'listarActivosPorCausa']);
         Route::patch('tribunal/{tribunal}', [TribunalController::class, 'update']);
         Route::patch('tribunal/eliminar/{tribunal}', [TribunalController::class, 'destroy']);
         //Cuerpo Expediente
-        Route::get('cuerpo-expediente', [CuerpoExpedienteController::class, 'index']);
-        Route::post('cuerpo-expediente', [CuerpoExpedienteController::class, 'store']);
-        Route::get('cuerpo-expediente/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'show']);
-        Route::patch('cuerpo-expediente/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'update']);
-        Route::patch('cuerpo-expediente/eliminar/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'destroy']);
+        Route::get('cuerpo-expedientes', [CuerpoExpedienteController::class, 'index']);
+        Route::get('cuerpo-expedientes/tribunal/listar/{tribunalId}', [CuerpoExpedienteController::class, 'listadoPorTribunal']);
+        Route::post('cuerpo-expedientes', [CuerpoExpedienteController::class, 'store']);
+        Route::get('cuerpo-expedientes/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'show']);
+        Route::post('cuerpo-expedientes/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'update']);
+        Route::patch('cuerpo-expedientes/eliminar/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'destroy']);
         //Participante
         Route::get('participantes', [ParticipanteController::class, 'index']);
         Route::post('participantes', [ParticipanteController::class, 'store']);
@@ -209,5 +216,29 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::post('compra-paquetes', [CompraPaqueteController::class, 'store']);
         Route::get('compra-paquetes', [CompraPaqueteController::class, 'index']);
         Route::get('compra-paquetes/{compraPaquete}', [CompraPaqueteController::class, 'show']);
+        //Usuarios
+        Route::get('usuarios/abogados', [UserController::class, 'listarAbogados']);
+        Route::get('usuarios/procuradores', [UserController::class, 'listarProcuradores']);
+        Route::get('usuarios/listar/{user?}', [UserController::class, 'show']);
+        //Documentos Categorias
+        Route::get('documentos-categorias', [DocumentosCategoriaController::class, 'index']);
+        Route::get('documentos-categorias/tramites', [DocumentosCategoriaController::class, 'indexTramites']);
+        Route::get('documentos-categorias/normas', [DocumentosCategoriaController::class, 'indexNormas']);
+        Route::post('documentos-categorias', [DocumentosCategoriaController::class, 'store']);
+        Route::get('documentos-categorias/listar/{documentosCategoria?}', [DocumentosCategoriaController::class, 'show']);
+        Route::patch('documentos-categorias/{documentosCategoria}', [DocumentosCategoriaController::class, 'update']);
+        Route::patch('documentos-categorias/eliminar/{documentosCategoria}', [DocumentosCategoriaController::class, 'destroy']);
+        Route::get('documentos-categorias/subcategoria/listado/{documentosCategoria}', [DocumentosCategoriaController::class, 'listarSubcategorias']);
+        Route::get('documentos-categorias/categoria/listado', [DocumentosCategoriaController::class, 'listarCategorias']);
+
+        Route::get('documentos-categorias/tramites/listado', [DocumentosCategoriaController::class, 'listarCategoriasTramites']);
+        Route::get('documentos-categorias/normas/listado', [DocumentosCategoriaController::class, 'listarCategoriasNormas']);
+        //Documentos - NORMAS-TRAMITES
+        Route::get('documentos', [DocumentoController::class, 'index']);
+        Route::get('documentos/tramites', [DocumentoController::class, 'indexTramites']);
+        Route::get('documentos/normas', [DocumentoController::class, 'indexNormas']);
+        Route::post('documentos', [DocumentoController::class, 'store']);
+        Route::post('documentos/{documento}', [DocumentoController::class, 'update']);
+        Route::patch('documentos/eliminar/{documento}', [DocumentoController::class, 'destroy']);
     });
 });

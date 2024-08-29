@@ -73,6 +73,53 @@ class UsuarioSeeder extends Seeder
             'usuario_id'=>$user->id,
 
           ]);
+          //ABOGADO LIDER
+        $userlider = User::create([
+            'name'=>'Ronal',
+            'email'=>'abogadolider@example.com',
+            'password'=>Hash::make('abogadolider123'),
+            'tipo'=>TipoUsuario::ABOGADO_LIDER,
+            'abogado_id'=>0,
+            'opciones_moto'=>json_encode($datosJson),
+            'estado'=>$estado,
+            'es_eliminado'=>0
+        ]);
+        Persona::create([
+            'nombre'=>$userlider->name,
+            'apellido'=>'Cros',
+            'telefono'=>'66565432',
+            'direccion'=>'Springfield',
+            'coordenadas'=>'',
+            'observacion'=>'',
+            'foto_url'=>'',
+            'estado'=>$estado,
+            'es_eliminado'=>0,
+            'usuario_id'=>$userlider->id,
+          ]);
+        //ABOGADO DEPENDIENTE
+        $userdep = User::create([
+            'name'=>'Junior',
+            'email'=>'junior@example.com',
+            'password'=>Hash::make('junior123'),
+            'tipo'=>TipoUsuario::ABOGADO_DEPENDIENTE,
+            'abogado_id'=>$userlider->id,
+            'opciones_moto'=>json_encode($datosJson),
+            'estado'=>$estado,
+            'es_eliminado'=>0
+        ]);
+        Persona::create([
+            'nombre'=>$userdep->name,
+            'apellido'=>'Blas',
+            'telefono'=>'76764643',
+            'direccion'=>'Springfield',
+            'coordenadas'=>'',
+            'observacion'=>'',
+            'foto_url'=>'',
+            'estado'=>$estado,
+            'es_eliminado'=>0,
+            'usuario_id'=>$userdep->id,
+          ]);
+
          //PROCURADOR MAESTRO
           $user = User::create([
             'name'=>'Lalo',

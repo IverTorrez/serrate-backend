@@ -8,6 +8,7 @@ use App\Enums\MessageHttp;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use App\Constants\EstadoCausa;
+use App\Constants\TipoUsuario;
 use App\Services\CausaService;
 use App\Services\PostaService;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,7 @@ use App\Http\Resources\CausaCollection;
 use App\Http\Requests\StoreCausaRequest;
 use App\Services\AvancePlantillaService;
 use App\Http\Requests\UpdateCausaRequest;
+use App\Models\TipoLegal;
 
 class CausaController extends Controller
 {
@@ -29,13 +31,12 @@ class CausaController extends Controller
     protected $userService;
 
     public function __construct(
-                                 CausaService $causaService,
-                                 AvancePlantillaService $avancePlantillaService,
-                                 PostaService $postaService,
-                                 CausaPostaService $causaPostaService,
-                                 UserService $userService
-                                )
-    {
+        CausaService $causaService,
+        AvancePlantillaService $avancePlantillaService,
+        PostaService $postaService,
+        CausaPostaService $causaPostaService,
+        UserService $userService
+    ) {
         $this->causaService = $causaService;
         $this->avancePlantillaService = $avancePlantillaService;
         $this->postaService = $postaService;
@@ -45,11 +46,36 @@ class CausaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $causa = Causa::where('es_eliminado', 0)
+        /*$causa = Causa::where('es_eliminado', 0)
+                       ->with(['procurador.persona'])
                            ->paginate();
-        return new CausaCollection($causa);
+        return new CausaCollection($causa);*/
+
+        $query = Causa::active();
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $causas = $query->paginate($perPage);
+
+        $causas->load('materia');
+        $causas->load('tipoLegal');
+        $causas->load('categoria');
+        $causas->load('abogado.persona');
+        $causas->load('procurador.persona');
+        return new CausaCollection($causas);
     }
 
     /**
@@ -66,17 +92,26 @@ class CausaController extends Controller
     public function store(StoreCausaRequest $request)
     {
         DB::beginTransaction();
-        try{
+        try {
             $usuarioPmaestro = $this->userService->obtenerUnPMaestro();
-            $idUser=Auth::user()->id;
+            $idUser = Auth::user()->id;
+
+            if (Auth::user()->tipo === TipoUsuario::ADMINISTRADOR) {
+                $procuradorId = $request->procurador_id;
+                $abogadoId = $request->abogado_id;
+            } else {
+                $procuradorId = $usuarioPmaestro->id;
+                $abogadoId = $idUser;
+            }
+
             $data = [
                 'nombre' => $request->nombre,
                 'observacion' => $request->observacion,
-                'objetivos' => $request->objetivos,
-                'estrategia' => $request->estrategia,
-                'informacion' => $request->informacion,
-                'apuntes_juridicos' => $request->apuntes_juridicos,
-                'apuntes_honorarios' => $request->apuntes_honorarios,
+                'objetivos' => '',
+                'estrategia' => '',
+                'informacion' => '',
+                'apuntes_juridicos' => '',
+                'apuntes_honorarios' => '',
                 'tiene_billetera' => $request->tiene_billetera,
                 'billetera' => 0,
                 'saldo_devuelto' => 0,
@@ -84,8 +119,8 @@ class CausaController extends Controller
                 'materia_id' => $request->materia_id,
                 'tipolegal_id' => $request->tipolegal_id,
                 'categoria_id' => $request->categoria_id,
-                'abogado_id' => $idUser,
-                'procurador_id' => $usuarioPmaestro->id,
+                'abogado_id' => $abogadoId,
+                'procurador_id' => $procuradorId,
                 'usuario_id' => $idUser,
             ];
             $data['plantilla_id'] = $request->has('plantilla_id') ? $request->plantilla_id : 0;
@@ -99,11 +134,10 @@ class CausaController extends Controller
 
             DB::commit();
             return response()->json([
-                    'message' => MessageHttp::CREADO_CORRECTAMENTE,
-                    'data' => $causa
-                ], 200);
-
-        }catch (Exception $e) {
+                'message' => MessageHttp::CREADO_CORRECTAMENTE,
+                'data' => $causa
+            ], 200);
+        } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error registrar causa: ' . $e->getMessage());
 
@@ -119,9 +153,19 @@ class CausaController extends Controller
      */
     public function show(Causa $causa)
     {
-        $data=[
-            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
-            'data'=>$causa
+        $causa = $this->causaService->obtenerUno($causa->id);
+        $data = [
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $causa
+        ];
+        return response()->json($data);
+    }
+    public function listarActivos()
+    {
+        $causas = $this->causaService->listarActivos();
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $causas
         ];
         return response()->json($data);
     }
@@ -140,7 +184,7 @@ class CausaController extends Controller
     public function update(UpdateCausaRequest $request, Causa $causa)
     {
         DB::beginTransaction();
-        try{
+        try {
             $data = $request->only([
                 'nombre',
                 'observacion',
@@ -161,22 +205,21 @@ class CausaController extends Controller
             ]);
             $plantillaId = $request->plantilla_id;
             //Pregunta si plantilla_id que esta en el request es diferente al valor de plantilla_id de la causa (si eligio otra plantilla)
-            if ($request->has('plantilla_id') && $plantillaId > 0 && $plantillaId != $causa->plantilla_id){
-                    $data['plantilla_id'] = $plantillaId;
-                    if ($causa->plantilla_id > 0){
-                        $this->causaPostaService->eliminarPorCausaId($causa->id);
-                    }
-                    $causaPosta = $this->guardarCausaPosta($causa->id,$plantillaId);
+            if ($request->has('plantilla_id') && $plantillaId > 0 && $plantillaId != $causa->plantilla_id) {
+                $data['plantilla_id'] = $plantillaId;
+                if ($causa->plantilla_id > 0) {
+                    $this->causaPostaService->eliminarPorCausaId($causa->id);
+                }
+                $causaPosta = $this->guardarCausaPosta($causa->id, $plantillaId);
             }
-            $causa = $this->causaService->update($data,$causa->id);
+            $causa = $this->causaService->update($data, $causa->id);
 
             DB::commit();
             return response()->json([
                 'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
                 'data' => $causa
             ], 200);
-
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error actualizado causa: ' . $e->getMessage());
 
@@ -192,15 +235,15 @@ class CausaController extends Controller
      */
     public function destroy(Causa $causa)
     {
-        $causa->es_eliminado =1;
-         $causa->save();
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$causa
+        $causa->es_eliminado = 1;
+        $causa->save();
+        $data = [
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $causa
         ];
         return response()->json($data);
     }
-    public function guardarCausaPosta($causaId,$pantillaId)
+    public function guardarCausaPosta($causaId, $pantillaId)
     {
         $avancePlantilla = $this->avancePlantillaService->obtenerUno($pantillaId);
         //Causa Posta cero, (INICIO)

@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\CommonsScopesCausa;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Causa extends Model
 {
-    use HasFactory;
+    use CommonsScopesCausa, HasFactory;
     protected $fillable=[
         'nombre',
         'observacion',
@@ -48,6 +49,14 @@ class Causa extends Model
     public function categoria()
     {
         return $this->belongsTo(Categoria::class, 'categoria_id');
+    }
+    public function abogado()
+    {
+        return $this->belongsTo(User::class, 'abogado_id');
+    }
+    public function procurador()
+    {
+        return $this->belongsTo(User::class, 'procurador_id');
     }
     /**
      * Get all of the comments for the Causa

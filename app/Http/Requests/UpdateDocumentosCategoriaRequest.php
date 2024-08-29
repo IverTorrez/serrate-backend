@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreCuerpoExpedienteRequest extends FormRequest
+class UpdateDocumentosCategoriaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,9 +22,9 @@ class StoreCuerpoExpedienteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre'=>['required','string','max:50'],
-            'link_cuerpo'=>['required'],
-            'tribunal_id'=>['required'],
+            'nombre'=>['sometimes','string'],
+            'tipo'=>['sometimes','string'],
+            'categoria_id'=>['sometimes'],
         ];
     }
 }
