@@ -26,4 +26,13 @@ class AvancePlantillaService
             ->get();
         return $avancePlantilla;
     }
+
+    public function listarPlantillaPorId($idPlantilla)
+    {
+        $plantilla = AvancePlantilla::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('id', $idPlantilla)
+            ->get();
+        return $plantilla;
+    }
 }

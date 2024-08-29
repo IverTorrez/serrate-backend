@@ -3,103 +3,79 @@
 namespace App\Http\Controllers;
 
 use App\Models\Posta;
-use App\Constants\Estado;
 use App\Enums\MessageHttp;
 use Illuminate\Http\Request;
 use App\Http\Resources\PostaCollection;
 use App\Http\Requests\StorePostaRequest;
 use App\Http\Requests\UpdatePostaRequest;
+use App\Services\PostaService;
 
 class PostaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected $postaService;
+    public function __construct(PostaService $postaService)
     {
-        $posta = Posta::where('es_eliminado', 0)
-                           ->where('estado', Estado::ACTIVO)
-                           ->paginate();
-        return new PostaCollection($posta);
+        $this->postaService = $postaService;
+    }
+    public function index(Request $request)
+    {
+        $postas = $this->postaService->index($request);
+        return new PostaCollection($postas);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StorePostaRequest $request)
     {
-        $posta=Posta::create([
-            'nombre'=>$request->nombre,
-            'numero_posta'=>$request->numero_posta,
-            'plantilla_id'=>$request->plantilla_id,
-            'estado'=>Estado::ACTIVO,
-            'es_eliminado'=>0
-         ]);
-         $data=[
-            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
-            'data'=>$posta
-         ];
-         return response()
-               ->json($data);
+        $posta = $this->postaService->store($request->all());
+        return response()->json([
+            'message' => MessageHttp::CREADO_CORRECTAMENTE,
+            'data' => $posta
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Posta $posta)
+
+
+    public function show(Posta $posta = null)
     {
-        $data=[
-            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
-            'data'=>$posta
-        ];
+        if ($posta) {
+            $data = [
+                'message' => 'Posta obtenida correctamente',
+                'data' => $posta
+            ];
+        } else {
+
+            $postas = $this->postaService->show();
+            $data = [
+                'message' => 'Postas obtenidas correctamente',
+                'data' => $postas
+            ];
+        }
+
         return response()->json($data);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Posta $posta)
+    public function listarPorIdPlantilla(Request $request, $idPlantilla = null)
     {
-        //
+        $postas = $this->postaService->listarPorIdPlantilla($request, $idPlantilla);
+        return new PostaCollection($postas);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdatePostaRequest $request, Posta $posta)
     {
-        $posta->update($request->only([
-            'nombre',
-            'numero_posta',
-            'plantilla_id',
-            'estado',
-            'es_eliminado']));
-        $data=[
-        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-        'data'=>$posta
-        ];
-        return response()->json($data);
+        $updatedPosta = $this->postaService->update($request->all(), $posta->id);
+        return response()->json([
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $updatedPosta
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(Posta $posta)
     {
-        $posta->es_eliminado   =1;
-         $posta->save();
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$posta
-        ];
-        return response()->json($data);
+        $deletedPosta = $this->postaService->destroy($posta->id);
+        return response()->json([
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $deletedPosta
+        ]);
     }
 }
