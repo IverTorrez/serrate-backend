@@ -95,7 +95,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('clase-tribunal', [ClaseTribunalController::class, 'index']);
         Route::post('clase-tribunal', [ClaseTribunalController::class, 'store']);
         Route::get('clase-tribunal/{claseTribunal}', [ClaseTribunalController::class, 'show']);
-        Route::get('clase-tribunal/listar', [ClaseTribunalController::class, 'listarActivos']);
+        Route::get('clase-tribunal/activos/listar', [ClaseTribunalController::class, 'listarActivos']);
         Route::patch('clase-tribunal/{claseTribunal}', [ClaseTribunalController::class, 'update']);
         Route::patch('clase-tribunal/eliminar/{claseTribunal}', [ClaseTribunalController::class, 'destroy']);
         //Causa
