@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Constants\Estado;
@@ -41,9 +42,11 @@ class JuzgadoService
     public function listarActivos()
     {
         $juzgados = Juzgado::where('estado', Estado::ACTIVO)
-                     ->where('es_eliminado', 0)
-                     ->get();
-      return $juzgados;
+            ->where('es_eliminado', 0)
+            ->with([
+                'distrito',
+            ])
+            ->get();
+        return $juzgados;
     }
-
 }

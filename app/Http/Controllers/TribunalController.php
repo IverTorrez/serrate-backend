@@ -91,9 +91,9 @@ class TribunalController extends Controller
     public function listarActivosPorCausa($causaId)
     {
         $tribunales = $this->tribunalService->listarActivosPorCausa($causaId);
-        if ($tribunales->isEmpty()) {
+        /*if ($tribunales->isEmpty()) {
             return response()->json(['message' => 'No se encontraron tribunales activos'], 404);
-        }
+        }*/
         $data = [
             'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
             'data' => $tribunales

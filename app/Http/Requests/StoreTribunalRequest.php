@@ -24,7 +24,6 @@ class StoreTribunalRequest extends FormRequest
         return [
             'expediente'=>['required','string','max:50'],
             'codnurejianuj'=>['required','string','max:50'],
-            'link_carpeta'=>['required','string'],
             'clasetribunal_id'=>['required'],
             'causa_id'=>['required'],
             'juzgado_id'=>['required'],

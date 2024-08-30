@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use App\Constants\Estado;
 use App\Traits\CommonScopes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Tribunal extends Model
 {
@@ -44,6 +45,8 @@ class Tribunal extends Model
      */
     public function cuerpoExpedientes()
     {
-        return $this->hasMany(CuerpoExpediente::class, 'tribunal_id');
+        return $this->hasMany(CuerpoExpediente::class, 'tribunal_id')
+                    ->where('estado', Estado::ACTIVO)
+                    ->where('es_eliminado', 0);
     }
 }
