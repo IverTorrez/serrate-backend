@@ -1,26 +1,99 @@
 <?php
+
 namespace App\Services;
 
 use App\Constants\Estado;
 use App\Models\Posta;
-use Illuminate\Http\Request;
 
 class PostaService
 {
-    public function update($data, $postaId)
-    {
-        $posta = Posta::findOrFail($postaId);
-        $posta->update($data);
-        return $posta;
+
+  public function index($request)
+  {
+    return $this->getPostas($request);
+  }
+
+  public function listarPorIdPlantilla($request, $idPlantilla)
+  {
+    return $this->getPostas($request, $idPlantilla);
+  }
+
+
+  private function getPostas($request, $idPlantilla = null)
+  {
+    $query = Posta::where('estado', Estado::ACTIVO)
+      ->where('es_eliminado', 0);
+
+    if ($idPlantilla) {
+      $query->where('plantilla_id', $idPlantilla);
     }
-    public function listarPorAvancePlantillaId($avancePlantillaId)
-    {
-      $postas = Posta::where('estado', Estado::ACTIVO)
-                     ->where('es_eliminado', 0)
-                     ->where('plantilla_id', $avancePlantillaId)
-                     ->orderBy('numero_posta', 'asc')
-                     ->get();
-      return $postas;
+    if ($request->has('search')) {
+      $search = json_decode($request->input('search'), true);
+      $query->search($search);
     }
 
+    if ($request->has('sort')) {
+      $sort = json_decode($request->input('sort'), true);
+      $query->sort($sort);
+    }
+
+    $perPage = $request->input('perPage', 10);
+    return $query->paginate($perPage);
+  }
+
+
+  public function show()
+  {
+    return Posta::where('estado', Estado::ACTIVO)
+      ->where('es_eliminado', 0)
+      ->get();
+  }
+
+
+  public function store($data)
+  {
+    $maxNumeroPosta = Posta::where('plantilla_id', $data['plantilla_id'])
+      ->where('es_eliminado', 0)
+      ->max('numero_posta');
+
+
+    $nextNumeroPosta = $maxNumeroPosta ? $maxNumeroPosta + 1 : 1;
+
+
+    return Posta::create([
+      'nombre' => $data['nombre'],
+      'numero_posta' => $nextNumeroPosta,
+      'plantilla_id' => $data['plantilla_id'],
+      'estado' => Estado::ACTIVO,
+      'es_eliminado' => 0
+    ]);
+  }
+
+
+  public function update($data, $postaId)
+  {
+    $posta = Posta::findOrFail($postaId);
+    $posta->update($data);
+    return $posta;
+  }
+
+  public function destroy($postaId)
+  {
+    $posta = Posta::findOrFail($postaId);
+    $posta->es_eliminado = 1;
+    $posta->save();
+    return $posta;
+  }
+
+
+
+  public function listarPorAvancePlantillaId($avancePlantillaId)
+  {
+    $postas = Posta::where('estado', Estado::ACTIVO)
+      ->where('es_eliminado', 0)
+      ->where('plantilla_id', $avancePlantillaId)
+      ->orderBy('numero_posta', 'asc')
+      ->get();
+    return $postas;
+  }
 }

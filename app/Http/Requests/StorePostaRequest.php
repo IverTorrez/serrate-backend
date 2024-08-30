@@ -22,9 +22,9 @@ class StorePostaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre'=>['required','string'],
-            'numero_posta'=>['required','numeric'],
-            'plantilla_id'=>['required'],
+            'nombre' => ['required', 'string'],
+            // 'numero_posta' => ['required', 'numeric'],
+            'plantilla_id' => ['required'],
         ];
     }
 }

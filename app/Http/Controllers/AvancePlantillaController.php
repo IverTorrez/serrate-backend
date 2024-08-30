@@ -10,6 +10,7 @@ use App\Http\Resources\AvancePlantillaCollection;
 use App\Http\Requests\StoreAvancePlantillaRequest;
 use App\Http\Requests\UpdateAvancePlantillaRequest;
 use App\Services\AvancePlantillaService;
+use Illuminate\Support\Facades\Log;
 
 class AvancePlantillaController extends Controller
 {
@@ -47,17 +48,7 @@ class AvancePlantillaController extends Controller
         return new AvancePlantillaCollection($avancePlantilla);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreAvancePlantillaRequest $request)
     {
         $avancePlantilla = AvancePlantilla::create([
@@ -72,10 +63,6 @@ class AvancePlantillaController extends Controller
         return response()
             ->json($data);
     }
-
-    /**
-     * Display the specified resource.
-     */
 
 
     public function show(AvancePlantilla $avancePlantilla = null)
@@ -97,17 +84,11 @@ class AvancePlantillaController extends Controller
         return response()->json($data);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(AvancePlantilla $avancePlantilla)
+    public function listarPlantillaPorId($idPlantilla)
     {
-        //
+        $plantilla = $this->avancePlantillaService->listarPlantillaPorId($idPlantilla);
+        return new AvancePlantillaCollection($plantilla);
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateAvancePlantillaRequest $request, AvancePlantilla $avancePlantilla)
     {
         $avancePlantilla->update($request->only([
