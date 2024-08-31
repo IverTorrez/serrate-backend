@@ -9,18 +9,56 @@ use Illuminate\Http\Request;
 use App\Http\Resources\ParticipanteCollection;
 use App\Http\Requests\StoreParticipanteRequest;
 use App\Http\Requests\UpdateParticpanteRequest;
+use App\Services\ParticipanteService;
 
 class ParticipanteController extends Controller
 {
+    protected $participanteService;
+
+    public function __construct(ParticipanteService $participanteService)
+    {
+        $this->participanteService = $participanteService;
+    }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $participante = Participante::where('es_eliminado', 0)
-                           ->where('estado', Estado::ACTIVO)
-                           ->paginate();
-        return new ParticipanteCollection($participante);
+        $query = Participante::active();
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+        $perPage = $request->input('perPage', 10);
+        $participantes = $query->paginate($perPage);
+
+        return new ParticipanteCollection($participantes);
+    }
+
+    public function listadoPorCausa(Request $request, $causaId)
+    {
+        $query = Participante::active()
+            ->where('causa_id', $causaId);
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+        $perPage = $request->input('perPage', 10);
+        $participantes = $query->paginate($perPage);
+
+        return new ParticipanteCollection($participantes);
     }
 
     /**
@@ -36,21 +74,19 @@ class ParticipanteController extends Controller
      */
     public function store(StoreParticipanteRequest $request)
     {
-        $participante=Participante::create([
-            'nombres'=>$request->nombres,
-            'tipo'=>$request->tipo,
-            'foja'=>$request->foja,
-            'ultimo_domicilio'=>$request->ultimo_domicilio,
-            'causa_id'=>$request->causa_id,
-            'estado'=>Estado::ACTIVO,
-            'es_eliminado'=>0
-         ]);
-         $data=[
-            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
-            'data'=>$participante
-         ];
-         return response()
-               ->json($data);
+        $data = ([
+            'nombres' => $request->nombres,
+            'tipo' => $request->tipo,
+            'foja' => $request->foja,
+            'ultimo_domicilio' => $request->ultimo_domicilio,
+            'causa_id' => $request->causa_id
+        ]);
+        $participante = $this->participanteService->store($data);
+        return response()
+            ->json([
+                'message' => MessageHttp::CREADO_CORRECTAMENTE,
+                'data' => $participante
+            ]);
     }
 
     /**
@@ -58,9 +94,10 @@ class ParticipanteController extends Controller
      */
     public function show(Participante $participante)
     {
-        $data=[
-            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
-            'data'=>$participante
+        $participante = $this->participanteService->obtenerUno($participante->id);
+        $data = [
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $participante
         ];
         return response()->json($data);
     }
@@ -78,19 +115,18 @@ class ParticipanteController extends Controller
      */
     public function update(UpdateParticpanteRequest $request, Participante $participante)
     {
-        $participante->update($request->only([
+        $data = $request->only([
             'nombres',
             'tipo',
             'foja',
             'ultimo_domicilio',
-            'causa_id',
-            'estado',
-            'es_eliminado']));
-        $data=[
-        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-        'data'=>$participante
-        ];
-        return response()->json($data);
+            'causa_id'
+        ]);
+        $participante = $this->participanteService->update($data, $participante->id);
+        return response()->json([
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $participante
+        ]);
     }
 
     /**
@@ -98,12 +134,10 @@ class ParticipanteController extends Controller
      */
     public function destroy(Participante $participante)
     {
-        $participante->es_eliminado   =1;
-         $participante->save();
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$participante
-        ];
-        return response()->json($data);
+        $participante = $this->participanteService->destroy($participante->id);
+        return response()->json([
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $participante
+        ]);
     }
 }

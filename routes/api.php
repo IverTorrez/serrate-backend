@@ -120,6 +120,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::patch('cuerpo-expedientes/eliminar/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'destroy']);
         //Participante
         Route::get('participantes', [ParticipanteController::class, 'index']);
+        Route::get('participantes/causa/listar/{causaId}', [ParticipanteController::class, 'listadoPorCausa']);
         Route::post('participantes', [ParticipanteController::class, 'store']);
         Route::get('participantes/{participante}', [ParticipanteController::class, 'show']);
         Route::patch('participantes/{participante}', [ParticipanteController::class, 'update']);
