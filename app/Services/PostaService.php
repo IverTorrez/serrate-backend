@@ -21,12 +21,12 @@ class PostaService
 
   private function getPostas($request, $idPlantilla = null)
   {
-    $query = Posta::where('estado', Estado::ACTIVO)
-      ->where('es_eliminado', 0);
+    $query = Posta::active();
 
     if ($idPlantilla) {
       $query->where('plantilla_id', $idPlantilla);
     }
+
     if ($request->has('search')) {
       $search = json_decode($request->input('search'), true);
       $query->search($search);
@@ -44,9 +44,7 @@ class PostaService
 
   public function show()
   {
-    return Posta::where('estado', Estado::ACTIVO)
-      ->where('es_eliminado', 0)
-      ->get();
+    return Posta::active()->get();
   }
 
 
@@ -89,8 +87,7 @@ class PostaService
 
   public function listarPorAvancePlantillaId($avancePlantillaId)
   {
-    $postas = Posta::where('estado', Estado::ACTIVO)
-      ->where('es_eliminado', 0)
+    $postas = Posta::Active()
       ->where('plantilla_id', $avancePlantillaId)
       ->orderBy('numero_posta', 'asc')
       ->get();

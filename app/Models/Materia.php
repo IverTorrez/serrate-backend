@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\CommonScopes;
+
 class Materia extends Model
 {
     use CommonScopes, HasFactory;
-    protected $fillable=[
+    protected $fillable = [
         'nombre',
         'abreviatura',
         'estado',
@@ -22,7 +23,7 @@ class Materia extends Model
      */
     public function TiposLegales()
     {
-        return $this->hasMany(TipoLegal::class,'materia_id');
+        return $this->hasMany(TipoLegal::class, 'materia_id');
     }
 
     /**

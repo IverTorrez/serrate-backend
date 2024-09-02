@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Causa extends Model
 {
     use CommonsScopesCausa, HasFactory;
-    protected $fillable=[
+    protected $fillable = [
         'nombre',
         'observacion',
         'objetivos',
@@ -87,5 +87,10 @@ class Causa extends Model
     public function causaPostas()
     {
         return $this->hasMany(CausaPosta::class, 'causa_id');
+    }
+
+    public function ordenes()
+    {
+        return $this->hasMany(Orden::class, 'causa_id');
     }
 }
