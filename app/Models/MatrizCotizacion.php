@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class MatrizCotizacion extends Model
 {
     use HasFactory;
-    protected $fillable=[
+    protected $fillable = [
         'numero_prioridad',
         'precio_compra',
         'precio_venta',
@@ -17,4 +17,9 @@ class MatrizCotizacion extends Model
         'estado',
         'es_eliminado'
     ];
+
+    public function ordenes()
+    {
+        return $this->hasMany(Orden::class, 'matriz_id');
+    }
 }

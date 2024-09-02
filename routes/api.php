@@ -31,10 +31,6 @@ use App\Http\Controllers\TipoLegalController;
 use App\Http\Controllers\TipoPostaController;
 use App\Http\Controllers\TribunalController;
 use App\Http\Controllers\UserController;
-use App\Models\AvancePlantilla;
-use App\Models\Categoria;
-use App\Models\Piso;
-use App\Models\TipoLegal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -89,7 +85,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('juzgados', [JuzgadoController::class, 'index']);
         Route::post('juzgados', [JuzgadoController::class, 'store']);
         Route::get('juzgados/listar/{juzgado?}', [JuzgadoController::class, 'show']);
-        Route::post('juzgados/{juzgado}', [JuzgadoController::class, 'update']);//Actualiza
+        Route::post('juzgados/{juzgado}', [JuzgadoController::class, 'update']); //Actualiza
         Route::patch('juzgados/eliminar/{juzgado}', [JuzgadoController::class, 'destroy']);
         //Clase Tribunal
         Route::get('clase-tribunal', [ClaseTribunalController::class, 'index']);
@@ -181,6 +177,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::patch('matriz-cotizacion/{matrizCotizacion}', [MatrizCotizacionController::class, 'update']);
         //Orden
         Route::get('orden', [OrdenController::class, 'index']);
+        Route::get('orden/listar-por-causa/{id?}', [OrdenController::class, 'listarPorCausa']);
         Route::post('orden', [OrdenController::class, 'store']);
         Route::get('orden/{orden}', [OrdenController::class, 'show']);
         Route::patch('orden/{orden}', [OrdenController::class, 'update']);

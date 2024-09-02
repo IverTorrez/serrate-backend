@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\CommonScopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Orden extends Model
 {
-    use HasFactory;
-    protected $fillable=[
+    use CommonScopes, HasFactory;
+    protected $fillable = [
         'entrega_informacion',
         'entrega_documentacion',
         'fecha_inicio',
@@ -33,4 +34,17 @@ class Orden extends Model
         'estado',
         'es_eliminado'
     ];
+
+    public function causa()
+    {
+        return $this->belongsTo(Causa::class, 'causa_id');
+    }
+    public function procurador()
+    {
+        return $this->belongsTo(User::class, 'procurador_id');
+    }
+    public function matriz()
+    {
+        return $this->belongsTo(MatrizCotizacion::class, 'matriz_id');
+    }
 }
