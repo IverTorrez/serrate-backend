@@ -44,12 +44,16 @@ Route::get('/user', function (Request $request) {
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function () {
 
-    Route::post('register', [AuthController::class, 'register']);
-    Route::post('login', [AuthController::class, 'login']);
+    Route::prefix('auth')->group(function () {
+        Route::post('register', [AuthController::class, 'register']);
+        Route::post('login', [AuthController::class, 'login']);
 
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('logout', [AuthController::class, 'logout']);
+        });
+    });
 
     Route::middleware(['auth:sanctum'])->group(function () {
-        Route::get('logout', [AuthController::class, 'logout']);
         //Materia
         Route::get('materias', [MateriaController::class, 'index']);
         Route::get('materias/listar/{materia?}', [MateriaController::class, 'show']);
