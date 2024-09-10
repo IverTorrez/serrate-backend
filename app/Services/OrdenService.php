@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Constants\Estado;
 use App\Models\Orden;
-use Illuminate\Http\Request;
-use App\Constants\EtapaOrden;
 
 class OrdenService
 {
@@ -21,56 +19,60 @@ class OrdenService
 
     public function getOrdenes($request, $idCausa = null)
     {
-        $query = Orden::select([
-            'id',
-            'entrega_informacion',
-            'entrega_documentacion',
-            'fecha_inicio',
-            'fecha_fin',
-            'fecha_giro',
-            'plazo_hora',
-            'fecha_recepcion',
-            'etapa_orden',
-            'calificacion',
-            'prioridad',
-            'fecha_cierre',
-            'girada_por',
-            'fecha_ini_bandera',
-            'notificado',
-            'lugar_ejecucion',
-            'sugerencia_presupuesto',
-            'tiene_propina',
-            'propina',
-            'causa_id',
-            'procurador_id',
-            'matriz_id',
-            'estado',
-        ])
-            ->with([
-                'causa:id,nombre',
-                'procurador:id,name,email,tipo,estado',
-                'procurador.persona:usuario_id,nombre,apellido,telefono,direccion',
-                'matriz:id,numero_prioridad,precio_compra,penalizacion'
-
+        try {
+            $query = Orden::select([
+                'id',
+                'entrega_informacion',
+                'entrega_documentacion',
+                'fecha_inicio',
+                'fecha_fin',
+                'fecha_giro',
+                'plazo_hora',
+                'fecha_recepcion',
+                'etapa_orden',
+                'calificacion',
+                'prioridad',
+                'fecha_cierre',
+                'girada_por',
+                'fecha_ini_bandera',
+                'notificado',
+                'lugar_ejecucion',
+                'sugerencia_presupuesto',
+                'tiene_propina',
+                'propina',
+                'causa_id',
+                'procurador_id',
+                'matriz_id',
+                'estado',
             ])
-            ->active();
+                ->with([
+                    'causa:id,nombre',
+                    'procurador:id,name,email,tipo,estado',
+                    'procurador.persona:usuario_id,nombre,apellido,telefono,direccion',
+                    'matriz:id,numero_prioridad,precio_compra,penalizacion'
 
-        if ($idCausa) {
-            $query->where('causa_id', $idCausa);
+                ])
+                ->active();
+
+            if ($idCausa) {
+                $query->where('causa_id', $idCausa);
+            }
+
+            if ($request->has('search')) {
+                $search = json_decode($request->input('search'), true);
+                $query->search($search);
+            }
+
+            if ($request->has('sort')) {
+                $sort = json_decode($request->input('sort'), true);
+                $query->sort($sort);
+            }
+
+            $perPage = $request->input('perPage', 10);
+            return $query->paginate($perPage);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
         }
-
-        if ($request->has('search')) {
-            $search = json_decode($request->input('search'), true);
-            $query->search($search);
-        }
-
-        if ($request->has('sort')) {
-            $sort = json_decode($request->input('sort'), true);
-            $query->sort($sort);
-        }
-
-        $perPage = $request->input('perPage', 10);
-        return $query->paginate($perPage);
     }
 
 
