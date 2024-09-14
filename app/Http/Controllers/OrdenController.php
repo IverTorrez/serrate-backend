@@ -113,22 +113,11 @@ class OrdenController extends Controller
 
     public function show(Orden $orden = null)
     {
-        if ($orden) {
-            $data = [
-                'message' => 'Orden obtenida correctamente',
-                'data' => $orden
-            ];
-        } else {
-
-            $ordenes = $this->ordenService->show();
-            $data = [
-                'message' => 'Ordenes obtenidas correctamente',
-                'data' => $ordenes
-            ];
-        }
+        $data = $this->ordenService->listarOrden($orden);
 
         return response()->json($data);
     }
+
 
     public function update(UpdateOrdenRequest $request, Orden $orden)
     {

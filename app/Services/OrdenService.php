@@ -76,10 +76,67 @@ class OrdenService
     }
 
 
-    public function show()
+    public function listarOrden(Orden $orden = null)
     {
-        return Orden::active()->get();
+        try {
+            $query = Orden::select([
+                'id',
+                'entrega_informacion',
+                'entrega_documentacion',
+                'fecha_inicio',
+                'fecha_fin',
+                'fecha_giro',
+                'plazo_hora',
+                'fecha_recepcion',
+                'etapa_orden',
+                'calificacion',
+                'prioridad',
+                'fecha_cierre',
+                'girada_por',
+                'fecha_ini_bandera',
+                'notificado',
+                'lugar_ejecucion',
+                'sugerencia_presupuesto',
+                'tiene_propina',
+                'propina',
+                'causa_id',
+                'procurador_id',
+                'matriz_id',
+                'estado',
+            ])
+                ->with([
+                    'causa:id,nombre',
+                    'procurador:id,name,email,tipo,estado',
+                    'procurador.persona:usuario_id,nombre,apellido,telefono,direccion',
+                    'matriz:id,numero_prioridad,precio_compra,penalizacion'
+                ])
+                ->active();
+
+            if ($orden) {
+                $query->where('id', $orden->id);
+                $result = $query->first();
+
+                if (!$result) {
+                    return response()->json(['message' => 'Orden no encontrada.'], 404);
+                }
+
+                return [
+                    'message' => 'Orden obtenida correctamente',
+                    'data' => $result
+                ];
+            }
+
+            $result = $query->get();
+
+            return [
+                'message' => 'Órdenes obtenidas correctamente',
+                'data' => $result
+            ];
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
+        }
     }
+
     public function store($data)
     {
         $orden = Orden::create([
