@@ -178,6 +178,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         //Matriz cotizacion
         Route::get('matriz-cotizacion', [MatrizCotizacionController::class, 'index']);
         Route::get('matriz-cotizacion/{matrizCotizacion}', [MatrizCotizacionController::class, 'show']);
+        Route::get('matriz-cotizacion/prioridad-condicion/{prioridad}/{condicion}', [MatrizCotizacionController::class, 'obtenerIdDePrioridadYCondicion']);
         Route::patch('matriz-cotizacion/{matrizCotizacion}', [MatrizCotizacionController::class, 'update']);
         //Orden
         Route::get('orden', [OrdenController::class, 'index']);
