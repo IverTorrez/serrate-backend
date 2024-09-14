@@ -14,13 +14,15 @@ class TablaConfigSeeder extends Seeder
      */
     public function run(): void
     {
-        $estado=Estado::ACTIVO;
+        $estado = Estado::ACTIVO;
         TablaConfig::create([
-            'caja_contador' =>0,
-            'deuda_extarna'=>0,
-            'ganancia_procesal_procuraduria'=>0,
-            'imagen_index'=>'inicio.png',
-            'imagen_logo'=>'logo.png',
+            'caja_contador' => 0,
+            'deuda_extarna' => 0,
+            'ganancia_procesal_procuraduria' => 0,
+            'titulo_index' => null,
+            'texto_index' => null,
+            'imagen_index' => null,
+            'imagen_logo' => null,
             'estado' => $estado,
             'es_eliminado' => 0,
         ]);

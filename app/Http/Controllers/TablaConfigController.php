@@ -2,11 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\MessageHttp;
 use App\Models\TablaConfig;
 use Illuminate\Http\Request;
+use App\Services\TablaConfigService;
+use App\Http\Requests\UpdateTablaConfigRequest;
 
 class TablaConfigController extends Controller
 {
+    protected $tablaConfigService;
+    public function __construct(TablaConfigService $tablaConfigService)
+    {
+        $this->tablaConfigService = $tablaConfigService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -34,9 +42,13 @@ class TablaConfigController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(TablaConfig $tablaConfig)
+    public function show()
     {
-        //
+        $tablaConfig = $this->tablaConfigService->mostarDatosTablaConfig();
+        return response()->json([
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $tablaConfig
+        ]);
     }
 
     /**
@@ -50,9 +62,27 @@ class TablaConfigController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, TablaConfig $tablaConfig)
+    public function update(UpdateTablaConfigRequest $request)
     {
-        //
+        $data = $request->only([
+            'titulo_index',
+            'texto_index'
+        ]);
+        if ($request->hasFile('imagen_index')) {
+            $file = $request->file('imagen_index');
+            $pathindex = $file->store('uploads/img/config', 'public');
+            $data['imagen_index'] = $pathindex;
+        }
+        if ($request->hasFile('imagen_logo')) {
+            $file = $request->file('imagen_logo');
+            $pathlogo = $file->store('uploads/img/config', 'public');
+            $data['imagen_logo'] = $pathlogo;
+        }
+        $tablaConfig = $this->tablaConfigService->update($data, 1);
+        return response()->json([
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $tablaConfig
+        ]);
     }
 
     /**

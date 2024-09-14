@@ -27,6 +27,7 @@ use App\Http\Controllers\PisoController;
 use App\Http\Controllers\PostaController;
 use App\Http\Controllers\PresupuestoController;
 use App\Http\Controllers\ProcuraduriaDescargaController;
+use App\Http\Controllers\TablaConfigController;
 use App\Http\Controllers\TipoLegalController;
 use App\Http\Controllers\TipoPostaController;
 use App\Http\Controllers\TribunalController;
@@ -52,6 +53,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
             Route::get('logout', [AuthController::class, 'logout']);
         });
     });
+    //Rutas sin autenticacion
+    Route::get('tabla-config/datos', [TablaConfigController::class, 'show']);
 
     Route::middleware(['auth:sanctum'])->group(function () {
         //Materia
@@ -243,5 +246,9 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::post('documentos', [DocumentoController::class, 'store']);
         Route::post('documentos/{documento}', [DocumentoController::class, 'update']);
         Route::patch('documentos/eliminar/{documento}', [DocumentoController::class, 'destroy']);
+        //Tabla config
+        Route::post('tabla-config/actualizar', [TablaConfigController::class, 'update']);
+
+
     });
 });
