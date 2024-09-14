@@ -12,6 +12,8 @@ class TablaConfig extends Model
         'caja_contador',
         'deuda_extarna',
         'ganancia_procesal_procuraduria',
+        'titulo_index',
+        'texto_index',
         'imagen_index',
         'imagen_logo',
         'estado',
