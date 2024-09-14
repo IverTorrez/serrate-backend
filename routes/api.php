@@ -187,7 +187,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('orden', [OrdenController::class, 'index']);
         Route::get('orden/listar-por-causa/{id?}', [OrdenController::class, 'listarPorCausa']);
         Route::post('orden', [OrdenController::class, 'store']);
-        Route::get('orden/{orden}', [OrdenController::class, 'show']);
+        Route::get('orden/listado/{orden?}', [OrdenController::class, 'show']);
         Route::patch('orden/{orden}', [OrdenController::class, 'update']);
         Route::patch('orden/eliminar/{orden}', [OrdenController::class, 'destroy']);
         Route::patch('orden/aceptar/{orden}', [OrdenController::class, 'aceptarOrden']);
