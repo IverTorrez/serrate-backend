@@ -29,10 +29,32 @@ class PaqueteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $paquetes = $this->paqueteService->index();
+        $query = Paquete::active();
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+        $perPage = $request->input('perPage', 10);
+        $paquetes = $query->paginate($perPage);
         return new PaqueteCollection($paquetes);
+    }
+
+    public function listadoPaquetes()
+    {
+        $paquetes = $this->paqueteService->listadoPaquetes();
+        return response()->json([
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $paquetes
+        ]);
+
     }
 
     /**

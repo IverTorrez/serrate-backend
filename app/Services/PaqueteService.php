@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Constants\Estado;
@@ -9,11 +10,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PaqueteService
 {
-    public function index()
+    public function listadoPaquetes()
     {
         $paquete = Paquete::where('es_eliminado', 0)
-                          ->where('estado', Estado::ACTIVO)
-                          ->paginate();
+            ->where('estado', Estado::ACTIVO)
+            ->get();
         return $paquete;
     }
 
@@ -52,6 +53,4 @@ class PaqueteService
         }
         return $paquete;
     }
-
-
 }

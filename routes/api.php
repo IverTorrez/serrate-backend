@@ -55,6 +55,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
     });
     //Rutas sin autenticacion
     Route::get('tabla-config/datos', [TablaConfigController::class, 'show']);
+    Route::get('paquetes/listado', [PaqueteController::class, 'listadoPaquetes']);
 
     Route::middleware(['auth:sanctum'])->group(function () {
         //Materia
