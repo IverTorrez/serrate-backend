@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\CommonScopes;
 
 class Paquete extends Model
 {
-    use HasFactory;
-    protected $fillable=[
+    use CommonScopes, HasFactory;
+    protected $fillable = [
         'nombre',
         'precio',
         'cantidad_mes',
