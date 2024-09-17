@@ -20,4 +20,14 @@ class Paquete extends Model
         'estado',
         'es_eliminado'
     ];
+
+    /**
+     * Get all of the comments for the Paquete
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function compraPaquetes()
+    {
+        return $this->hasMany(CompraPaquete::class, 'paquete_id');
+    }
 }
