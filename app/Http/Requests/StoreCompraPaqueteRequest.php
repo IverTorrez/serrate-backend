@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Constants\TipoUsuario;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class StoreCompraPaqueteRequest extends FormRequest
 {
@@ -11,7 +13,7 @@ class StoreCompraPaqueteRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return Auth::user()->tipo === TipoUsuario::ABOGADO_INDEPENDIENTE || Auth::user()->tipo === TipoUsuario::ABOGADO_LIDER;
     }
 
     /**
@@ -22,8 +24,8 @@ class StoreCompraPaqueteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'monto'=>['required','numeric'],
-            'paquete_id'=>['required','numeric','exists:paquetes,id']
+            'monto' => ['required', 'numeric'],
+            'paquete_id' => ['required', 'numeric', 'exists:paquetes,id']
         ];
     }
 }
