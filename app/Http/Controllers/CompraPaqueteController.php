@@ -24,18 +24,30 @@ class CompraPaqueteController extends Controller
     public function __construct(
         CompraPaqueteService $compraPaqueteService,
         PaqueteService $paqueteService
-      )
-    {
-      $this->compraPaqueteService = $compraPaqueteService;
-      $this->paqueteService = $paqueteService;
+    ) {
+        $this->compraPaqueteService = $compraPaqueteService;
+        $this->paqueteService = $paqueteService;
     }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $compraPaquete = $this->compraPaqueteService->index();
-        return new CompraPaqueteCollection($compraPaquete);
+        $query = CompraPaquete::active();
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+        $perPage = $request->input('perPage', 10);
+        $compraPaquetes = $query->paginate($perPage);
+
+        return new CompraPaqueteCollection($compraPaquetes);
     }
 
     /**
@@ -52,7 +64,7 @@ class CompraPaqueteController extends Controller
     public function store(StoreCompraPaqueteRequest $request)
     {
         DB::beginTransaction();
-        try{
+        try {
             $paquete = $this->paqueteService->obtenerUno($request->paquete_id);
             $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
             $fechaInicioVigencia = Carbon::now();
@@ -62,7 +74,7 @@ class CompraPaqueteController extends Controller
                 'monto' => $request->monto,
                 'fecha_ini_vigencia' => $fechaInicioVigencia->format('Y-m-d'),
                 'fecha_fin_vigencia' => $fechaFinalVigencia->format('Y-m-d'),
-                'fecha_compra'=> $fechaHora,
+                'fecha_compra' => $fechaHora,
                 'cantidad_causas' => $paquete->cantidad_causas,
                 'dias_vigente' => $cantidadDias,
                 'paquete_id' => $request->paquete_id,
@@ -75,7 +87,7 @@ class CompraPaqueteController extends Controller
                 'message' => MessageHttp::CREADO_CORRECTAMENTE,
                 'data' => $compraPaquete
             ], 200);
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error al crear la orden: ' . $e->getMessage());
 
