@@ -74,7 +74,7 @@ class OrdenController extends Controller
                 'fecha_ini_bandera' => $request->fecha_inicio,
                 'notificado' => 0,
                 'lugar_ejecucion' => $request->lugar_ejecucion,
-                'sugerencia_presupuesto' => $request->sugerencia_presupuesto,
+                'sugerencia_presupuesto' => null, //$request->sugerencia_presupuesto, // vacio
                 'tiene_propina' => $request->tiene_propina,
                 'propina' => $request->propina,
                 'causa_id' => $request->causa_id,

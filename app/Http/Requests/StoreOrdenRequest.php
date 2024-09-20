@@ -22,17 +22,16 @@ class StoreOrdenRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'entrega_informacion'=>['required','string'],
-            'entrega_documentacion'=>['required','string'],
-            'fecha_inicio'=>['required','date_format:Y-m-d H:i'],
-            'fecha_fin'=>['required','date_format:Y-m-d H:i'],
-            'prioridad'=>['required','numeric'],
-            'lugar_ejecucion'=>['required','string','max:100'],
-            'sugerencia_presupuesto'=>['required','string'],
-            'tiene_propina'=>['required','numeric'],
-            'propina'=>['required','numeric'],
-            'causa_id'=>['required'],
-            'procurador_id'=>['required'],
+            'entrega_informacion' => ['required', 'string'],
+            'entrega_documentacion' => ['required', 'string'],
+            'fecha_inicio' => ['required', 'date_format:Y-m-d H:i'],
+            'fecha_fin' => ['required', 'date_format:Y-m-d H:i'],
+            'prioridad' => ['required', 'numeric'],
+            'lugar_ejecucion' => ['required', 'string', 'max:100'],
+            'tiene_propina' => ['required', 'numeric'],
+            'propina' => ['required', 'numeric'],
+            'causa_id' => ['required'],
+            'procurador_id' => ['required'],
         ];
     }
 }

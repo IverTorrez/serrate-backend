@@ -105,7 +105,9 @@ class OrdenService
                 'estado',
             ])
                 ->with([
-                    'causa:id,nombre',
+                    'causa:id,nombre,materia_id,tipolegal_id',
+                    'causa.materia:id,abreviatura',
+                    'causa.tipoLegal:id,abreviatura',
                     'procurador:id,name,email,tipo,estado',
                     'procurador.persona:usuario_id,nombre,apellido,telefono,direccion',
                     'matriz:id,numero_prioridad,precio_compra,penalizacion'
