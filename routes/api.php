@@ -21,6 +21,7 @@ use App\Http\Controllers\JuzgadoController;
 use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\MatrizCotizacionController;
 use App\Http\Controllers\OrdenController;
+use App\Http\Controllers\PaqueteCausaController;
 use App\Http\Controllers\PaqueteController;
 use App\Http\Controllers\ParticipanteController;
 use App\Http\Controllers\PisoController;
@@ -108,6 +109,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('causas/{causa}', [CausaController::class, 'show']);
         Route::patch('causas/{causa}', [CausaController::class, 'update']);
         Route::patch('causas/eliminar/{causa}', [CausaController::class, 'destroy']);
+        Route::get('causas/listado/sin-paquete', [CausaController::class, 'listarCausasParaPaquete']);
         //Tribunal
         Route::get('tribunal', [TribunalController::class, 'index']);
         Route::post('tribunal', [TribunalController::class, 'store']);
@@ -223,6 +225,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::post('compra-paquetes', [CompraPaqueteController::class, 'store']);
         Route::get('compra-paquetes', [CompraPaqueteController::class, 'index']);
         Route::get('compra-paquetes/{compraPaquete}', [CompraPaqueteController::class, 'show']);
+        Route::get('compra-paquetes/lista/activos', [CompraPaqueteController::class, 'listarActivosPorUsuario']);
         //Usuarios
         Route::get('usuarios/abogados', [UserController::class, 'listarAbogados']);
         Route::get('usuarios/procuradores', [UserController::class, 'listarProcuradores']);
@@ -249,6 +252,10 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::patch('documentos/eliminar/{documento}', [DocumentoController::class, 'destroy']);
         //Tabla config
         Route::post('tabla-config/actualizar', [TablaConfigController::class, 'update']);
+        //Paquete Causas
+        Route::post('paquete-causas', [PaqueteCausaController::class, 'store']);
+        Route::get('paquete-causas/listado/compra-pquete/{compraPaqueteId}', [PaqueteCausaController::class, 'listadoActivosDeUnPaquete']);
+        Route::patch('paquete-causas/eliminar/{paqueteCausa}', [PaqueteCausaController::class, 'destroy']);
 
 
     });

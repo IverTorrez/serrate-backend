@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use App\Constants\Estado;
 use App\Traits\CommonScopes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CompraPaquete extends Model
 {
@@ -33,5 +34,16 @@ class CompraPaquete extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'usuario_id');
+    }
+    /**
+     * Get all of the comments for the CompraPaquete
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function paqueteCausas()
+    {
+        return $this->hasMany(PaqueteCausa::class, 'compra_paquete_id')
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0);
     }
 }

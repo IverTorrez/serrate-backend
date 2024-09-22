@@ -270,4 +270,14 @@ class CausaController extends Controller
         }
         return $causaPosta;
     }
+    public function listarCausasParaPaquete()
+    {
+        $causas = $this->causaService->listarCausasParaPaquete();
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $causas
+        ];
+        return response()->json($data);
+    }
+
 }
