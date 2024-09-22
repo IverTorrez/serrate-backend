@@ -1,20 +1,23 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Orden;
 use App\Constants\Estado;
 use Illuminate\Http\Request;
-use App\Constants\EtapaOrden;
 use App\Models\CompraPaquete;
+use App\Models\PaqueteCausa;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class CompraPaqueteService
 {
     public function index()
     {
         $compraPaquete = CompraPaquete::where('es_eliminado', 0)
-                                        ->where('estado', Estado::ACTIVO)
-                                        ->paginate();
+            ->where('estado', Estado::ACTIVO)
+            ->paginate();
         return $compraPaquete;
     }
 
@@ -48,6 +51,42 @@ class CompraPaqueteService
         }
         return $compraPaquete;
     }
+    public function isCompraPaqueteAgotado($compraPaqueteId)
+    {
+        $compraPaquete = CompraPaquete::find($compraPaqueteId);
 
-
+        $paqueteCausaCount  = PaqueteCausa::where('es_eliminado', 0)
+            ->where('estado', Estado::ACTIVO)
+            ->where('compra_paquete_id', $compraPaqueteId)
+            ->count();
+        if ($compraPaquete->cantidad_causas <= $paqueteCausaCount) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public function isCompraPaqueteExpirado($compraPaqueteId)
+    {
+        $fechaActual = Carbon::now();
+        $fechaActualFormat = $fechaActual->format('Y-m-d');
+        $compraPaquete = CompraPaquete::find($compraPaqueteId);
+        if ($fechaActualFormat > $compraPaquete->fecha_fin_vigencia) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public function listarActivosPorUsuario()
+    {
+        $usuarioId = Auth::user()->id;
+        $compraPaquetes = CompraPaquete::where('es_eliminado', 0)
+            ->where('estado', Estado::ACTIVO)
+            ->where('usuario_id', $usuarioId)
+            ->with([
+                'paquete',
+                'paqueteCausas',
+            ])
+            ->get();
+        return $compraPaquetes;
+    }
 }

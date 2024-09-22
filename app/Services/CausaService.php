@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Constants\Estado;
 use App\Constants\EstadoCausa;
 use App\Models\Causa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CausaService
 {
@@ -61,6 +63,24 @@ class CausaService
         $causas->load('categoria');
         $causas->load('abogado.persona');
         $causas->load('procurador.persona');
+        return $causas;
+    }
+    public function listarCausasParaPaquete()
+    {
+        $usuarioId = Auth::user()->id;
+        $causas = Causa::where('estado', EstadoCausa::ACTIVA)
+            ->where('es_eliminado', 0)
+            ->where('usuario_id', $usuarioId)
+            ->with([
+                'materia',
+                'tipoLegal'
+            ])
+            ->whereDoesntHave('paqueteCausas', function ($query) {
+                // Verificar que no tengan registros activos en paquete_causas
+                $query->where('estado', Estado::ACTIVO)
+                    ->where('es_eliminado', 0);
+            })
+            ->get();
         return $causas;
     }
 }

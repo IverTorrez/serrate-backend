@@ -133,4 +133,13 @@ class CompraPaqueteController extends Controller
     {
         //
     }
+    public function listarActivosPorUsuario()
+    {
+        $compraPaquetes = $this->compraPaqueteService->listarActivosPorUsuario();
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $compraPaquetes
+        ];
+        return response()->json($data);
+    }
 }

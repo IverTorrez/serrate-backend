@@ -93,4 +93,8 @@ class Causa extends Model
     {
         return $this->hasMany(Orden::class, 'causa_id');
     }
+    public function paqueteCausas()
+    {
+        return $this->hasMany(PaqueteCausa::class, 'causa_id');
+    }
 }
