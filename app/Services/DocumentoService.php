@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Constants\Estado;
 use App\Models\Documento;
 use Illuminate\Http\Request;
+use App\Constants\TipoDocumento;
 
 class DocumentoService
 {
@@ -31,5 +32,25 @@ class DocumentoService
         $documento->es_eliminado = 1;
         $documento->save();
         return $documento;
+    }
+    public function listarDocNormasActivas($categoria)
+    {
+        $docNormas = Documento::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('categoria_id', $categoria)
+            ->where('tipo', TipoDocumento::NORMAS)
+            ->orderBy('nombre', 'ASC')
+            ->get();
+        return $docNormas;
+    }
+    public function listarDocTramitesActivas($categoria)
+    {
+        $docNormas = Documento::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('categoria_id', $categoria)
+            ->where('tipo', TipoDocumento::TRAMITES)
+            ->orderBy('nombre', 'ASC')
+            ->get();
+        return $docNormas;
     }
 }

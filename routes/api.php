@@ -250,6 +250,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::post('documentos', [DocumentoController::class, 'store']);
         Route::post('documentos/{documento}', [DocumentoController::class, 'update']);
         Route::patch('documentos/eliminar/{documento}', [DocumentoController::class, 'destroy']);
+        Route::get('documentos/listado/normas/categoria/{categoria}', [DocumentoController::class, 'listarDocNormasActivas']);
+        Route::get('documentos/listado/tramites/categoria/{categoria}', [DocumentoController::class, 'listarDocTramitesActivas']);
         //Tabla config
         Route::post('tabla-config/actualizar', [TablaConfigController::class, 'update']);
         //Paquete Causas
