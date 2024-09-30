@@ -190,4 +190,22 @@ class DocumentoController extends Controller
                 'data' => $documento
             ]);
     }
+    public function listarDocNormasActivas($categoria)
+    {
+        $documentos = $this->documentoService->listarDocNormasActivas($categoria);
+        return response()
+            ->json([
+                'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+                'data' => $documentos
+            ]);
+    }
+    public function listarDocTramitesActivas($categoria)
+    {
+        $documentos = $this->documentoService->listarDocTramitesActivas($categoria);
+        return response()
+            ->json([
+                'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+                'data' => $documentos
+            ]);
+    }
 }
