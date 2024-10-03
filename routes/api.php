@@ -57,6 +57,12 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
     //Rutas sin autenticacion
     Route::get('tabla-config/datos', [TablaConfigController::class, 'show']);
     Route::get('paquetes/listado', [PaqueteController::class, 'listadoPaquetes']);
+    //Documentos y categorias
+    Route::get('documentos-categorias/tramites/listado', [DocumentosCategoriaController::class, 'listarCategoriasTramites']);
+    Route::get('documentos-categorias/normas/listado', [DocumentosCategoriaController::class, 'listarCategoriasNormas']);
+    Route::get('documentos-categorias/subcategoria/listado/{documentosCategoria}', [DocumentosCategoriaController::class, 'listarSubcategorias']);
+    Route::get('documentos/listado/normas/categoria/{categoria}', [DocumentoController::class, 'listarDocNormasActivas']);
+    Route::get('documentos/listado/tramites/categoria/{categoria}', [DocumentoController::class, 'listarDocTramitesActivas']);
 
     Route::middleware(['auth:sanctum'])->group(function () {
         //Materia
@@ -238,11 +244,9 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('documentos-categorias/listar/{documentosCategoria?}', [DocumentosCategoriaController::class, 'show']);
         Route::patch('documentos-categorias/{documentosCategoria}', [DocumentosCategoriaController::class, 'update']);
         Route::patch('documentos-categorias/eliminar/{documentosCategoria}', [DocumentosCategoriaController::class, 'destroy']);
-        Route::get('documentos-categorias/subcategoria/listado/{documentosCategoria}', [DocumentosCategoriaController::class, 'listarSubcategorias']);
+
         Route::get('documentos-categorias/categoria/listado', [DocumentosCategoriaController::class, 'listarCategorias']);
 
-        Route::get('documentos-categorias/tramites/listado', [DocumentosCategoriaController::class, 'listarCategoriasTramites']);
-        Route::get('documentos-categorias/normas/listado', [DocumentosCategoriaController::class, 'listarCategoriasNormas']);
         //Documentos - NORMAS-TRAMITES
         Route::get('documentos', [DocumentoController::class, 'index']);
         Route::get('documentos/tramites', [DocumentoController::class, 'indexTramites']);
@@ -250,8 +254,6 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::post('documentos', [DocumentoController::class, 'store']);
         Route::post('documentos/{documento}', [DocumentoController::class, 'update']);
         Route::patch('documentos/eliminar/{documento}', [DocumentoController::class, 'destroy']);
-        Route::get('documentos/listado/normas/categoria/{categoria}', [DocumentoController::class, 'listarDocNormasActivas']);
-        Route::get('documentos/listado/tramites/categoria/{categoria}', [DocumentoController::class, 'listarDocTramitesActivas']);
         //Tabla config
         Route::post('tabla-config/actualizar', [TablaConfigController::class, 'update']);
         //Paquete Causas
