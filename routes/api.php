@@ -33,6 +33,7 @@ use App\Http\Controllers\TipoLegalController;
 use App\Http\Controllers\TipoPostaController;
 use App\Http\Controllers\TribunalController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VideoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -63,6 +64,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
     Route::get('documentos-categorias/subcategoria/listado/{documentosCategoria}', [DocumentosCategoriaController::class, 'listarSubcategorias']);
     Route::get('documentos/listado/normas/categoria/{categoria}', [DocumentoController::class, 'listarDocNormasActivas']);
     Route::get('documentos/listado/tramites/categoria/{categoria}', [DocumentoController::class, 'listarDocTramitesActivas']);
+    //Videos
+    Route::get('videos/listado', [VideoController::class, 'listarActivos']);
 
     Route::middleware(['auth:sanctum'])->group(function () {
         //Materia
@@ -260,7 +263,12 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::post('paquete-causas', [PaqueteCausaController::class, 'store']);
         Route::get('paquete-causas/listado/compra-pquete/{compraPaqueteId}', [PaqueteCausaController::class, 'listadoActivosDeUnPaquete']);
         Route::patch('paquete-causas/eliminar/{paqueteCausa}', [PaqueteCausaController::class, 'destroy']);
-
+        //Video
+        Route::get('videos', [VideoController::class, 'index']);
+        Route::post('videos', [VideoController::class, 'store']);
+        Route::get('videos/{video}', [VideoController::class, 'show']);
+        Route::patch('videos/{video}', [VideoController::class, 'update']);
+        Route::patch('videos/eliminar/{video}', [VideoController::class, 'destroy']);
 
     });
 });
