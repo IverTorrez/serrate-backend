@@ -48,11 +48,6 @@ class CausaController extends Controller
      */
     public function index(Request $request)
     {
-        /*$causa = Causa::where('es_eliminado', 0)
-                       ->with(['procurador.persona'])
-                           ->paginate();
-        return new CausaCollection($causa);*/
-
         $query = Causa::active();
 
         // Manejo de búsqueda
@@ -96,7 +91,7 @@ class CausaController extends Controller
             $usuarioPmaestro = $this->userService->obtenerUnPMaestro();
             $idUser = Auth::user()->id;
 
-            if (Auth::user()->tipo === TipoUsuario::ADMINISTRADOR) {
+            if (Auth::user()->tipo === TipoUsuario::ABOGADO_LIDER) {
                 $procuradorId = $request->procurador_id;
                 $abogadoId = $request->abogado_id;
             } else {

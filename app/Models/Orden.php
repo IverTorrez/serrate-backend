@@ -47,4 +47,36 @@ class Orden extends Model
     {
         return $this->belongsTo(MatrizCotizacion::class, 'matriz_id');
     }
+    /**
+     * Get the user associated with the Orden
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function presupuesto()
+    {
+        return $this->hasOne(Presupuesto::class, 'orden_id', 'id');
+    }
+    public function cotizacion()
+    {
+        return $this->hasOne(Cotizacion::class, 'orden_id', 'id');
+    }
+    public function finalCostos()
+    {
+        return $this->hasOne(FinalCosto::class, 'orden_id', 'id');
+    }
+    public function descarga()
+    {
+        return $this->hasOne(ProcuraduriaDescarga::class, 'orden_id', 'id');
+    }
+    /**
+     * Get all of the comments for the Orden
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function gestionAlternativas()
+    {
+        return $this->hasMany(GestionAlternativa::class, 'orden_id', 'id');
+    }
+
+
 }

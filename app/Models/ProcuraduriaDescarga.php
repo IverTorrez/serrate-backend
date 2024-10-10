@@ -22,6 +22,15 @@ class ProcuraduriaDescarga extends Model
         'estado',
         'es_eliminado'
     ];
+    /**
+     * Get the user that owns the ProcuraduriaDescarga
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function orden()
+    {
+        return $this->belongsTo(Orden::class, 'orden_id');
+    }
 
 
 }

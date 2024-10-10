@@ -14,7 +14,7 @@ class CausaSeeder extends Seeder
      */
     public function run(): void
     {
-        $estadoCausa=EstadoCausa::ACTIVA;
+        $estadoCausa=EstadoCausa::CONGELADA;
         Causa::create([
             'nombre' => 'Causa nueva 1',
             'observacion' => 'es nueva',
