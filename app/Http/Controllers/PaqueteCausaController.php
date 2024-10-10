@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\EstadoCausa;
 use Exception;
 use Carbon\Carbon;
 use App\Enums\MessageHttp;
@@ -13,16 +14,19 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\PaqueteCausaService;
 use App\Services\CompraPaqueteService;
 use App\Http\Requests\StorePaqueteCausaRequest;
+use App\Services\CausaService;
 
 class PaqueteCausaController extends Controller
 {
     protected $paqueteCausaService;
     protected $compraPaqueteService;
+    protected $causaService;
 
-    public function __construct(PaqueteCausaService $paqueteCausaService, CompraPaqueteService $compraPaqueteService)
+    public function __construct(PaqueteCausaService $paqueteCausaService, CompraPaqueteService $compraPaqueteService, CausaService $causaService)
     {
         $this->paqueteCausaService = $paqueteCausaService;
         $this->compraPaqueteService = $compraPaqueteService;
+        $this->causaService = $causaService;
     }
     /**
      * Display a listing of the resource.
@@ -71,6 +75,10 @@ class PaqueteCausaController extends Controller
             ];
 
             $paqueteCausa = $this->paqueteCausaService->store($data);
+            //La causa que se le asigna un paquete su esta cambia a activa
+            $dataCausa['estado'] = EstadoCausa::ACTIVA;
+            $causa = $this->causaService->update($dataCausa, $request->causa_id);
+
             DB::commit();
             return response()->json([
                 'message' => MessageHttp::CREADO_CORRECTAMENTE,
@@ -117,6 +125,9 @@ class PaqueteCausaController extends Controller
     public function destroy(PaqueteCausa $paqueteCausa)
     {
         $paqueteCausa = $this->paqueteCausaService->destroy($paqueteCausa);
+        //Cuando la causa se quita de un paquete, esta se pone CONGELADA
+        $dataCausa['estado'] = EstadoCausa::CONGELADA;
+        $causa = $this->causaService->update($dataCausa, $paqueteCausa->causa_id);
         return response()->json([
             'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data' => $paqueteCausa

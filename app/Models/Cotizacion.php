@@ -18,4 +18,14 @@ class Cotizacion extends Model
         'estado',
         'es_eliminado'
     ];
+
+    /**
+     * Get the orden that owns the Cotizacion
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function orden()
+    {
+        return $this->belongsTo(Orden::class, 'orden_id');
+    }
 }

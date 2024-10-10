@@ -32,7 +32,7 @@ class CausaService
             'usuario_id' => $data['usuario_id'],
             'plantilla_id' => $data['plantilla_id'],
 
-            'estado' => EstadoCausa::ACTIVA,
+            'estado' => EstadoCausa::CONGELADA,
             'es_eliminado' => 0
         ]);
         return $causa;
@@ -68,7 +68,7 @@ class CausaService
     public function listarCausasParaPaquete()
     {
         $usuarioId = Auth::user()->id;
-        $causas = Causa::where('estado', EstadoCausa::ACTIVA)
+        $causas = Causa::where('estado', EstadoCausa::CONGELADA)
             ->where('es_eliminado', 0)
             ->where('usuario_id', $usuarioId)
             ->with([

@@ -1,15 +1,18 @@
 <?php
+
 namespace App\Traits;
 
 use App\Constants\EstadoCausa;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 trait CommonsScopesCausa
 {
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('es_eliminado', 0)
-                     ->where('estado', EstadoCausa::ACTIVA);
+            ->where('usuario_id', Auth::user()->id)
+            ->whereIn('estado', [EstadoCausa::ACTIVA, EstadoCausa::CONGELADA]);
     }
 
     public function scopeSearch(Builder $query, array $search): Builder

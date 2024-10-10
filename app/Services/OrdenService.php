@@ -49,7 +49,10 @@ class OrdenService
                     'causa:id,nombre',
                     'procurador:id,name,email,tipo,estado',
                     'procurador.persona:usuario_id,nombre,apellido,telefono,direccion',
-                    'matriz:id,numero_prioridad,precio_compra,penalizacion'
+                    'matriz:id,numero_prioridad,precio_compra,penalizacion',
+                    'cotizacion:id,compra,venta,penalizacion,prioridad,condicion,orden_id',
+                    'descarga:id,compra_judicial,orden_id',
+                    'finalCostos:id,costo_procesal_venta,costo_procuraduria_compra,costo_procuraduria_venta,total_egreso,orden_id'
 
                 ])
                 ->active();
