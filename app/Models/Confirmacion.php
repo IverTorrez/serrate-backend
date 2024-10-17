@@ -19,4 +19,14 @@ class Confirmacion extends Model
         'estado',
         'es_eliminado'
     ];
+
+    /**
+     * Get the user that owns the Confirmacion
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function descarga()
+    {
+        return $this->belongsTo(ProcuraduriaDescarga::class, 'descarga_id');
+    }
 }

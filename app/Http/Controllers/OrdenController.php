@@ -228,4 +228,13 @@ class OrdenController extends Controller
             'difference' => $difference
         ];
     }
+    public function sugerirPresupuesto(UpdateOrdenRequest $request, Orden $orden)
+    {
+        $data['sugerencia_presupuesto']=$request->sugerencia_presupuesto;
+        $orden = $this->ordenService->update($data,$orden->id);
+        return response()->json([
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $orden
+        ], 200);
+    }
 }

@@ -113,7 +113,11 @@ class OrdenService
                     'causa.tipoLegal:id,abreviatura',
                     'procurador:id,name,email,tipo,estado',
                     'procurador.persona:usuario_id,nombre,apellido,telefono,direccion',
-                    'matriz:id,numero_prioridad,precio_compra,penalizacion'
+                    'matriz:id,numero_prioridad,precio_compra,penalizacion',
+                    'cotizacion:id,prioridad,condicion,orden_id',
+                    'descarga:id,ultima_foja,fecha_descarga,detalle_informacion,detalle_documentacion,gastos,saldo,detalle_gasto,orden_id',
+                    'presupuesto:id,monto,detalle_presupuesto,fecha_presupuesto,fecha_entrega,orden_id',
+                    'descarga.confirmacion:id,fecha_confir_abogado,fecha_confir_contador,justificacion_rechazo,descarga_id'
                 ])
                 ->active();
 
