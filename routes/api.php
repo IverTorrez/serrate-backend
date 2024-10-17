@@ -203,6 +203,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::patch('orden/{orden}', [OrdenController::class, 'update']);
         Route::patch('orden/eliminar/{orden}', [OrdenController::class, 'destroy']);
         Route::patch('orden/aceptar/{orden}', [OrdenController::class, 'aceptarOrden']);
+        Route::patch('orden/sugerir-presupuesto/{orden}', [OrdenController::class, 'sugerirPresupuesto']);
         //Cotizacion
 
         //Presupuesto

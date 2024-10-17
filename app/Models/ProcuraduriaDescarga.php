@@ -31,6 +31,15 @@ class ProcuraduriaDescarga extends Model
     {
         return $this->belongsTo(Orden::class, 'orden_id');
     }
+    /**
+     * Get the user associated with the ProcuraduriaDescarga
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function confirmacion()
+    {
+        return $this->hasOne(Confirmacion::class, 'descarga_id', 'id');
+    }
 
 
 }
