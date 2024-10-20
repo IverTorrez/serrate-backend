@@ -11,7 +11,6 @@ trait CommonsScopesCausa
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('es_eliminado', 0)
-            ->where('usuario_id', Auth::user()->id)
             ->whereIn('estado', [EstadoCausa::ACTIVA, EstadoCausa::CONGELADA]);
     }
 

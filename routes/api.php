@@ -238,6 +238,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('compra-paquetes/lista/activos', [CompraPaqueteController::class, 'listarActivosPorUsuario']);
         //Usuarios
         Route::get('usuarios/abogados', [UserController::class, 'listarAbogados']);
+        Route::get('usuarios/abogados-dependiantes/{abogadoLiderId}', [UserController::class, 'listarAbogadosDependientes']);
         Route::get('usuarios/procuradores', [UserController::class, 'listarProcuradores']);
         Route::get('usuarios/listar/{user?}', [UserController::class, 'show']);
         //Documentos Categorias

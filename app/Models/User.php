@@ -55,6 +55,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Persona::class,'usuario_id');
     }
+    public function billetera()
+    {
+        return $this->hasOne(Billetera::class, 'abogado_id');
+    }
 
 
 }
