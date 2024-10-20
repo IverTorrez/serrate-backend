@@ -172,8 +172,17 @@ class OrdenController extends Controller
 
     public function destroy(Orden $orden)
     {
-        $orden->es_eliminado   = 1;
-        $orden->save();
+        // Obtener el presupuesto relacionado con la orden
+        $presupuesto = $orden->presupuesto;
+        // Verificar si el presupuesto existe y si el campo fecha_entrega está vacío
+        if ($presupuesto && !empty($presupuesto->fecha_entrega)) {
+            // Si fecha_entrega no está vacío, no permitir la eliminación
+            return response()->json([
+                'message' => 'No se puede eliminar la orden porque el presupuesto ya tiene una fecha de entrega.',
+                'data' => null
+            ], 400);
+        }
+        $orden = $this->ordenService->destroy($orden->id);
         $data = [
             'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data' => $orden
@@ -230,8 +239,8 @@ class OrdenController extends Controller
     }
     public function sugerirPresupuesto(UpdateOrdenRequest $request, Orden $orden)
     {
-        $data['sugerencia_presupuesto']=$request->sugerencia_presupuesto;
-        $orden = $this->ordenService->update($data,$orden->id);
+        $data['sugerencia_presupuesto'] = $request->sugerencia_presupuesto;
+        $orden = $this->ordenService->update($data, $orden->id);
         return response()->json([
             'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
             'data' => $orden

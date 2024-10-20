@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Constants\TipoUsuario;
 use App\Constants\Estado;
+use App\Models\Billetera;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
@@ -71,7 +72,12 @@ class UsuarioSeeder extends Seeder
             'estado'=>$estado,
             'es_eliminado'=>0,
             'usuario_id'=>$user->id,
-
+          ]);
+          Billetera::create([
+            'monto' => 0,
+            'abogado_id' => $user->id,
+            'estado' => $estado,
+            'es_eliminado'=>0
           ]);
           //ABOGADO LIDER
         $userlider = User::create([
@@ -95,6 +101,12 @@ class UsuarioSeeder extends Seeder
             'estado'=>$estado,
             'es_eliminado'=>0,
             'usuario_id'=>$userlider->id,
+          ]);
+          Billetera::create([
+            'monto' => 0,
+            'abogado_id' => $userlider->id,
+            'estado' => $estado,
+            'es_eliminado'=>0
           ]);
         //ABOGADO DEPENDIENTE
         $userdep = User::create([

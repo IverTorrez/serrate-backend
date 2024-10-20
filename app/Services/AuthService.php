@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Constants\Estado;
 use App\Constants\TipoUsuario;
+use App\Models\Billetera;
 use Illuminate\Support\Facades\DB;
 use Laravel\Reverb\Loggers\Log;
 
@@ -73,6 +74,15 @@ class AuthService
                 'es_eliminado' => 0,
                 'usuario_id' => $user->id,
             ]);
+
+            if ($data['tipo'] === TipoUsuario::ABOGADO_INDEPENDIENTE || $data['tipo'] === TipoUsuario::ABOGADO_LIDER) {
+                $billetera = Billetera::create([
+                    'monto' => 0,
+                    'abogado_id' => $user->id,
+                    'estado' => Estado::ACTIVO,
+                    'es_eliminado' => 0,
+                ]);
+            }
 
 
             DB::commit();

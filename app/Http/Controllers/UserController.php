@@ -8,6 +8,7 @@ use App\Constants\TipoUsuario;
 use App\Constants\Estado;
 use App\Enums\MessageHttp;
 use App\Services\UserService;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -100,7 +101,27 @@ class UserController extends Controller
     }
     public function listarAbogados()
     {
-        $usuarios = $this->userService->listarAbogados();
+        $usuarios = '';
+        if (Auth::user()->tipo === TipoUsuario::ABOGADO_LIDER)
+        {
+            //Lista abogados dependientes del usuario logueado
+            $usuarios = $this->userService->abogadosDependientes();
+        }
+        if (Auth::user()->tipo === TipoUsuario::ADMINISTRADOR)
+        {
+            //Todos los abogados
+            $usuarios = $this->userService->listarAbogados();
+        }
+        $data=[
+            'message'=> MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data'=>$usuarios
+        ];
+        return response()->json($data);
+
+    }
+    public function listarAbogadosDependientes($abogadoLiderId)
+    {
+        $usuarios = $this->userService->listarAbogadosDependientes($abogadoLiderId);
         $data=[
             'message'=> MessageHttp::OBTENIDOS_CORRECTAMENTE,
             'data'=>$usuarios

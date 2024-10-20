@@ -183,4 +183,11 @@ class OrdenService
         $orden->update($data);
         return $orden;
     }
+    public function destroy($ordenId)
+    {
+        $orden = Orden::findOrFail($ordenId);
+        $orden->es_eliminado = 1;
+        $orden->save();
+        return $orden;
+    }
 }

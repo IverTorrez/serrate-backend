@@ -50,6 +50,21 @@ class CausaController extends Controller
     {
         $query = Causa::active();
 
+        $usuario = Auth::user();
+        //Filtrado por usuario
+        if ($usuario->tipo === TipoUsuario::ABOGADO_LIDER || $usuario->tipo === TipoUsuario::ABOGADO_INDEPENDIENTE) {
+            $query->where('usuario_id', $usuario->id);
+        } else {
+            if ($usuario->tipo === TipoUsuario::ABOGADO_DEPENDIENTE) {
+                $query->where('abogado_id', $usuario->id);
+            } else {
+                if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+                    $query->where('procurador_id', $usuario->id);
+                }
+            }
+        }
+
+
         // Manejo de búsqueda
         if ($request->has('search')) {
             $search = json_decode($request->input('search'), true);
@@ -274,5 +289,4 @@ class CausaController extends Controller
         ];
         return response()->json($data);
     }
-
 }
