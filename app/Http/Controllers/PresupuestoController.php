@@ -23,12 +23,12 @@ class PresupuestoController extends Controller
     protected $ordenService;
     protected $matrizCotizacionService;
     protected $cotizacionService;
-    public function __construct(PresupuestoService $presupuestoService,
-                                OrdenService $ordenService,
-                                MatrizCotizacionService $matrizCotizacionService,
-                                CotizacionService $cotizacionService
-                                )
-    {
+    public function __construct(
+        PresupuestoService $presupuestoService,
+        OrdenService $ordenService,
+        MatrizCotizacionService $matrizCotizacionService,
+        CotizacionService $cotizacionService
+    ) {
         $this->presupuestoService = $presupuestoService;
         $this->ordenService = $ordenService;
         $this->matrizCotizacionService = $matrizCotizacionService;
@@ -40,8 +40,8 @@ class PresupuestoController extends Controller
     public function index()
     {
         $presupuesto = Presupuesto::where('es_eliminado', 0)
-                           ->where('estado', Estado::ACTIVO)
-                           ->paginate();
+            ->where('estado', Estado::ACTIVO)
+            ->paginate();
         return new PresupuestoCollection($presupuesto);
     }
 
@@ -58,8 +58,8 @@ class PresupuestoController extends Controller
      */
     public function store(StorePresupuestoRequest $request)
     {
-        $now=Carbon::now('America/La_Paz');
-        $fechaHora=$now->toDateTimeString();
+        $now = Carbon::now('America/La_Paz');
+        $fechaHora = $now->toDateTimeString();
         $data = [
             'monto' => $request->monto,
             'detalle_presupuesto' => $request->detalle_presupuesto,
@@ -71,25 +71,25 @@ class PresupuestoController extends Controller
         $presupuesto = $this->presupuestoService->store($data);
 
         //MARCA LA ORDEN PRESUPUESTADA
-        $cotizacion= $this->cotizacionService->obtenerPorIdOrden($presupuesto->orden_id);
+        $cotizacion = $this->cotizacionService->obtenerPorIdOrden($presupuesto->orden_id);
         $matrizCotizacion = $this->matrizCotizacionService->obtenerIdDePrioridadYCondicion($request->prioridad, $cotizacion->condicion);
 
         $dataOrden = [
             'prioridad' => $request->prioridad,
             'procurador_id' => $request->procurador_id,
-            'etapa_orden'=>EtapaOrden::PRESUPUESTADA,
-            'matriz_id'=>$matrizCotizacion->id,
+            'etapa_orden' => EtapaOrden::PRESUPUESTADA,
+            'matriz_id' => $matrizCotizacion->id,
         ];
-        $orden= $this->ordenService->update($dataOrden,$presupuesto->orden_id);
+        $orden = $this->ordenService->update($dataOrden, $presupuesto->orden_id);
 
         //ACTUALIZACION DE COTIZACION
         $dataCotizacion = [
             'compra' => $matrizCotizacion->precio_compra,
             'venta' => $matrizCotizacion->precio_venta,
-            'penalizacion'=> $matrizCotizacion->penalizacion,
-            'prioridad'=> $matrizCotizacion->numero_prioridad
+            'penalizacion' => $matrizCotizacion->penalizacion,
+            'prioridad' => $matrizCotizacion->numero_prioridad
         ];
-        $cotizacion= $this->cotizacionService->update($dataCotizacion,$cotizacion->id);
+        $cotizacion = $this->cotizacionService->update($dataCotizacion, $cotizacion->id);
 
         return response()->json([
             'message' => MessageHttp::CREADO_CORRECTAMENTE,
@@ -102,9 +102,9 @@ class PresupuestoController extends Controller
      */
     public function show(Presupuesto $presupuesto)
     {
-        $data=[
-            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
-            'data'=>$presupuesto
+        $data = [
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $presupuesto
         ];
         return response()->json($data);
     }
@@ -125,38 +125,40 @@ class PresupuestoController extends Controller
         $data = $request->only([
             'monto',
             'detalle_presupuesto',
-            'orden_id',
-            'prioridad',
-            'procurador_id',
         ]);
-        $presupuesto=$this->presupuestoService->update($data,$presupuesto->id);
+        if (!$presupuesto->fecha_entrega) {
 
-        if($request->prioridad){
-            //ACTUALIZACION DE ORDENS
-            $cotizacion= $this->cotizacionService->obtenerPorIdOrden($presupuesto->orden_id);
-            $matrizCotizacion = $this->matrizCotizacionService->obtenerIdDePrioridadYCondicion($request->prioridad, $cotizacion->condicion);
-            $dataOrden = [
-                'prioridad' => $request->prioridad,
-                'procurador_id' => $request->procurador_id,
-                'matriz_id'=>$matrizCotizacion->id,
-            ];
-            $orden= $this->ordenService->update($dataOrden,$presupuesto->orden_id);
 
-            //ACTUALIZACION DE COTIZACION
-            $dataCotizacion = [
-                'compra' => $matrizCotizacion->precio_compra,
-                'venta' => $matrizCotizacion->precio_venta,
-                'penalizacion'=> $matrizCotizacion->penalizacion,
-                'prioridad'=> $matrizCotizacion->numero_prioridad
-            ];
-            $cotizacion= $this->cotizacionService->update($dataCotizacion,$cotizacion->id);
+            $presupuesto = $this->presupuestoService->update($data, $presupuesto->id);
+
+            if ($request->prioridad) {
+                //ACTUALIZACION DE ORDENS
+                $cotizacion = $this->cotizacionService->obtenerPorIdOrden($presupuesto->orden_id);
+                $matrizCotizacion = $this->matrizCotizacionService->obtenerIdDePrioridadYCondicion($request->prioridad, $cotizacion->condicion);
+                $dataOrden = [
+                    'prioridad' => $request->prioridad,
+                    'procurador_id' => $request->procurador_id,
+                    'matriz_id' => $matrizCotizacion->id,
+                ];
+                $orden = $this->ordenService->update($dataOrden, $presupuesto->orden_id);
+
+                //ACTUALIZACION DE COTIZACION
+                $dataCotizacion = [
+                    'compra' => $matrizCotizacion->precio_compra,
+                    'venta' => $matrizCotizacion->precio_venta,
+                    'penalizacion' => $matrizCotizacion->penalizacion,
+                    'prioridad' => $matrizCotizacion->numero_prioridad
+                ];
+                $cotizacion = $this->cotizacionService->update($dataCotizacion, $cotizacion->id);
+            }
+        } else {
+            return 'Presupuesto entregado, no se puede modificar el presupuesto';
         }
-
-        $data=[
-            'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-            'data'=>$presupuesto
-            ];
-            return response()->json($data);
+        $data = [
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $presupuesto
+        ];
+        return response()->json($data);
     }
 
     /**
@@ -165,32 +167,31 @@ class PresupuestoController extends Controller
     public function destroy(Presupuesto $presupuesto)
     {
         $presupuesto = $this->presupuestoService->destroy($presupuesto);
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$presupuesto
+        $data = [
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $presupuesto
         ];
         return response()->json($data);
     }
     public function entregarPresupuesto(Presupuesto $presupuesto)
     {
-        $now=Carbon::now('America/La_Paz');
-        $fechaHora=$now->toDateTimeString();
-        $data=[
-            'fecha_entrega'=>$fechaHora
+        $now = Carbon::now('America/La_Paz');
+        $fechaHora = $now->toDateTimeString();
+        $data = [
+            'fecha_entrega' => $fechaHora
         ];
-        $presupuesto=$this->presupuestoService->update($data,$presupuesto->id);
+        $presupuesto = $this->presupuestoService->update($data, $presupuesto->id);
 
-       //ACTUALIZA ETAPA DE LA ORDEN
-        $dataOrden=[
-            'etapa_orden'=>EtapaOrden::DINERO_ENTREGADO,
+        //ACTUALIZA ETAPA DE LA ORDEN
+        $dataOrden = [
+            'etapa_orden' => EtapaOrden::DINERO_ENTREGADO,
         ];
-        $orden=$this->ordenService->update($dataOrden,$presupuesto->orden_id);
+        $orden = $this->ordenService->update($dataOrden, $presupuesto->orden_id);
 
-        $data=[
-            'message'=>'Dinero entregado correctamente',
-            'data'=>$presupuesto
+        $data = [
+            'message' => 'Dinero entregado correctamente',
+            'data' => $presupuesto
         ];
         return response()->json($data);
-
     }
 }

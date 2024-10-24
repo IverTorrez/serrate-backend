@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Constants\TipoUsuario;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class StorePresupuestoRequest extends FormRequest
 {
@@ -11,7 +13,11 @@ class StorePresupuestoRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::user()->tipo === TipoUsuario::CONTADOR) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -22,12 +28,12 @@ class StorePresupuestoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'monto'=>['required','numeric'],
-            'detalle_presupuesto'=>['required','string'],
-            'orden_id'=>['required','exists:ordens,id'],
+            'monto' => ['required', 'numeric'],
+            'detalle_presupuesto' => ['required', 'string'],
+            'orden_id' => ['required', 'exists:ordens,id'],
             //Campos que define el contador para la orden
-            'prioridad'=>['required','numeric'],
-            'procurador_id'=>['required','numeric'],
+            'prioridad' => ['required', 'numeric'],
+            'procurador_id' => ['required', 'numeric'],
         ];
     }
 }

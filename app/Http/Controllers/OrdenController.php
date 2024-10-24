@@ -49,6 +49,11 @@ class OrdenController extends Controller
         $ordenCausa = $this->ordenService->listarPorCausa($request, $idCausa);
         return new OrdenCollection($ordenCausa);
     }
+    public function listarPorCausaDeProcurador(Request $request, $idCausa, $procuradorId)
+    {
+        $ordenCausa = $this->ordenService->getOrdenesProcurador($request, $idCausa, $procuradorId);
+        return new OrdenCollection($ordenCausa);
+    }
 
     public function store(StoreOrdenRequest $request)
     {
@@ -79,7 +84,8 @@ class OrdenController extends Controller
                 'propina' => $request->propina,
                 'causa_id' => $request->causa_id,
                 'procurador_id' => $request->procurador_id,
-                'matriz_id' => $matrizCotizacion->id
+                'matriz_id' => $matrizCotizacion->id,
+                'usuario_id' => Auth::user()->id
             ];
 
             $orden = $this->ordenService->store($data);
@@ -239,8 +245,14 @@ class OrdenController extends Controller
     }
     public function sugerirPresupuesto(UpdateOrdenRequest $request, Orden $orden)
     {
-        $data['sugerencia_presupuesto'] = $request->sugerencia_presupuesto;
-        $orden = $this->ordenService->update($data, $orden->id);
+        if ($orden->etapa_orden === EtapaOrden::GIRADA || $orden->etapa_orden === EtapaOrden::PREPRESUPUESTADA) {
+            $data['sugerencia_presupuesto'] = $request->sugerencia_presupuesto;
+            $data['etapa_orden'] = EtapaOrden::PREPRESUPUESTADA;
+            $orden = $this->ordenService->update($data, $orden->id);
+        } else {
+            return 'No se puede sugerir presupuesto, porque la se giro el presupuesto';
+        }
+
         return response()->json([
             'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
             'data' => $orden
