@@ -31,6 +31,7 @@ class Orden extends Model
         'causa_id',
         'procurador_id',
         'matriz_id',
+        'usuario_id',
         'estado',
         'es_eliminado'
     ];

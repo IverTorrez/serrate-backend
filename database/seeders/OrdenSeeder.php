@@ -42,8 +42,9 @@ class OrdenSeeder extends Seeder
             'tiene_propina'=>1,
             'propina'=>20,
             'causa_id'=>1,
-            'procurador_id'=>4,
+            'procurador_id'=>6,
             'matriz_id'=>1,
+            'usuario_id' => 2,
             'estado' => Estado::ACTIVO,
             'es_eliminado' => 0,
         ]);

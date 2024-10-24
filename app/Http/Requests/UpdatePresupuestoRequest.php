@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
+use App\Constants\TipoUsuario;
 
 class UpdatePresupuestoRequest extends FormRequest
 {
@@ -11,7 +13,11 @@ class UpdatePresupuestoRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::user()->tipo === TipoUsuario::CONTADOR) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

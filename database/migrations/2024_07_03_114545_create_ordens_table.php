@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('calificacion', 20)->nullable()->comment('Calificacion de la orden, SUFICIENTE, INSUFICIENTE');
             $table->integer('prioridad')->comment('numero de prioridad de la orden');
             $table->timestamp('fecha_cierre')->nullable()->comment('fecha y hora del cierre de la orden');
-            $table->string('girada_por', 20)->comment('Indica si la orden la giro un abogado o el administrador,(ADMINISTRADOR,ABOGADO)');
+            $table->string('girada_por', 20)->comment('Indica el tipo de usuario que giro la orden, (ADMINISTRADOR,ABOGADO)');
             $table->timestamp('fecha_ini_bandera')->nullable()->comment('fecha y hora bandera de la orden para sber desde que fecha y hora se puede enviar notificacion');
             $table->integer('notificado')->comment('indica si se envio notificacion  a los usuarios, 1 notificado, 0 no esta notificaco');
             $table->string('lugar_ejecucion', 100)->comment('lugar de ejecucion sugerido');
@@ -34,7 +34,7 @@ return new class extends Migration
             $table->integer('causa_id')->comment('id de la tabla causa');
             $table->integer('procurador_id')->comment('id del usuario procurador, o procurador maestro');
             $table->integer('matriz_id')->comment('id de la tabla matriz_cotizacions');
-
+            $table->integer('usuario_id')->comment('id de la tabla user');
 
             $table->string('estado', 20)->comment('estado ACTIVO,INACTIVO');
             $table->integer('es_eliminado')->comment('1 es eliminado, 0 no es eliminado');
