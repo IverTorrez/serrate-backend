@@ -28,7 +28,6 @@ class StoreProcuraduriaDescargaRequest extends FormRequest
             'gastos'=>['required','numeric'],
 
             'detalle_gasto'=>['required','string'],
-            'compra_judicial'=>['required','numeric'],
             'orden_id'=>['required','exists:ordens,id'],
         ];
     }

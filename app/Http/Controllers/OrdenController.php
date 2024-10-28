@@ -198,6 +198,13 @@ class OrdenController extends Controller
 
     public function aceptarOrden(Orden $orden)
     {
+        if($orden->fecha_recepcion)
+        {
+            return response()->json([
+                'message' => 'Esta orden ya fue aceptada',
+                'data' => null
+            ], 409);
+        }
         $now = Carbon::now('America/La_Paz');
         $fechaHora = $now->toDateTimeString();
         $data = [
@@ -257,5 +264,11 @@ class OrdenController extends Controller
             'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
             'data' => $orden
         ], 200);
+    }
+    public function ordenesParaEntregarPresupuesto($procuradorId)
+    {
+        $data = $this->ordenService->listarOrdenParaEntregarPresupuestoDeProcurador($procuradorId);
+
+        return response()->json($data);
     }
 }
