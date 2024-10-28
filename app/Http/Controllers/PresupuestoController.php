@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Carbon\Carbon;
 use App\Constants\Estado;
 use App\Enums\MessageHttp;
@@ -16,6 +17,8 @@ use App\Services\MatrizCotizacionService;
 use App\Http\Resources\PresupuestoCollection;
 use App\Http\Requests\StorePresupuestoRequest;
 use App\Http\Requests\UpdatePresupuestoRequest;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PresupuestoController extends Controller
 {
@@ -58,43 +61,61 @@ class PresupuestoController extends Controller
      */
     public function store(StorePresupuestoRequest $request)
     {
-        $now = Carbon::now('America/La_Paz');
-        $fechaHora = $now->toDateTimeString();
-        $data = [
-            'monto' => $request->monto,
-            'detalle_presupuesto' => $request->detalle_presupuesto,
-            'fecha_presupuesto' => $fechaHora,
-            'fecha_entrega' => null,
-            'contador_id' => Auth::user()->id,
-            'orden_id' => $request->orden_id,
-        ];
-        $presupuesto = $this->presupuestoService->store($data);
+        $tieneRegistroPresupuesto = $this->presupuestoService->tienePresupuestoActivo($request->orden_id);
+        if ($tieneRegistroPresupuesto) {
+            return response()->json([
+                'message' => 'Esta orden ya tiene presupuesto',
+                'data' => null
+            ], 409);
+        }
+        DB::beginTransaction();
+        try {
+            $now = Carbon::now('America/La_Paz');
+            $fechaHora = $now->toDateTimeString();
+            $data = [
+                'monto' => $request->monto,
+                'detalle_presupuesto' => $request->detalle_presupuesto,
+                'fecha_presupuesto' => $fechaHora,
+                'fecha_entrega' => null,
+                'contador_id' => Auth::user()->id,
+                'orden_id' => $request->orden_id,
+            ];
+            $presupuesto = $this->presupuestoService->store($data);
 
-        //MARCA LA ORDEN PRESUPUESTADA
-        $cotizacion = $this->cotizacionService->obtenerPorIdOrden($presupuesto->orden_id);
-        $matrizCotizacion = $this->matrizCotizacionService->obtenerIdDePrioridadYCondicion($request->prioridad, $cotizacion->condicion);
+            //MARCA LA ORDEN PRESUPUESTADA
+            $cotizacion = $this->cotizacionService->obtenerPorIdOrden($presupuesto->orden_id);
+            $matrizCotizacion = $this->matrizCotizacionService->obtenerIdDePrioridadYCondicion($request->prioridad, $cotizacion->condicion);
 
-        $dataOrden = [
-            'prioridad' => $request->prioridad,
-            'procurador_id' => $request->procurador_id,
-            'etapa_orden' => EtapaOrden::PRESUPUESTADA,
-            'matriz_id' => $matrizCotizacion->id,
-        ];
-        $orden = $this->ordenService->update($dataOrden, $presupuesto->orden_id);
+            $dataOrden = [
+                'prioridad' => $request->prioridad,
+                'procurador_id' => $request->procurador_id,
+                'etapa_orden' => EtapaOrden::PRESUPUESTADA,
+                'matriz_id' => $matrizCotizacion->id,
+            ];
+            $orden = $this->ordenService->update($dataOrden, $presupuesto->orden_id);
 
-        //ACTUALIZACION DE COTIZACION
-        $dataCotizacion = [
-            'compra' => $matrizCotizacion->precio_compra,
-            'venta' => $matrizCotizacion->precio_venta,
-            'penalizacion' => $matrizCotizacion->penalizacion,
-            'prioridad' => $matrizCotizacion->numero_prioridad
-        ];
-        $cotizacion = $this->cotizacionService->update($dataCotizacion, $cotizacion->id);
+            //ACTUALIZACION DE COTIZACION
+            $dataCotizacion = [
+                'compra' => $matrizCotizacion->precio_compra,
+                'venta' => $matrizCotizacion->precio_venta,
+                'penalizacion' => $matrizCotizacion->penalizacion,
+                'prioridad' => $matrizCotizacion->numero_prioridad
+            ];
+            $cotizacion = $this->cotizacionService->update($dataCotizacion, $cotizacion->id);
+            DB::commit();
+            return response()->json([
+                'message' => MessageHttp::CREADO_CORRECTAMENTE,
+                'data' => $presupuesto
+            ], 201);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error registrar descarga: ' . $e->getMessage());
 
-        return response()->json([
-            'message' => MessageHttp::CREADO_CORRECTAMENTE,
-            'data' => $presupuesto
-        ], 200);
+            return response()->json([
+                'message' => 'Error registrar descarga',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

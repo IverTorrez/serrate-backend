@@ -1,9 +1,10 @@
 <?php
 namespace App\Services;
 
+use App\Models\Causa;
 use App\Constants\Estado;
-use App\Models\ProcuraduriaDescarga;
 use Illuminate\Http\Request;
+use App\Models\ProcuraduriaDescarga;
 
 class ProcuraduriaDescargaService
 {
@@ -50,6 +51,18 @@ class ProcuraduriaDescargaService
                                         ->where('es_eliminado',0)
                                         ->first();
         return $descarga;
+    }
+    public function tieneDescargaActiva( $ordenId): bool
+    {
+        return ProcuraduriaDescarga::where('orden_id', $ordenId)
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado',0)
+            ->exists();
+    }
+    public function ultimaFojaDeCausa($causaId){
+        $causa = Causa::find($causaId);
+        $ultimaDescarga = $causa->ultimaDescarga();
+        return $ultimaDescarga;
     }
 
 }

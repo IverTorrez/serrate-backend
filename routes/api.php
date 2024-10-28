@@ -205,6 +205,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::patch('orden/eliminar/{orden}', [OrdenController::class, 'destroy']);
         Route::patch('orden/aceptar/{orden}', [OrdenController::class, 'aceptarOrden']);
         Route::patch('orden/sugerir-presupuesto/{orden}', [OrdenController::class, 'sugerirPresupuesto']);
+        Route::get('orden/listado/entregar-presupuesto/procurador/{procuradorId}', [OrdenController::class, 'ordenesParaEntregarPresupuesto']);
         //Cotizacion
 
         //Presupuesto
@@ -217,6 +218,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         //Procuraduria Descarga
         Route::get('descargas', [ProcuraduriaDescargaController::class, 'index']);
         Route::post('descargas', [ProcuraduriaDescargaController::class, 'store']);
+        Route::get('descargas/ultima-foja/causa/{causaId}', [ProcuraduriaDescargaController::class, 'ultinaFojaCausa']);
 
         //Confirmacion
         Route::patch('confirmacion/pronuncio-abogado/{confirmacion}', [ConfirmacionController::class, 'pronuncioAbogado']);

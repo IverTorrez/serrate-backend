@@ -207,6 +207,58 @@ class OrdenService
             return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
         }
     }
+    public function listarOrdenParaEntregarPresupuestoDeProcurador($procuradorId)
+    {
+        try {
+            $query = Orden::select([
+                'id',
+                'entrega_informacion',
+                'entrega_documentacion',
+                'fecha_inicio',
+                'fecha_fin',
+                'fecha_giro',
+                'plazo_hora',
+                'fecha_recepcion',
+                'etapa_orden',
+                'calificacion',
+                'prioridad',
+                'fecha_cierre',
+                'girada_por',
+                'fecha_ini_bandera',
+                'notificado',
+                'lugar_ejecucion',
+                'sugerencia_presupuesto',
+                'tiene_propina',
+                'propina',
+                'causa_id',
+                'procurador_id',
+                'matriz_id',
+                'estado',
+            ])
+                ->with([
+                    'causa:id,nombre,materia_id,tipolegal_id',
+                    'causa.materia:id,abreviatura',
+                    'causa.tipoLegal:id,abreviatura',
+                    'presupuesto:id,monto,detalle_presupuesto,fecha_presupuesto,fecha_entrega,orden_id',
+                ])
+                ->active()
+                ->whereHas('presupuesto', function ($query) {
+                    $query->whereNull('fecha_entrega');
+                })
+                ->whereDoesntHave('descarga'); //Verifica que no exista registros en descarga
+
+                $query->where('procurador_id', $procuradorId);
+                $result = $query->get();
+
+                return [
+                    'message' => 'Ordenes obtenidas correctamente',
+                    'data' => $result
+                ];
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
+        }
+    }
 
     public function store($data)
     {
