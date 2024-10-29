@@ -24,6 +24,7 @@ use App\Http\Controllers\OrdenController;
 use App\Http\Controllers\PaqueteCausaController;
 use App\Http\Controllers\PaqueteController;
 use App\Http\Controllers\ParticipanteController;
+use App\Http\Controllers\PerfilUsuarioController;
 use App\Http\Controllers\PisoController;
 use App\Http\Controllers\PostaController;
 use App\Http\Controllers\PresupuestoController;
@@ -242,6 +243,13 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('usuarios/abogados-dependiantes/{abogadoLiderId}', [UserController::class, 'listarAbogadosDependientes']);
         Route::get('usuarios/procuradores', [UserController::class, 'listarProcuradores']);
         Route::get('usuarios/listar/{user?}', [UserController::class, 'show']);
+
+        Route::get('/usuarios/perfil', [PerfilUsuarioController::class, 'obtenerPerfil']);
+        Route::post('/usuarios/perfil/actualizar', [PerfilUsuarioController::class, 'actualizarPerfil']);
+        Route::post('/usuarios/perfil/cambiar-foto', [PerfilUsuarioController::class, 'actualizarFotoPerfil']);
+
+
+
         //Documentos Categorias
         Route::get('documentos-categorias', [DocumentosCategoriaController::class, 'index']);
         Route::get('documentos-categorias/tramites', [DocumentosCategoriaController::class, 'indexTramites']);
@@ -272,6 +280,5 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('videos/{video}', [VideoController::class, 'show']);
         Route::patch('videos/{video}', [VideoController::class, 'update']);
         Route::patch('videos/eliminar/{video}', [VideoController::class, 'destroy']);
-
     });
 });
