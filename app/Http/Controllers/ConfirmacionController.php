@@ -32,8 +32,7 @@ class ConfirmacionController extends Controller
         ProcuraduriaDescargaService $procuraduriaDescargaService,
         FinalCostoService $finalCostoService,
         CotizacionService $cotizacionService
-    )
-    {
+    ) {
         $this->confirmacionService = $confirmacionService;
         $this->ordenService = $ordenService;
         $this->procuraduriaDescargaService = $procuraduriaDescargaService;
@@ -97,77 +96,88 @@ class ConfirmacionController extends Controller
     }
     public function pronuncioAbogado(UpdateConfirmacionRequest $request, Confirmacion $confirmacion)
     {
+        if($confirmacion->fecha_confir_abogado){
+            return response()->json([
+                'message' => 'Error, esta descarga ya fue calificada.',
+                'data' => null
+            ], 409);
+        }
         DB::beginTransaction();
-        try{
-        $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
-        $data= $request->only([
-            'confir_abogado',
-            'confir_contador',
-            'justificacion_rechazo'
-        ]);
+        try {
+            $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
+            $data = $request->only([
+                'confir_abogado',
+                'justificacion_rechazo'
+            ]);
 
-        if ($request->has('justificacion_rechazo') && $request->justificacion_rechazo === '') {
-            $data['justificacion_rechazo'] = '';
+            if ($request->has('justificacion_rechazo') && $request->justificacion_rechazo === '' && $request->confir_abogado === 1) {
+                $data['justificacion_rechazo'] = '';
+            }
+            $data['fecha_confir_abogado'] = $fechaHora;
+            $confirmacion = $this->confirmacionService->update($data, $confirmacion->id);
+
+            $descarga = $this->procuraduriaDescargaService->obtenerUno($confirmacion->descarga_id);
+            if ($confirmacion->fecha_confir_contador === NULL) {
+                //ACTUALIZA LA ETAPA DE LA ORDEN CON PRONUNCIAMIENTO DEL ABOGADO
+                $dataOrden = [
+                    'etapa_orden' => EtapaOrden::PRONUNCIO_ABOGADO
+                ];
+                $orden = $this->ordenService->update($dataOrden, $descarga->orden_id);
+            } else {
+                //CIERRE DE LA ORDEN
+                $calificacionOrden = ($confirmacion->confir_abogado === 1 && $confirmacion->confir_sistema === 1) ? 1 : 0;
+                $ordenCerrada = $this->cerrarOrden($calificacionOrden, $descarga->orden_id);
+            }
+
+
+            DB::commit();
+            return response()->json([
+                'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+                'data' => $confirmacion
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error pronuncio abogado: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error pronuncio abogado',
+                'error' => $e->getMessage()
+            ], 500);
         }
-        $data['fecha_confir_abogado'] = $fechaHora;
-        $confirmacion = $this->confirmacionService->update($data,$confirmacion->id);
-
-        $descarga = $this->procuraduriaDescargaService->obtenerUno($confirmacion->descarga_id);
-        if ($confirmacion->fecha_confir_contador === NULL){
-            //ACTUALIZA LA ETAPA DE LA ORDEN CON PRONUNCIAMIENTO DEL ABOGADO
-            $dataOrden=[
-                'etapa_orden'=>EtapaOrden::PRONUNCIO_ABOGADO
-            ];
-            $orden = $this->ordenService->update($dataOrden,$descarga->orden_id);
-        }else{
-            //CIERRE DE LA ORDEN
-            $calificacionOrden = ($confirmacion->confir_abogado === 1 && $confirmacion->confir_sistema === 1) ? 1 : 0;
-            $ordenCerrada = $this->cerrarOrden($calificacionOrden,$descarga->orden_id);
-        }
-
-
-        DB::commit();
-        return response()->json([
-            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-            'data' => $confirmacion
-        ], 200);
-
-       }catch (Exception $e) {
-        DB::rollBack();
-        Log::error('Error pronuncio abogado: ' . $e->getMessage());
-
-        return response()->json([
-            'message' => 'Error pronuncio abogado',
-            'error' => $e->getMessage()
-        ], 500);
-       }
     }
 
     public function pronuncioContador(UpdateConfirmacionRequest $request, Confirmacion $confirmacion)
     {
+        if($confirmacion->fecha_confir_contador){
+            return response()->json([
+                'message' => 'Error, esta descarga ya hizo devolucion de saldo.',
+                'data' => null
+            ], 409);
+        }
         DB::beginTransaction();
-        try{
+        try {
             $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
-            $data= $request->only([
+            /*$data = $request->only([
                 'confir_contador',
-            ]);
+            ]);*/
+            $data['confir_contador'] = 1;
             $data['fecha_confir_contador'] = $fechaHora;
-            $confirmacion = $this->confirmacionService->update($data,$confirmacion->id);
+            $confirmacion = $this->confirmacionService->update($data, $confirmacion->id);
             //VALIDA EL CONTADOR
             $dataDescarga = [
                 'es_validado' => 1
             ];
             $descarga = $this->procuraduriaDescargaService->update($dataDescarga, $confirmacion->descarga_id);
-            if ($confirmacion->fecha_confir_abogado === NULL){
+            if ($confirmacion->fecha_confir_abogado === NULL) {
                 //ACTUALIZA LA ETAPA DE LA ORDEN CON PRONUNCIAMIENTO DEL CONTADOR
-                $dataOrden=[
-                    'etapa_orden'=>EtapaOrden::PRONUNCIO_CONTADOR
+                $dataOrden = [
+                    'etapa_orden' => EtapaOrden::PRONUNCIO_CONTADOR
                 ];
-                $orden = $this->ordenService->update($dataOrden,$descarga->orden_id);
-            }else{
+                $orden = $this->ordenService->update($dataOrden, $descarga->orden_id);
+            } else {
                 //CIERRE DE LA ORDEN
                 $calificacionOrden = ($confirmacion->confir_abogado === 1 && $confirmacion->confir_sistema === 1) ? 1 : 0;
-                $ordenCerrada = $this->cerrarOrden($calificacionOrden,$descarga->orden_id);
+                $ordenCerrada = $this->cerrarOrden($calificacionOrden, $descarga->orden_id);
             }
 
             DB::commit();
@@ -175,8 +185,7 @@ class ConfirmacionController extends Controller
                 'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
                 'data' => $confirmacion
             ], 200);
-
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error pronuncio contador: ' . $e->getMessage());
 
@@ -184,29 +193,29 @@ class ConfirmacionController extends Controller
                 'message' => 'Error pronuncio contador',
                 'error' => $e->getMessage()
             ], 500);
-           }
+        }
     }
 
-    public function cerrarOrden($calificacionOrden,$ordenId)
+    public function cerrarOrden($calificacionOrden, $ordenId)
     {
         $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
-        $calificacion = $calificacionOrden ===1 ? 'SUFICIENTE': 'INSUFICIENTE';
-        $dataOrden=[
+        $calificacion = $calificacionOrden === 1 ? 'SUFICIENTE' : 'INSUFICIENTE';
+        $dataOrden = [
             'etapa_orden' => EtapaOrden::CERRADA,
             'calificacion' => $calificacion,
             'fecha_cierre' => $fechaHora
         ];
-        $orden = $this->ordenService->update($dataOrden,$ordenId);
+        $orden = $this->ordenService->update($dataOrden, $ordenId);
 
         $cotizacion = $this->cotizacionService->obtenerPorIdOrden($ordenId);
-        if ($orden->calificacion==='SUFICIENTE'){
-            $procuraduriaCompra=$cotizacion->compra;
-            $procuraduriaVenta=$cotizacion->venta;
-            $penalizacion=0;
-        }else{
-            $procuraduriaCompra=0;
-            $procuraduriaVenta=0;
-            $penalizacion=$cotizacion->penalizacion;
+        if ($orden->calificacion === 'SUFICIENTE') {
+            $procuraduriaCompra = $cotizacion->compra;
+            $procuraduriaVenta = $cotizacion->venta;
+            $penalizacion = 0;
+        } else {
+            $procuraduriaCompra = 0;
+            $procuraduriaVenta = 0;
+            $penalizacion = $cotizacion->penalizacion;
         }
         //DATOS DE GASTO PROCESAL EN DESCARGA
         $descarga = $this->procuraduriaDescargaService->obtenerUnoPorOrdenId($ordenId);
@@ -228,6 +237,5 @@ class ConfirmacionController extends Controller
         $finalCosto = $this->finalCostoService->store($dataFinalCosto);
 
         return $orden;
-
     }
 }
