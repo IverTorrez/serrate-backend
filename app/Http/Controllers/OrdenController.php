@@ -186,7 +186,7 @@ class OrdenController extends Controller
             return response()->json([
                 'message' => 'No se puede eliminar la orden porque el presupuesto ya tiene una fecha de entrega.',
                 'data' => null
-            ], 400);
+            ], 409);
         }
         $orden = $this->ordenService->destroy($orden->id);
         $data = [
@@ -269,6 +269,17 @@ class OrdenController extends Controller
     {
         $data = $this->ordenService->listarOrdenParaEntregarPresupuestoDeProcurador($procuradorId);
 
+        return response()->json($data);
+    }
+    public function ordenesParaDevolverPresupuesto($procuradorId)
+    {
+        $data = $this->ordenService->listarOrdenParaDevolverPresupuestoDeProcurador($procuradorId);
+
+        return response()->json($data);
+    }
+    public function ordenesParaColocarCostoJudicialVenta()
+    {
+        $data = $this->ordenService->listarOrdenParaColocarCostoJudicialVenta();
         return response()->json($data);
     }
 }

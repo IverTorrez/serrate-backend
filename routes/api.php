@@ -15,6 +15,7 @@ use App\Http\Controllers\DevolucionSaldoController;
 use App\Http\Controllers\DistritoController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\DocumentosCategoriaController;
+use App\Http\Controllers\FinalCostoController;
 use App\Http\Controllers\GestionAlternativaController;
 use App\Http\Controllers\InformePostaController;
 use App\Http\Controllers\JuzgadoController;
@@ -206,6 +207,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::patch('orden/aceptar/{orden}', [OrdenController::class, 'aceptarOrden']);
         Route::patch('orden/sugerir-presupuesto/{orden}', [OrdenController::class, 'sugerirPresupuesto']);
         Route::get('orden/listado/entregar-presupuesto/procurador/{procuradorId}', [OrdenController::class, 'ordenesParaEntregarPresupuesto']);
+        Route::get('orden/listado/devolver-presupuesto/procurador/{procuradorId}', [OrdenController::class, 'ordenesParaDevolverPresupuesto']);
+        Route::get('orden/listado/sin-costojudicial-venta/admin', [OrdenController::class, 'ordenesParaColocarCostoJudicialVenta']);
         //Cotizacion
 
         //Presupuesto
@@ -223,6 +226,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         //Confirmacion
         Route::patch('confirmacion/pronuncio-abogado/{confirmacion}', [ConfirmacionController::class, 'pronuncioAbogado']);
         Route::patch('confirmacion/pronuncio-contador/{confirmacion}', [ConfirmacionController::class, 'pronuncioContador']);
+        // Final Costo
+        Route::patch('finalcostos/costo-judicial-venta/{finalCosto}', [FinalCostoController::class, 'colocarCostoJudicialVenta']);
         //Gestion Alternativa
         Route::post('gestion-alternativa', [GestionAlternativaController::class, 'store']);
         Route::patch('gestion-alternativa/{gestionAlternativa}', [GestionAlternativaController::class, 'update']);
