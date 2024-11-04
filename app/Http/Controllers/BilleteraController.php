@@ -3,10 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Billetera;
+use App\Enums\MessageHttp;
 use Illuminate\Http\Request;
+use App\Services\BilleteraService;
 
 class BilleteraController extends Controller
 {
+    protected $billeteraService;
+
+    public function __construct(BilleteraService $billeteraService)
+    {
+        $this->billeteraService = $billeteraService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -61,5 +69,14 @@ class BilleteraController extends Controller
     public function destroy(Billetera $billetera)
     {
         //
+    }
+    public function obtenerPorAbogadoId($abogadoId)
+    {
+        $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($abogadoId);
+        $data=[
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data'=>$billetera
+        ];
+        return response()->json($data);
     }
 }

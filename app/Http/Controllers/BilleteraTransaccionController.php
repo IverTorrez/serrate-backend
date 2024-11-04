@@ -1,0 +1,170 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Constants\TipoTransaccion;
+use App\Constants\TipoUsuario;
+use Exception;
+use Carbon\Carbon;
+use App\Enums\MessageHttp;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use App\Models\BilleteraTransaccion;
+use App\Http\Resources\BilleteraTransaccionCollection;
+use App\Http\Requests\StoreBilleteraTransaccionRequest;
+use App\Services\BilleteraService;
+use App\Services\BilleteraTransaccionService;
+
+class BilleteraTransaccionController extends Controller
+{
+    protected $billeteraService;
+    protected $billeteraTransaccionService;
+
+    public function __construct(BilleteraService $billeteraService, BilleteraTransaccionService $billeteraTransaccionService)
+    {
+        $this->billeteraService = $billeteraService;
+        $this->billeteraTransaccionService = $billeteraTransaccionService;
+    }
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $query = BilleteraTransaccion::active();
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $billeteraTransaccion = $query->paginate($perPage);
+
+        return new BilleteraTransaccionCollection($billeteraTransaccion);
+    }
+    public function listadoPorBilletera(Request $request, $billeteraId)
+    {
+        $query = BilleteraTransaccion::active()
+            ->where('billetera_id', $billeteraId);
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $billeteraTransaccion = $query->paginate($perPage);
+        return new BilleteraTransaccionCollection($billeteraTransaccion);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(StoreBilleteraTransaccionRequest $request)
+    {
+        if (Auth::user()->tipo != TipoUsuario::ABOGADO_INDEPENDIENTE && Auth::user()->tipo != TipoUsuario::ABOGADO_LIDER) {
+            return response()->json([
+                'message' => 'Usted no tiene permiso para esta acción',
+                'data' => null
+            ], 403); // Código 403 para "Prohibido"
+        }
+        $idUser = Auth::user()->id;
+        DB::beginTransaction();
+        try {
+            $now = Carbon::now('America/La_Paz');
+            $fechaHora = $now->toDateTimeString();
+
+            $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($idUser);
+
+            $data = [
+                'monto' => $request->monto,
+                'fecha_transaccion' => $fechaHora,
+                'tipo' => TipoTransaccion::DEPOSITO,
+                'billetera_id' => $request->billetera_id,
+                'usuario_id' => $idUser
+            ];
+            $billeteraTransaccion = $this->billeteraTransaccionService->store($data);
+            //Suma a la billetera del abogado
+            $montoBilletera = $billetera->monto;
+            $montoActualizado = $montoBilletera + $billeteraTransaccion->monto;
+            $dataBilletera = [
+                'monto' => $montoActualizado
+            ];
+            $billetera = $this->billeteraService->update($dataBilletera, $request->billetera_id);
+
+            DB::commit();
+            return response()->json([
+                'message' => MessageHttp::CREADO_CORRECTAMENTE,
+                'data' => $billeteraTransaccion
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error registrar transaccion: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error registrar transaccion',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(BilleteraTransaccion $billeteraTransaccion)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(BilleteraTransaccion $billeteraTransaccion)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, BilleteraTransaccion $billeteraTransaccion)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(BilleteraTransaccion $billeteraTransaccion)
+    {
+        $billeteraTransaccion = $this->billeteraTransaccionService->destroy($billeteraTransaccion->id);
+        return response()->json([
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $billeteraTransaccion
+        ]);
+    }
+}

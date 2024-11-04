@@ -3,6 +3,7 @@
 use App\Http\Controllers\AgendaApunteController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvancePlantillaController;
+use App\Http\Controllers\BilleteraTransaccionController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\CausaController;
 use App\Http\Controllers\CausaPostaController;
@@ -37,6 +38,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VideoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BilleteraController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -279,6 +281,14 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('videos/{video}', [VideoController::class, 'show']);
         Route::patch('videos/{video}', [VideoController::class, 'update']);
         Route::patch('videos/eliminar/{video}', [VideoController::class, 'destroy']);
+        //Billetera
+        Route::get('billetera/abogado/{abogadoId}', [BilleteraController::class, 'obtenerPorAbogadoId']);
+        //Billetera Transacciones
+        Route::get('billetera-transaccion', [BilleteraTransaccionController::class, 'index']);
+        Route::get('billetera-transaccion/listado-billetera/{billeteraId}', [BilleteraTransaccionController::class, 'listadoPorBilletera']);
+        Route::post('billetera-transaccion', [BilleteraTransaccionController::class, 'store']);
+        Route::patch('billetera-transaccion/eliminar/{billeteraTransaccion}', [BilleteraTransaccionController::class, 'destroy']);
+
 
     });
 });
