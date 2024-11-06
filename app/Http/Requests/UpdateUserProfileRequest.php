@@ -22,6 +22,12 @@ class UpdateUserProfileRequest extends FormRequest
             'persona.direccion' => 'sometimes|string|max:255',
             'persona.observacion' => 'sometimes|string|max:255',
 
+            // 'nombre' => 'required|string|max:255',
+            // 'apellido' => 'required|string|max:255',
+            // 'telefono' => 'nullable|string|max:20',
+            // 'direccion' => 'nullable|string|max:255',
+            // 'observacion' => 'nullable|string',
+            // 'foto_url' => 'nullable|url',
         ];
     }
 }

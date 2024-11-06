@@ -15,6 +15,7 @@ class UpdateProfilePhotoRequest extends FormRequest
     {
         return [
             'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            //'foto_url' => 'required|url',
         ];
     }
 }

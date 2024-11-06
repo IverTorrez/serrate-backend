@@ -53,7 +53,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::post('login', [AuthController::class, 'login']);
 
         Route::middleware(['auth:sanctum'])->group(function () {
-            Route::get('logout', [AuthController::class, 'logout']);
+            Route::post('logout', [AuthController::class, 'logout']);
         });
     });
     //Rutas sin autenticacion
@@ -245,9 +245,9 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('usuarios/listar/{user?}', [UserController::class, 'show']);
 
         Route::get('/usuarios/perfil', [PerfilUsuarioController::class, 'obtenerPerfil']);
-        Route::post('/usuarios/perfil/actualizar', [PerfilUsuarioController::class, 'actualizarPerfil']);
-        Route::post('/usuarios/perfil/cambiar-foto', [PerfilUsuarioController::class, 'actualizarFotoPerfil']);
-
+        Route::patch('/usuarios/perfil/actualizar', [PerfilUsuarioController::class, 'actualizarPerfil']);
+        Route::patch('/usuarios/perfil/cambiar-foto', [PerfilUsuarioController::class, 'actualizarFotoPerfil']);
+        Route::patch('/usuarios/perfil/cambiar-password', [PerfilUsuarioController::class, 'cambiarPassword']);
 
 
         //Documentos Categorias

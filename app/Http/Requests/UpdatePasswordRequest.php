@@ -18,4 +18,13 @@ class UpdatePasswordRequest extends FormRequest
             'new_password' => 'required|string|min:8|confirmed',
         ];
     }
+    public function messages()
+    {
+        return [
+            'current_password.required' => 'La contraseña actual es obligatoria.',
+            'new_password.required' => 'La nueva contraseña es obligatoria.',
+            'new_password.min' => 'La nueva contraseña debe tener al menos 8 caracteres.',
+            'new_password.confirmed' => 'Las contraseñas no coinciden.',
+        ];
+    }
 }

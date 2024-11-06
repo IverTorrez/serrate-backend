@@ -6,49 +6,23 @@ use App\Models\User;
 use App\Models\Persona;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use App\Constants\Estado;
 use App\Constants\TipoUsuario;
 use App\Models\Billetera;
 use Illuminate\Support\Facades\DB;
-use Laravel\Reverb\Loggers\Log;
 
 class AuthService
 {
-    public function register(array $data)
+    public function register(array $data): array
     {
+
+
         try {
-
-            $validator = Validator::make($data, [
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:8',
-                'tipo' => 'required|string|in:' . implode(',', TipoUsuario::getValues()),
-                'apellido' => 'required|string|max:255',
-                'telefono' => 'nullable|string|max:255',
-                'direccion' => 'nullable|string|max:255',
-                'coordenadas' => 'nullable|string|max:200',
-                'observacion' => 'nullable|string|max:300',
-                'foto_url' => 'nullable|string|max:200',
-                'opciones_moto' => 'nullable|array',
-            ]);
-
-
-            if ($validator->fails()) {
-                return [
-                    'success' => false,
-                    'errors' => $validator->errors(),
-                    'status' => 400
-                ];
-            }
 
 
             $abogado_id = (Auth::check() && $data['tipo'] === TipoUsuario::ABOGADO_DEPENDIENTE) ? Auth::user()->id : 0;
             $datosJson = $data['opciones_moto'] ?? null;
-
-
             DB::beginTransaction();
-
 
             $user = User::create([
                 'name' => $data['name'],
@@ -63,13 +37,13 @@ class AuthService
 
 
             $persona = Persona::create([
-                'nombre' => $data['name'],
-                'apellido' => $data['apellido'],
-                'telefono' => $data['telefono'],
-                'direccion' => $data['direccion'],
-                'coordenadas' => $data['coordenadas'],
-                'observacion' => $data['observacion'],
-                'foto_url' => $data['foto_url'],
+                'nombre' => $data['persona']['nombre'],
+                'apellido' => $data['persona']['apellido'],
+                'telefono' => $data['persona']['telefono'],
+                'direccion' => $data['persona']['direccion'],
+                'coordenadas' => $data['persona']['coordenadas'] ?? null,
+                'observacion' => $data['persona']['observacion'] ?? null,
+                'foto_url' => $data['persona']['foto_url'] ?? null,
                 'estado' => Estado::ACTIVO,
                 'es_eliminado' => 0,
                 'usuario_id' => $user->id,
@@ -84,61 +58,77 @@ class AuthService
                 ]);
             }
 
-
             DB::commit();
 
-
             $user->load('persona');
-
-
             $token = $user->createToken('auth_token')->plainTextToken;
 
-
             return [
-                'success' => true,
-                'data' => $user,
-                'access_token' => $token,
-                'token_type' => 'Bearer'
+                'status' => 'success',
+                'data' => [
+                    'user' => $user,
+                    'access_token' => $token,
+                    'token_type' => 'Bearer',
+                    //'expires_in' => 3600
+                ],
+                'status_code' => 201
             ];
         } catch (\Exception $e) {
-
-            Log::error('Error al registrar usuario: ' . $e->getMessage());
-
-
+            DB::rollBack();
             return [
-                'success' => false,
-                'error' => 'Error al procesar el registro, por favor intente más tarde',
-                'status' => 500
+                'status' => 'error',
+                'message' => 'Error al registrar usuario',
+                'status_code' => 500
             ];
         }
     }
 
 
 
-
-    public function login(array $credentials)
+    public function login(array $credentials): array
     {
+        $user = User::where('email', $credentials['email'])->first();
 
-        if (!Auth::attempt($credentials)) {
-            return ['message' => 'No autorizado', 'status' => 401];
+        if (!$user) {
+            return [
+                'status' => 'error',
+                'message' => 'Correo electrónico no encontrado',
+                'status_code' => 404
+            ];
         }
 
-        $user = User::where('email', $credentials['email'])->firstOrFail();
+        if (!Hash::check($credentials['password'], $user->password)) {
+            return [
+                'status' => 'error',
+                'message' => 'Contraseña incorrecta',
+                'status_code' => 401
+            ];
+        }
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return [
-            'message' => 'Hi ' . $user->name,
-            'accessToken' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user,
+            'status' => 'success',
+            'data' => [
+                'user' => $user,
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                // 'expires_in' => 3600
+            ],
+            'status_code' => 200
         ];
     }
 
-    public function logout()
+    public function logout(): array
     {
+        $user = Auth::user();
 
-        auth()->user()->tokens()->delete();
+        $user->tokens->each(function ($token) {
+            $token->delete();
+        });
 
-        return ['message' => 'Cierre de sesión exitoso'];
+        return [
+            'status' => 'success',
+            'message' => 'Cierre de sesión exitoso'
+        ];
     }
 }
