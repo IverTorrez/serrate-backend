@@ -16,31 +16,44 @@ class PerfilUsuarioService
         $user = User::with('persona')->find(Auth::id());
 
         if (!$user) {
-            throw new \Exception("Usuario no autenticado.");
+            return [
+                'status' => 'error',
+                'message' => 'Usuario no autenticado.',
+                'status_code' => 401
+            ];
         }
+
         return [
-            'user' => [
-                'name' => $user->name,
-                'email' => $user->email,
-                'tipo' => $user->tipo,
-                'persona' => $user->persona ? [
-                    'nombre' => $user->persona->nombre,
-                    'apellido' => $user->persona->apellido,
-                    'telefono' => $user->persona->telefono,
-                    'direccion' => $user->persona->direccion,
-                    'observacion' => $user->persona->observacion,
-                    'foto_url' => $user->persona->foto_url,
-                ] : null,
-            ]
+            'status' => 'success',
+            'data' => [
+                'user' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'tipo' => $user->tipo,
+                    'persona' => $user->persona ? [
+                        'nombre' => $user->persona->nombre,
+                        'apellido' => $user->persona->apellido,
+                        'telefono' => $user->persona->telefono,
+                        'direccion' => $user->persona->direccion,
+                        'observacion' => $user->persona->observacion,
+                        'foto_url' => $user->persona->foto_url,
+                    ] : null,
+                ]
+            ],
+            'status_code' => 200
         ];
     }
 
-    public function actualizarPerfil(array $data): bool
+    public function actualizarPerfil(array $data): array
     {
         $user = Auth::user();
 
         if (!$user instanceof User) {
-            throw new \Exception("Usuario no autenticado.");
+            return [
+                'status' => 'error',
+                'message' => 'Usuario no autenticado.',
+                'status_code' => 401
+            ];
         }
 
         DB::beginTransaction();
@@ -56,60 +69,92 @@ class PerfilUsuarioService
             }
 
             DB::commit();
-            return true;
+
+            return [
+                'status' => 'success',
+                'message' => 'Perfil actualizado correctamente.',
+                'data' => $user->load('persona'),
+                'status_code' => 200
+            ];
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new \Exception('Error al actualizar el perfil: ' . $e->getMessage());
+
+            return [
+                'status' => 'error',
+                'message' => 'Error al actualizar el perfil. ' . $e->getMessage(),
+                'status_code' => 500
+            ];
         }
     }
 
-    public function cambiarPassword(array $data): bool
+    public function cambiarPassword(array $data): array
     {
         $user = Auth::user();
 
         if (!$user instanceof User) {
-            throw new \Exception("Usuario no autenticado.");
-        }
-
-        if (!Hash::check($data['current_password'], $user->password)) {
-            throw new \Exception("La contraseña actual es incorrecta.");
+            return [
+                'status' => 'error',
+                'message' => 'Usuario no autenticado.',
+                'status_code' => 404
+            ];
         }
 
         $user->update([
             'password' => Hash::make($data['new_password']),
         ]);
 
-        return true;
+        return [
+            'status' => 'success',
+            'message' => 'Contraseña cambiada correctamente.'
+        ];
     }
 
-    public function actualizarFotoPerfil($foto): string
+
+    public function actualizarFotoPerfil($foto): array
     {
         $user = Auth::user();
 
         if (!$user || !$user->persona) {
-            throw new \Exception("Usuario no autenticado o sin perfil asociado.");
+            return [
+                'status' => 'error',
+                'message' => 'Usuario no autenticado o sin perfil asociado.',
+                'status_code' => 401
+            ];
         }
 
         if (!$foto || !$foto->isValid()) {
-            throw new \Exception("Foto no válida.");
+            return [
+                'status' => 'error',
+                'message' => 'Foto no válida.',
+                'status_code' => 400
+            ];
         }
 
         if ($user->persona->foto_url) {
             Storage::disk('public')->delete($user->persona->foto_url);
         }
 
-
         $nombreUsuario = $user->persona->nombre;
         $extension = $foto->getClientOriginalExtension();
         $nombreArchivo = Str::slug($nombreUsuario) . '_' . $user->persona->apellido . '.' . $extension;
 
         $rutaFoto = $foto->storeAs('fotos_perfil', $nombreArchivo, 'public');
+
         if (!$rutaFoto) {
-            throw new \Exception("Error al guardar la foto.");
+            return [
+                'status' => 'error',
+                'message' => 'Error al guardar la foto.',
+                'status_code' => 500
+            ];
         }
 
         $user->persona->update(['foto_url' => $rutaFoto]);
 
-        return Storage::url($rutaFoto);
+        return [
+            'status' => 'success',
+            'message' => 'Foto de perfil actualizada correctamente.',
+            'data' => ['foto_url' => Storage::url($rutaFoto)],
+            'status_code' => 200
+        ];
     }
 }

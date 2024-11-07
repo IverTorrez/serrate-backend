@@ -4,13 +4,23 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Support\Facades\Log;
 use Throwable;
+
+// Servicio para estructurar las respuestas JSON
+function jsonResponse($status, $message, $code, $data = [])
+{
+    return response()->json([
+        'status' => $status,
+        'message' => $message,
+        'data' => $data
+    ], $code);
+}
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,73 +31,61 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Aquí puedes registrar middlewares globales si es necesario
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Manejo de errores de autenticación (401)
+
+        // 1. Autenticación fallida (401)
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'No autenticado. Por favor, inicia sesión.'
-                ], 401);
+                return jsonResponse('error', 'No autenticado. Por favor, inicia sesión.', 401);
             }
         });
 
-        // Manejo para rutas no encontradas (404)
+        // 2. Recurso no encontrado (404)
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Recurso no encontrado.'
-                ], 404);
+                return jsonResponse('error', 'Recurso no encontrado.', 404);
             }
         });
 
-        // Manejo para métodos no permitidos (405)
+        // 3. Método HTTP no permitido (405)
         $exceptions->render(function (MethodNotAllowedHttpException $e, Request $request) {
             if ($request->is('api/*')) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Método no permitido.'
-                ], 405);
+                return jsonResponse('error', 'Método no permitido.', 405);
             }
         });
 
-        // Manejo de errores de validación (422)
+        // 4. Error de validación (422)
         $exceptions->render(function (ValidationException $e, Request $request) {
             if ($request->is('api/*')) {
-                return \App\Services\ResponseService::validationError(
-                    $e->errors(),
-                    'Los datos proporcionados no son válidos.'
+                return jsonResponse(
+                    'error',
+                    'Los datos proporcionados no son válidos.',
+                    422,
+                    $e->errors()
                 );
             }
         });
 
-        // Manejo de errores de autorización (403)
+        // 5. Error de autorización (403)
         $exceptions->render(function (AuthorizationException $e, Request $request) {
             if ($request->is('api/*')) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'No tienes permiso para acceder a este recurso.'
-                ], 403);
+                return jsonResponse('error', 'No tienes permiso para acceder a este recurso.', 403);
             }
         });
 
-        // Manejo general de excepciones
+        // 6. Excepción general para errores internos (500)
         $exceptions->render(function (Throwable $e, Request $request) {
             if ($request->is('api/*')) {
-                // Registro de la excepción para facilitar la depuración
                 Log::error('Error en API:', [
-                    'exception' => $e,
+                    'exception' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
                     'url' => $request->fullUrl(),
                     'ip' => $request->ip(),
                 ]);
 
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Ocurrió un error interno en el servidor.',
-                ], 500);
+                return jsonResponse('error', 'Ocurrió un error interno en el servidor.', 500);
             }
         });
     })

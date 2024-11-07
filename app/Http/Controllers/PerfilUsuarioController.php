@@ -2,77 +2,82 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\UpdateUserProfileRequest;
 use App\Http\Requests\UpdatePasswordRequest;
-use App\Http\Requests\UpdateProfilePhotoRequest;
+use App\Http\Requests\UpdateUserProfileRequest;
 use App\Services\PerfilUsuarioService;
 use App\Services\ResponseService;
-use Exception;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PerfilUsuarioController extends Controller
 {
-    private PerfilUsuarioService $perfilUsuarioService;
+    protected $perfilUsuarioService;
 
     public function __construct(PerfilUsuarioService $perfilUsuarioService)
     {
         $this->perfilUsuarioService = $perfilUsuarioService;
     }
 
-    public function obtenerPerfil()
+    public function obtenerPerfil(): JsonResponse
     {
         try {
-            $user = auth()->user();
-            if (!$user) {
-                return ResponseService::unauthenticated();
+            $response = $this->perfilUsuarioService->obtenerPerfil();
+
+            if ($response['status'] === 'success') {
+                return ResponseService::success($response['data'], $response['status_code']);
             }
 
-            $data = $this->perfilUsuarioService->obtenerPerfil($user);
-            return ResponseService::success($data, 'Perfil obtenido correctamente');
-        } catch (Exception $e) {
-            return ResponseService::error('Error al obtener el perfil', 500, [$e->getMessage()]);
-        }
-    }
-
-    public function actualizarPerfil(UpdateUserProfileRequest $request)
-    {
-        try {
-            $user = auth()->user();
-            if (!$user) {
-                return ResponseService::unauthenticated();
-            }
-
-            $persona = $this->perfilUsuarioService->actualizarPerfil($user, $request->validated());
-            return ResponseService::success($persona, 'Perfil actualizado correctamente');
-        } catch (Exception $e) {
-            return ResponseService::error('Error al actualizar el perfil', 500, [$e->getMessage()]);
-        }
-    }
-
-    public function cambiarPassword(UpdatePasswordRequest $request)
-    {
-        try {
-            $this->perfilUsuarioService->cambiarPassword($request->validated());
-            return ResponseService::success([], 'Contraseña cambiada correctamente');
+            return ResponseService::error($response['message'], $response['status_code']);
         } catch (\Exception $e) {
-            return ResponseService::error('Error al cambiar la contraseña', 500, [$e->getMessage()]);
+            return ResponseService::error('Error inesperado al obtener el perfil.', 500);
         }
     }
 
-
-
-    public function actualizarFotoPerfil(UpdateProfilePhotoRequest $request)
+    public function actualizarPerfil(UpdateUserProfileRequest $request): JsonResponse
     {
         try {
-            $user = auth()->user();
-            if (!$user) {
-                return ResponseService::unauthenticated();
+            $validatedData = $request->validated();
+            $response = $this->perfilUsuarioService->actualizarPerfil($validatedData);
+
+            if ($response['status'] === 'success') {
+                return ResponseService::success($response['data'], $response['status_code']);
             }
 
-            $fotoUrl = $this->perfilUsuarioService->actualizarFotoPerfil($user, $request->file('foto'));
-            return ResponseService::success(['foto_url' => $fotoUrl], 'Foto de perfil actualizada');
-        } catch (Exception $e) {
-            return ResponseService::error('Error al actualizar la foto de perfil', 500, [$e->getMessage()]);
+            return ResponseService::error($response['message'], $response['status_code']);
+        } catch (\Exception $e) {
+            return ResponseService::error('Error inesperado al actualizar el perfil.', 500);
+        }
+    }
+
+    public function cambiarPassword(UpdatePasswordRequest $request): JsonResponse
+    {
+        try {
+            $validatedData = $request->validated();
+            $response = $this->perfilUsuarioService->cambiarPassword($validatedData);
+
+            if ($response['status'] === 'success') {
+                return ResponseService::success($response);
+            }
+
+            return ResponseService::error($response['message'], $response['status_code']);
+        } catch (\Exception $e) {
+            return ResponseService::error('Error inesperado al cambiar la contraseña.', 500);
+        }
+    }
+
+    public function actualizarFotoPerfil(Request $request): JsonResponse
+    {
+        try {
+            $foto = $request->file('foto');
+            $response = $this->perfilUsuarioService->actualizarFotoPerfil($foto);
+
+            if ($response['status'] === 'success') {
+                return ResponseService::success($response['data'], $response['status_code']);
+            }
+
+            return ResponseService::error($response['message'], $response['status_code']);
+        } catch (\Exception $e) {
+            return ResponseService::error('Error inesperado al actualizar la foto de perfil.', 500);
         }
     }
 }
