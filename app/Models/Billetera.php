@@ -25,4 +25,13 @@ class Billetera extends Model
     {
         return $this->belongsTo(User::class, 'abogado_id');
     }
+    /**
+     * Get all of the comments for the Billetera
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function billeteraTransacciones()
+    {
+        return $this->hasMany(BilleteraTransaccion::class, 'billetera_id', 'id');
+    }
 }

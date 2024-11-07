@@ -27,12 +27,11 @@ class ProcuraduriaDescargaController extends Controller
     protected $confirmacionService;
 
     public function __construct(
-                                 ProcuraduriaDescargaService $procuraduriaDescargaService,
-                                 PresupuestoService $presupuestoService,
-                                 OrdenService $ordenService,
-                                 ConfirmacionService $confirmacionService
-                                )
-    {
+        ProcuraduriaDescargaService $procuraduriaDescargaService,
+        PresupuestoService $presupuestoService,
+        OrdenService $ordenService,
+        ConfirmacionService $confirmacionService
+    ) {
         $this->procuraduriaDescargaService = $procuraduriaDescargaService;
         $this->presupuestoService = $presupuestoService;
         $this->ordenService = $ordenService;
@@ -60,15 +59,22 @@ class ProcuraduriaDescargaController extends Controller
      */
     public function store(StoreProcuraduriaDescargaRequest $request)
     {
+        $tieneRegistroDeDescarga = $this->procuraduriaDescargaService->tieneDescargaActiva($request->orden_id);
+        if ($tieneRegistroDeDescarga) {
+            return response()->json([
+                'message' => 'Esta orden ya tiene una descarga',
+                'data' => null
+            ], 409);
+        }
         DB::beginTransaction();
-        try{
-            $now=Carbon::now('America/La_Paz');
-            $fechaHora=$now->toDateTimeString();
+        try {
+            $now = Carbon::now('America/La_Paz');
+            $fechaHora = $now->format('Y-m-d H:i:00');
 
             $presupuesto = $this->presupuestoService->obtenerUnoPorOrdenId($request->orden_id);
-            $saldo=$presupuesto->monto - $request->gastos;
+            $saldo = $presupuesto->monto - $request->gastos;
 
-            $data=[
+            $data = [
                 'detalle_informacion' => $request->detalle_informacion,
                 'detalle_documentacion' => $request->detalle_documentacion,
                 'ultima_foja' => $request->ultima_foja,
@@ -76,17 +82,17 @@ class ProcuraduriaDescargaController extends Controller
                 'saldo' => $saldo,
                 'detalle_gasto' => $request->detalle_gasto,
                 'fecha_descarga' => $fechaHora,
-                'compra_judicial' => $request->compra_judicial,
+                'compra_judicial' => $request->gastos,
                 'orden_id' => $request->orden_id,
             ];
 
-            $descarga= $this->procuraduriaDescargaService->store($data);
+            $descarga = $this->procuraduriaDescargaService->store($data);
 
             //ACTUALIZA LA ETAPA DE LA ORDEN
-            $dataOrden=[
-                'etapa_orden'=>EtapaOrden::DESCARGADA
+            $dataOrden = [
+                'etapa_orden' => EtapaOrden::DESCARGADA
             ];
-            $orden = $this->ordenService->update($dataOrden,$request->orden_id);
+            $orden = $this->ordenService->update($dataOrden, $request->orden_id);
             //INSERTA LA CONFIRMACION DEL SISTEMA
             $confirmacionSistema = $descarga->fecha_descarga <= $orden->fecha_fin ? 1 : 0;
 
@@ -101,16 +107,15 @@ class ProcuraduriaDescargaController extends Controller
                 'message' => MessageHttp::CREADO_CORRECTAMENTE,
                 'data' => $descarga
             ], 201);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error registrar descarga: ' . $e->getMessage());
 
-       }catch (Exception $e) {
-        DB::rollBack();
-        Log::error('Error registrar descarga: ' . $e->getMessage());
-
-        return response()->json([
-            'message' => 'Error registrar descarga',
-            'error' => $e->getMessage()
-        ], 500);
-       }
+            return response()->json([
+                'message' => 'Error registrar descarga',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -143,5 +148,13 @@ class ProcuraduriaDescargaController extends Controller
     public function destroy(ProcuraduriaDescarga $procuraduriaDescarga)
     {
         //
+    }
+    public function ultinaFojaCausa($causaId)
+    {
+        $ultimaFojaDescarga = $this->procuraduriaDescargaService->ultimaFojaDeCausa($causaId);
+        return response()->json([
+            'message' => 'Datos obtenidos',
+            'data' => $ultimaFojaDescarga
+        ], 200);
     }
 }

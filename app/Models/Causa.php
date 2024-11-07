@@ -97,4 +97,10 @@ class Causa extends Model
     {
         return $this->hasMany(PaqueteCausa::class, 'causa_id');
     }
+    public function ultimaDescarga()
+    {
+        return $this->hasManyThrough(ProcuraduriaDescarga::class, Orden::class)
+            ->latest('created_at') // Ordena por la columna de fecha de creación
+            ->first(); // Obtiene solo el primer (último) registro
+    }
 }

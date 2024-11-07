@@ -3,6 +3,7 @@
 use App\Http\Controllers\AgendaApunteController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvancePlantillaController;
+use App\Http\Controllers\BilleteraTransaccionController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\CausaController;
 use App\Http\Controllers\CausaPostaController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\DevolucionSaldoController;
 use App\Http\Controllers\DistritoController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\DocumentosCategoriaController;
+use App\Http\Controllers\FinalCostoController;
 use App\Http\Controllers\GestionAlternativaController;
 use App\Http\Controllers\InformePostaController;
 use App\Http\Controllers\JuzgadoController;
@@ -37,6 +39,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VideoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BilleteraController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -206,6 +209,9 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::patch('orden/eliminar/{orden}', [OrdenController::class, 'destroy']);
         Route::patch('orden/aceptar/{orden}', [OrdenController::class, 'aceptarOrden']);
         Route::patch('orden/sugerir-presupuesto/{orden}', [OrdenController::class, 'sugerirPresupuesto']);
+        Route::get('orden/listado/entregar-presupuesto/procurador/{procuradorId}', [OrdenController::class, 'ordenesParaEntregarPresupuesto']);
+        Route::get('orden/listado/devolver-presupuesto/procurador/{procuradorId}', [OrdenController::class, 'ordenesParaDevolverPresupuesto']);
+        Route::get('orden/listado/sin-costojudicial-venta/admin', [OrdenController::class, 'ordenesParaColocarCostoJudicialVenta']);
         //Cotizacion
 
         //Presupuesto
@@ -218,10 +224,13 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         //Procuraduria Descarga
         Route::get('descargas', [ProcuraduriaDescargaController::class, 'index']);
         Route::post('descargas', [ProcuraduriaDescargaController::class, 'store']);
+        Route::get('descargas/ultima-foja/causa/{causaId}', [ProcuraduriaDescargaController::class, 'ultinaFojaCausa']);
 
         //Confirmacion
         Route::patch('confirmacion/pronuncio-abogado/{confirmacion}', [ConfirmacionController::class, 'pronuncioAbogado']);
         Route::patch('confirmacion/pronuncio-contador/{confirmacion}', [ConfirmacionController::class, 'pronuncioContador']);
+        // Final Costo
+        Route::patch('finalcostos/costo-judicial-venta/{finalCosto}', [FinalCostoController::class, 'colocarCostoJudicialVenta']);
         //Gestion Alternativa
         Route::post('gestion-alternativa', [GestionAlternativaController::class, 'store']);
         Route::patch('gestion-alternativa/{gestionAlternativa}', [GestionAlternativaController::class, 'update']);
@@ -280,5 +289,12 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('videos/{video}', [VideoController::class, 'show']);
         Route::patch('videos/{video}', [VideoController::class, 'update']);
         Route::patch('videos/eliminar/{video}', [VideoController::class, 'destroy']);
+        //Billetera
+        Route::get('billetera/abogado/{abogadoId}', [BilleteraController::class, 'obtenerPorAbogadoId']);
+        //Billetera Transacciones
+        Route::get('billetera-transaccion', [BilleteraTransaccionController::class, 'index']);
+        Route::get('billetera-transaccion/listado-billetera/{billeteraId}', [BilleteraTransaccionController::class, 'listadoPorBilletera']);
+        Route::post('billetera-transaccion', [BilleteraTransaccionController::class, 'store']);
+        Route::patch('billetera-transaccion/eliminar/{billeteraTransaccion}', [BilleteraTransaccionController::class, 'destroy']);
     });
 });

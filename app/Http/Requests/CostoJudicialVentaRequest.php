@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreProcuraduriaDescargaRequest extends FormRequest
+class CostoJudicialVentaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,13 +22,7 @@ class StoreProcuraduriaDescargaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'detalle_informacion'=>['required','string'],
-            'detalle_documentacion'=>['required','string'],
-            'ultima_foja'=>['required','string','max:50'],
-            'gastos'=>['required','numeric'],
-
-            'detalle_gasto'=>['required','string'],
-            'orden_id'=>['required','exists:ordens,id'],
+            'costo_procesal_venta' => ['sometimes', 'numeric'],
         ];
     }
 }

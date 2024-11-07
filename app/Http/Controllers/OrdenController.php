@@ -186,7 +186,7 @@ class OrdenController extends Controller
             return response()->json([
                 'message' => 'No se puede eliminar la orden porque el presupuesto ya tiene una fecha de entrega.',
                 'data' => null
-            ], 400);
+            ], 409);
         }
         $orden = $this->ordenService->destroy($orden->id);
         $data = [
@@ -198,6 +198,13 @@ class OrdenController extends Controller
 
     public function aceptarOrden(Orden $orden)
     {
+        if($orden->fecha_recepcion)
+        {
+            return response()->json([
+                'message' => 'Esta orden ya fue aceptada',
+                'data' => null
+            ], 409);
+        }
         $now = Carbon::now('America/La_Paz');
         $fechaHora = $now->toDateTimeString();
         $data = [
@@ -257,5 +264,22 @@ class OrdenController extends Controller
             'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
             'data' => $orden
         ], 200);
+    }
+    public function ordenesParaEntregarPresupuesto($procuradorId)
+    {
+        $data = $this->ordenService->listarOrdenParaEntregarPresupuestoDeProcurador($procuradorId);
+
+        return response()->json($data);
+    }
+    public function ordenesParaDevolverPresupuesto($procuradorId)
+    {
+        $data = $this->ordenService->listarOrdenParaDevolverPresupuestoDeProcurador($procuradorId);
+
+        return response()->json($data);
+    }
+    public function ordenesParaColocarCostoJudicialVenta()
+    {
+        $data = $this->ordenService->listarOrdenParaColocarCostoJudicialVenta();
+        return response()->json($data);
     }
 }

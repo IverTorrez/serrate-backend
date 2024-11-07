@@ -167,10 +167,11 @@ class OrdenService
                 'causa_id',
                 'procurador_id',
                 'matriz_id',
+                'usuario_id',
                 'estado',
             ])
                 ->with([
-                    'causa:id,nombre,materia_id,tipolegal_id',
+                    'causa:id,nombre,materia_id,tipolegal_id,usuario_id,abogado_id',
                     'causa.materia:id,abreviatura',
                     'causa.tipoLegal:id,abreviatura',
                     'procurador:id,name,email,tipo,estado',
@@ -179,7 +180,7 @@ class OrdenService
                     'cotizacion:id,prioridad,condicion,orden_id',
                     'descarga:id,ultima_foja,fecha_descarga,detalle_informacion,detalle_documentacion,gastos,saldo,detalle_gasto,orden_id',
                     'presupuesto:id,monto,detalle_presupuesto,fecha_presupuesto,fecha_entrega,orden_id',
-                    'descarga.confirmacion:id,fecha_confir_abogado,fecha_confir_contador,justificacion_rechazo,descarga_id'
+                    'descarga.confirmacion:id,fecha_confir_abogado,fecha_confir_contador,justificacion_rechazo,confir_sistema,confir_abogado,confir_contador,descarga_id'
                 ])
                 ->active();
 
@@ -203,6 +204,168 @@ class OrdenService
                 'message' => 'Órdenes obtenidas correctamente',
                 'data' => $result
             ];
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
+        }
+    }
+    public function listarOrdenParaEntregarPresupuestoDeProcurador($procuradorId)
+    {
+        try {
+            $query = Orden::select([
+                'id',
+                'entrega_informacion',
+                'entrega_documentacion',
+                'fecha_inicio',
+                'fecha_fin',
+                'fecha_giro',
+                'plazo_hora',
+                'fecha_recepcion',
+                'etapa_orden',
+                'calificacion',
+                'prioridad',
+                'fecha_cierre',
+                'girada_por',
+                'fecha_ini_bandera',
+                'notificado',
+                'lugar_ejecucion',
+                'sugerencia_presupuesto',
+                'tiene_propina',
+                'propina',
+                'causa_id',
+                'procurador_id',
+                'matriz_id',
+                'estado',
+            ])
+                ->with([
+                    'causa:id,nombre,materia_id,tipolegal_id',
+                    'causa.materia:id,abreviatura',
+                    'causa.tipoLegal:id,abreviatura',
+                    'presupuesto:id,monto,detalle_presupuesto,fecha_presupuesto,fecha_entrega,orden_id',
+                ])
+                ->active()
+                ->whereHas('presupuesto', function ($query) {
+                    $query->whereNull('fecha_entrega');
+                })
+                ->whereDoesntHave('descarga'); //Verifica que no exista registros en descarga
+
+                $query->where('procurador_id', $procuradorId);
+                $result = $query->get();
+
+                return [
+                    'message' => 'Ordenes obtenidas correctamente',
+                    'data' => $result
+                ];
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
+        }
+    }
+    public function listarOrdenParaDevolverPresupuestoDeProcurador($procuradorId)
+    {
+        try {
+            $query = Orden::select([
+                'id',
+                'entrega_informacion',
+                'entrega_documentacion',
+                'fecha_inicio',
+                'fecha_fin',
+                'fecha_giro',
+                'plazo_hora',
+                'fecha_recepcion',
+                'etapa_orden',
+                'calificacion',
+                'prioridad',
+                'fecha_cierre',
+                'girada_por',
+                'fecha_ini_bandera',
+                'notificado',
+                'lugar_ejecucion',
+                'sugerencia_presupuesto',
+                'tiene_propina',
+                'propina',
+                'causa_id',
+                'procurador_id',
+                'matriz_id',
+                'estado',
+            ])
+                ->with([
+                    'causa:id,nombre,materia_id,tipolegal_id',
+                    'causa.materia:id,abreviatura',
+                    'causa.tipoLegal:id,abreviatura',
+                    'presupuesto:id,monto,detalle_presupuesto,fecha_presupuesto,fecha_entrega,orden_id',
+                    'descarga:id,detalle_informacion,detalle_gasto,gastos,saldo,es_validado,orden_id',
+                    'descarga.confirmacion:id,confir_abogado,fecha_confir_abogado,justificacion_rechazo,descarga_id'
+                ])
+                ->active()
+                ->whereHas('descarga', function ($query) {
+                    $query->where('es_validado', 0)
+                          ->whereHas('confirmacion', function ($query) {
+                              $query->whereNull('fecha_confir_contador');
+                          });
+                });
+
+
+                $query->where('procurador_id', $procuradorId);
+                $result = $query->get();
+
+                return [
+                    'message' => 'Ordenes obtenidas correctamente',
+                    'data' => $result
+                ];
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
+        }
+    }
+    public function listarOrdenParaColocarCostoJudicialVenta()
+    {
+        try {
+            $query = Orden::select([
+                'id',
+                'entrega_informacion',
+                'entrega_documentacion',
+                'fecha_inicio',
+                'fecha_fin',
+                'fecha_giro',
+                'plazo_hora',
+                'fecha_recepcion',
+                'etapa_orden',
+                'calificacion',
+                'prioridad',
+                'fecha_cierre',
+                'girada_por',
+                'fecha_ini_bandera',
+                'notificado',
+                'lugar_ejecucion',
+                'sugerencia_presupuesto',
+                'tiene_propina',
+                'propina',
+                'causa_id',
+                'procurador_id',
+                'matriz_id',
+                'estado',
+            ])
+                ->with([
+                    'causa:id,nombre,materia_id,tipolegal_id',
+                    'causa.materia:id,abreviatura',
+                    'causa.tipoLegal:id,abreviatura',
+                    'presupuesto:id,monto,detalle_presupuesto,fecha_presupuesto,fecha_entrega,orden_id',
+                    'descarga:id,detalle_informacion,detalle_gasto,gastos,saldo,es_validado,orden_id',
+                    'descarga.confirmacion:id,confir_abogado,fecha_confir_abogado,justificacion_rechazo,descarga_id',
+                    'finalCostos:id,costo_procesal_compra,costo_procesal_venta,costo_procuraduria_compra,costo_procuraduria_venta,total_egreso,orden_id'
+
+                ])
+                ->active()
+                ->whereHas('finalCostos', function ($query) {
+                    $query->where('es_validado', 0);
+                });
+                $result = $query->get();
+
+                return [
+                    'message' => 'Ordenes obtenidas correctamente',
+                    'data' => $result
+                ];
+
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
         }
