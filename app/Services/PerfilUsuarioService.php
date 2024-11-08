@@ -16,11 +16,7 @@ class PerfilUsuarioService
         $user = User::with('persona')->find(Auth::id());
 
         if (!$user) {
-            return [
-                'status' => 'error',
-                'message' => 'Usuario no autenticado.',
-                'status_code' => 401
-            ];
+            return ResponseService::unauthorized('Usuario no autenticado.');
         }
 
         return [
@@ -40,7 +36,8 @@ class PerfilUsuarioService
                     ] : null,
                 ]
             ],
-            'status_code' => 200
+            'status_code' => 200,
+            'message' => 'Perfil obtenido correctamente.'
         ];
     }
 
@@ -49,11 +46,7 @@ class PerfilUsuarioService
         $user = Auth::user();
 
         if (!$user instanceof User) {
-            return [
-                'status' => 'error',
-                'message' => 'Usuario no autenticado.',
-                'status_code' => 401
-            ];
+            return ResponseService::unauthorized('Usuario no autenticado.');
         }
 
         DB::beginTransaction();
@@ -78,12 +71,7 @@ class PerfilUsuarioService
             ];
         } catch (\Exception $e) {
             DB::rollBack();
-
-            return [
-                'status' => 'error',
-                'message' => 'Error al actualizar el perfil. ' . $e->getMessage(),
-                'status_code' => 500
-            ];
+            return ResponseService::error('Error al actualizar el perfil. ' . $e->getMessage(), 500);
         }
     }
 
@@ -92,11 +80,7 @@ class PerfilUsuarioService
         $user = Auth::user();
 
         if (!$user instanceof User) {
-            return [
-                'status' => 'error',
-                'message' => 'Usuario no autenticado.',
-                'status_code' => 404
-            ];
+            return ResponseService::unauthorized('Usuario no autenticado.');
         }
 
         $user->update([
@@ -105,29 +89,21 @@ class PerfilUsuarioService
 
         return [
             'status' => 'success',
-            'message' => 'Contraseña cambiada correctamente.'
+            'message' => 'Contraseña cambiada correctamente.',
+            'status_code' => 200
         ];
     }
-
 
     public function actualizarFotoPerfil($foto): array
     {
         $user = Auth::user();
 
         if (!$user || !$user->persona) {
-            return [
-                'status' => 'error',
-                'message' => 'Usuario no autenticado o sin perfil asociado.',
-                'status_code' => 401
-            ];
+            return ResponseService::unauthorized('Usuario no autenticado o sin perfil asociado.');
         }
 
         if (!$foto || !$foto->isValid()) {
-            return [
-                'status' => 'error',
-                'message' => 'Foto no válida.',
-                'status_code' => 400
-            ];
+            return ResponseService::error('Foto no válida.', 400);
         }
 
         if ($user->persona->foto_url) {
@@ -141,11 +117,7 @@ class PerfilUsuarioService
         $rutaFoto = $foto->storeAs('fotos_perfil', $nombreArchivo, 'public');
 
         if (!$rutaFoto) {
-            return [
-                'status' => 'error',
-                'message' => 'Error al guardar la foto.',
-                'status_code' => 500
-            ];
+            return ResponseService::error('Error al guardar la foto.', 500);
         }
 
         $user->persona->update(['foto_url' => $rutaFoto]);

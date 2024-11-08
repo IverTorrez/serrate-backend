@@ -10,19 +10,18 @@ use App\Constants\Estado;
 use App\Constants\TipoUsuario;
 use App\Models\Billetera;
 use Illuminate\Support\Facades\DB;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class AuthService
 {
     public function register(array $data): array
     {
-
+        DB::beginTransaction();
 
         try {
-
-
             $abogado_id = (Auth::check() && $data['tipo'] === TipoUsuario::ABOGADO_DEPENDIENTE) ? Auth::user()->id : 0;
             $datosJson = $data['opciones_moto'] ?? null;
-            DB::beginTransaction();
 
             $user = User::create([
                 'name' => $data['name'],
@@ -34,7 +33,6 @@ class AuthService
                 'estado' => Estado::ACTIVO,
                 'es_eliminado' => 0,
             ]);
-
 
             $persona = Persona::create([
                 'nombre' => $data['persona']['nombre'],
@@ -49,8 +47,8 @@ class AuthService
                 'usuario_id' => $user->id,
             ]);
 
-            if ($data['tipo'] === TipoUsuario::ABOGADO_INDEPENDIENTE || $data['tipo'] === TipoUsuario::ABOGADO_LIDER) {
-                $billetera = Billetera::create([
+            if (in_array($data['tipo'], [TipoUsuario::ABOGADO_INDEPENDIENTE, TipoUsuario::ABOGADO_LIDER])) {
+                Billetera::create([
                     'monto' => 0,
                     'abogado_id' => $user->id,
                     'estado' => Estado::ACTIVO,
@@ -69,21 +67,19 @@ class AuthService
                     'user' => $user,
                     'access_token' => $token,
                     'token_type' => 'Bearer',
-                    //'expires_in' => 3600
                 ],
                 'status_code' => 201
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
+            Log::error('Error al registrar usuario: ' . $e->getMessage());
             return [
                 'status' => 'error',
-                'message' => 'Error al registrar usuario',
+                'message' => 'Error al registrar usuario.',
                 'status_code' => 500
             ];
         }
     }
-
-
 
     public function login(array $credentials): array
     {
@@ -104,6 +100,7 @@ class AuthService
                 'status_code' => 401
             ];
         }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return [
@@ -112,7 +109,6 @@ class AuthService
                 'user' => $user,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
-                // 'expires_in' => 3600
             ],
             'status_code' => 200
         ];
@@ -122,13 +118,20 @@ class AuthService
     {
         $user = Auth::user();
 
-        $user->tokens->each(function ($token) {
-            $token->delete();
-        });
+        if ($user) {
+            $user->tokens->each(function ($token) {
+                $token->delete();
+            });
+            return [
+                'status' => 'success',
+                'message' => 'Cierre de sesión exitoso'
+            ];
+        }
 
         return [
-            'status' => 'success',
-            'message' => 'Cierre de sesión exitoso'
+            'status' => 'error',
+            'message' => 'Usuario no autenticado',
+            'status_code' => 401
         ];
     }
 }

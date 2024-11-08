@@ -1,9 +1,9 @@
 <?php
 
+use App\Services\ResponseService;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -11,16 +11,6 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Throwable;
-
-// Servicio para estructurar las respuestas JSON
-function jsonResponse($status, $message, $code, $data = [])
-{
-    return response()->json([
-        'status' => $status,
-        'message' => $message,
-        'data' => $data
-    ], $code);
-}
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -30,63 +20,35 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__ . '/../routes/channels.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware) {
-        // Aquí puedes registrar middlewares globales si es necesario
-    })
+    ->withMiddleware(function (Middleware $middleware) {})
     ->withExceptions(function (Exceptions $exceptions) {
-
-        // 1. Autenticación fallida (401)
-        $exceptions->render(function (AuthenticationException $e, Request $request) {
-            if ($request->is('api/*')) {
-                return jsonResponse('error', 'No autenticado. Por favor, inicia sesión.', 401);
-            }
+        $exceptions->reportable(function (Throwable $e) {
+            Log::error($e->getMessage());
         });
 
-        // 2. Recurso no encontrado (404)
-        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
-            if ($request->is('api/*')) {
-                return jsonResponse('error', 'Recurso no encontrado.', 404);
-            }
+        $exceptions->renderable(function (ValidationException $e) {
+            return ResponseService::validationError($e->errors(), 'Error de validación');
         });
 
-        // 3. Método HTTP no permitido (405)
-        $exceptions->render(function (MethodNotAllowedHttpException $e, Request $request) {
-            if ($request->is('api/*')) {
-                return jsonResponse('error', 'Método no permitido.', 405);
-            }
+        $exceptions->renderable(function (AuthenticationException $e) {
+            return ResponseService::unauthorized('No autenticado');
         });
 
-        // 4. Error de validación (422)
-        $exceptions->render(function (ValidationException $e, Request $request) {
-            if ($request->is('api/*')) {
-                return jsonResponse(
-                    'error',
-                    'Los datos proporcionados no son válidos.',
-                    422,
-                    $e->errors()
-                );
-            }
+        $exceptions->renderable(function (AuthorizationException $e) {
+            return ResponseService::forbidden('No tienes permiso para realizar esta acción');
         });
 
-        // 5. Error de autorización (403)
-        $exceptions->render(function (AuthorizationException $e, Request $request) {
-            if ($request->is('api/*')) {
-                return jsonResponse('error', 'No tienes permiso para acceder a este recurso.', 403);
-            }
+        $exceptions->renderable(function (NotFoundHttpException $e) {
+            return ResponseService::notFound('Recurso no encontrado');
         });
 
-        // 6. Excepción general para errores internos (500)
-        $exceptions->render(function (Throwable $e, Request $request) {
-            if ($request->is('api/*')) {
-                Log::error('Error en API:', [
-                    'exception' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                    'url' => $request->fullUrl(),
-                    'ip' => $request->ip(),
-                ]);
+        $exceptions->renderable(function (MethodNotAllowedHttpException $e) {
+            return ResponseService::error('Método no permitido', 405);
+        });
 
-                return jsonResponse('error', 'Ocurrió un error interno en el servidor.', 500);
-            }
+        $exceptions->renderable(function (Throwable $e) {
+            return ResponseService::error('Error interno del servidor', 500);
         });
     })
+
     ->create();

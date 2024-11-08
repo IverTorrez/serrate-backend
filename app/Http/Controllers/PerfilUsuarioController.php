@@ -22,12 +22,9 @@ class PerfilUsuarioController extends Controller
     {
         try {
             $response = $this->perfilUsuarioService->obtenerPerfil();
-
-            if ($response['status'] === 'success') {
-                return ResponseService::success($response['data'], $response['status_code']);
-            }
-
-            return ResponseService::error($response['message'], $response['status_code']);
+            return $response['status'] === 'success'
+                ? ResponseService::success($response['data'], $response['message'], $response['status_code'])
+                : ResponseService::error($response['message'], $response['status_code']);
         } catch (\Exception $e) {
             return ResponseService::error('Error inesperado al obtener el perfil.', 500);
         }
@@ -38,12 +35,9 @@ class PerfilUsuarioController extends Controller
         try {
             $validatedData = $request->validated();
             $response = $this->perfilUsuarioService->actualizarPerfil($validatedData);
-
-            if ($response['status'] === 'success') {
-                return ResponseService::success($response['data'], $response['status_code']);
-            }
-
-            return ResponseService::error($response['message'], $response['status_code']);
+            return $response['status'] === 'success'
+                ? ResponseService::success($response['data'], $response['message'], $response['status_code'])
+                : ResponseService::error($response['message'], $response['status_code']);
         } catch (\Exception $e) {
             return ResponseService::error('Error inesperado al actualizar el perfil.', 500);
         }
@@ -54,12 +48,9 @@ class PerfilUsuarioController extends Controller
         try {
             $validatedData = $request->validated();
             $response = $this->perfilUsuarioService->cambiarPassword($validatedData);
-
-            if ($response['status'] === 'success') {
-                return ResponseService::success($response);
-            }
-
-            return ResponseService::error($response['message'], $response['status_code']);
+            return $response['status'] === 'success'
+                ? ResponseService::success([], $response['message'])
+                : ResponseService::error($response['message'], $response['status_code']);
         } catch (\Exception $e) {
             return ResponseService::error('Error inesperado al cambiar la contraseña.', 500);
         }
@@ -70,12 +61,9 @@ class PerfilUsuarioController extends Controller
         try {
             $foto = $request->file('foto');
             $response = $this->perfilUsuarioService->actualizarFotoPerfil($foto);
-
-            if ($response['status'] === 'success') {
-                return ResponseService::success($response['data'], $response['status_code']);
-            }
-
-            return ResponseService::error($response['message'], $response['status_code']);
+            return $response['status'] === 'success'
+                ? ResponseService::success($response['data'], $response['message'], $response['status_code'])
+                : ResponseService::error($response['message'], $response['status_code']);
         } catch (\Exception $e) {
             return ResponseService::error('Error inesperado al actualizar la foto de perfil.', 500);
         }
