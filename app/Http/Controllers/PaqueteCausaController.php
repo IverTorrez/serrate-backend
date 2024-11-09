@@ -52,16 +52,25 @@ class PaqueteCausaController extends Controller
         DB::beginTransaction();
         try {
             $compraPaqueteId = $request->compra_paquete_id;
+            $causaId = $request->causa_id;
 
             if ($this->compraPaqueteService->isCompraPaqueteAgotado($compraPaqueteId)) {
                 return response()->json([
                     'message' => 'Cupo de Paquete agotado: ya no puede incluir mas causas a este paquete',
-                ]);
+                    'data' => null
+                ], 409);
             }
             if ($this->compraPaqueteService->isCompraPaqueteExpirado($compraPaqueteId)) {
                 return response()->json([
                     'message' => 'Paquete expirado: este paquete ya no esta vigente',
-                ]);
+                    'data' => null
+                ], 409);
+            }
+            if($this->paqueteCausaService->causaEstaEnPaquete($causaId)){
+                return response()->json([
+                    'message' => 'La causa con ID: '.$causaId.' ya esta en un paquete',
+                    'data' => null
+                ], 409);
             }
             $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
             $compraPaquete = $this->compraPaqueteService->obtenerUno($compraPaqueteId);
@@ -69,7 +78,7 @@ class PaqueteCausaController extends Controller
                 'fecha_inicio' => $compraPaquete->fecha_ini_vigencia,
                 'fecha_fin' => $compraPaquete->fecha_fin_vigencia,
                 'compra_paquete_id' => $compraPaqueteId,
-                'causa_id' => $request->causa_id,
+                'causa_id' => $causaId,
                 'fecha_asociacion' => $fechaHora,
                 'usuario_id' => Auth::user()->id
             ];
@@ -77,7 +86,7 @@ class PaqueteCausaController extends Controller
             $paqueteCausa = $this->paqueteCausaService->store($data);
             //La causa que se le asigna un paquete su esta cambia a activa
             $dataCausa['estado'] = EstadoCausa::ACTIVA;
-            $causa = $this->causaService->update($dataCausa, $request->causa_id);
+            $causa = $this->causaService->update($dataCausa, $causaId);
 
             DB::commit();
             return response()->json([

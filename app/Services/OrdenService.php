@@ -416,4 +416,10 @@ class OrdenService
         $orden->save();
         return $orden;
     }
+
+    public function obtenerUno($ordenId)
+    {
+        $orden = Orden::findOrFail($ordenId);
+        return $orden;
+    }
 }

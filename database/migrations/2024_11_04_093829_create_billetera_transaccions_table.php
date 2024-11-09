@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->decimal('monto',10,2)->comment('monto de la transaccion');
             $table->timestamp('fecha_transaccion')->nullable()->comment('fecha de la transaccion');
-            $table->string('tipo', 20)->comment('tipo de transaccin, DEPOSITO, RETIRO');
+            $table->string('tipo', 20)->comment('tipo de transaccin, DEBITO, CREDITO');
+            $table->string('glosa', 200)->comment('glosa de la transaccion, escrito por el sistema');
             $table->integer('billetera_id')->comment('id de la tabla billeteras');
             $table->integer('usuario_id')->comment('id de la tabla users, usuario quien hizo la transaccion');
             $table->string('estado', 20)->comment('estado ACTIVO,INACTIVO');
