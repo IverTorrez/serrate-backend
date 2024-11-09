@@ -21,6 +21,7 @@ use App\Http\Requests\StoreCausaRequest;
 use App\Services\AvancePlantillaService;
 use App\Http\Requests\UpdateCausaRequest;
 use App\Models\TipoLegal;
+use App\Services\PaqueteCausaService;
 
 class CausaController extends Controller
 {
@@ -29,19 +30,22 @@ class CausaController extends Controller
     protected $postaService;
     protected $causaPostaService;
     protected $userService;
+    protected $paqueteCausaService;
 
     public function __construct(
         CausaService $causaService,
         AvancePlantillaService $avancePlantillaService,
         PostaService $postaService,
         CausaPostaService $causaPostaService,
-        UserService $userService
+        UserService $userService,
+        PaqueteCausaService $paqueteCausaService
     ) {
         $this->causaService = $causaService;
         $this->avancePlantillaService = $avancePlantillaService;
         $this->postaService = $postaService;
         $this->causaPostaService = $causaPostaService;
         $this->userService = $userService;
+        $this->paqueteCausaService = $paqueteCausaService;
     }
     /**
      * Display a listing of the resource.
@@ -49,6 +53,48 @@ class CausaController extends Controller
     public function index(Request $request)
     {
         $query = Causa::active();
+
+        $usuario = Auth::user();
+        //Filtrado por usuario
+        if ($usuario->tipo === TipoUsuario::ABOGADO_LIDER || $usuario->tipo === TipoUsuario::ABOGADO_INDEPENDIENTE) {
+            $query->where('usuario_id', $usuario->id);
+        } else {
+            if ($usuario->tipo === TipoUsuario::ABOGADO_DEPENDIENTE) {
+                $query->where('abogado_id', $usuario->id);
+            } else {
+                if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+                    $query->where('procurador_id', $usuario->id);
+                }
+            }
+        }
+
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $causas = $query->paginate($perPage);
+
+        $causas->load('materia');
+        $causas->load('tipoLegal');
+        $causas->load('categoria');
+        $causas->load('abogado.persona');
+        $causas->load('procurador.persona');
+        return new CausaCollection($causas);
+    }
+    public function indexTerminadas(Request $request)
+    {
+        $query = Causa::where('estado', EstadoCausa::TERMINADA)
+            ->where('es_eliminado', 0);
 
         $usuario = Auth::user();
         //Filtrado por usuario
@@ -193,6 +239,13 @@ class CausaController extends Controller
      */
     public function update(UpdateCausaRequest $request, Causa $causa)
     {
+        //Verificacion si se esta terminando la causa
+        if ($request->estado === EstadoCausa::TERMINADA && $this->causaService->tieneOrdenesNoCerradas($causa->id)) {
+            return response()->json([
+                'message' => 'No se puede Terminar la causa porque tiene órdenes no cerradas.',
+                'data' => null
+            ], 409);
+        }
         DB::beginTransaction();
         try {
             $data = $request->only([
@@ -224,6 +277,12 @@ class CausaController extends Controller
             }
             $causa = $this->causaService->update($data, $causa->id);
 
+            //Si se esta terminando la causa se elimina del paquete
+            if ($request->estado === EstadoCausa::TERMINADA) {
+                //Elimina la causa de PaqueteCausa (si esxistiera)
+                $this->paqueteCausaService->darDeBajaPorCausaId($causa->id);
+            }
+
             DB::commit();
             return response()->json([
                 'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
@@ -245,6 +304,15 @@ class CausaController extends Controller
      */
     public function destroy(Causa $causa)
     {
+        if ($this->causaService->tieneOrdenesNoCerradas($causa->id)) {
+            return response()->json([
+                'message' => 'No se puede eliminar la causa porque tiene órdenes no cerradas.',
+                'data' => null
+            ], 409);
+        }
+        //Elimina la causa de PaqueteCausa (si esxistiera)
+        $this->paqueteCausaService->darDeBajaPorCausaId($causa->id);
+
         $causa->es_eliminado = 1;
         $causa->save();
         $data = [

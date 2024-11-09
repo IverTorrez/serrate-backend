@@ -65,5 +65,29 @@ class PaqueteCausaService
             ->get();
         return $paqueteCausas;
     }
+    public function causaEstaEnPaquete($causaId)
+    {
+        $paqueteCausa = PaqueteCausa::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('causa_id', $causaId)
+            ->first();
+        if ($paqueteCausa) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public function darDeBajaPorCausaId($causaId): bool
+    {
+        $paqueteCausa = PaqueteCausa::where('causa_id', $causaId)
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->first();
 
+        if ($paqueteCausa) {
+            $paqueteCausa->es_eliminado = 1;
+            return $paqueteCausa->save();
+        }
+        return false; // Retorna false si no se encontró el registro
+    }
 }

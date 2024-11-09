@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Constants\Estado;
 use App\Constants\EstadoCausa;
+use App\Constants\EtapaOrden;
 use App\Models\Causa;
+use App\Models\Orden;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -82,5 +84,20 @@ class CausaService
             })
             ->get();
         return $causas;
+    }
+    public function tieneOrdenesNoCerradas($causaId): bool
+    {
+        return Orden::where('causa_id', $causaId)
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('etapa_orden', '!=', EtapaOrden::CERRADA)
+            ->exists();
+    }
+    public function cuasaNoEstaActiva($causaId): bool
+    {
+        return Causa::where('id', $causaId)
+            ->whereIn('estado', [EstadoCausa::CONGELADA, EstadoCausa::TERMINADA])
+            ->where('es_eliminado', 0)
+            ->exists();
     }
 }

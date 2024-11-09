@@ -18,6 +18,7 @@ use App\Services\ConfirmacionService;
 use App\Services\ProcuraduriaDescargaService;
 use App\Http\Resources\ProcuraduriaDescargaCollection;
 use App\Http\Requests\StoreProcuraduriaDescargaRequest;
+use App\Services\CausaService;
 
 class ProcuraduriaDescargaController extends Controller
 {
@@ -25,17 +26,20 @@ class ProcuraduriaDescargaController extends Controller
     protected $presupuestoService;
     protected $ordenService;
     protected $confirmacionService;
+    protected $causaService;
 
     public function __construct(
         ProcuraduriaDescargaService $procuraduriaDescargaService,
         PresupuestoService $presupuestoService,
         OrdenService $ordenService,
-        ConfirmacionService $confirmacionService
+        ConfirmacionService $confirmacionService,
+        CausaService $causaService
     ) {
         $this->procuraduriaDescargaService = $procuraduriaDescargaService;
         $this->presupuestoService = $presupuestoService;
         $this->ordenService = $ordenService;
         $this->confirmacionService = $confirmacionService;
+        $this->causaService = $causaService;
     }
     /**
      * Display a listing of the resource.
@@ -59,6 +63,13 @@ class ProcuraduriaDescargaController extends Controller
      */
     public function store(StoreProcuraduriaDescargaRequest $request)
     {
+        $orden = $this->ordenService->obtenerUno($request->orden_id);
+        if($this->causaService->cuasaNoEstaActiva($orden->causa_id)){
+            return response()->json([
+                'message' => 'No se puede realizar la descarga, porque la causa no está activa.',
+                'data' => null
+            ], 409);
+        }
         $tieneRegistroDeDescarga = $this->procuraduriaDescargaService->tieneDescargaActiva($request->orden_id);
         if ($tieneRegistroDeDescarga) {
             return response()->json([
