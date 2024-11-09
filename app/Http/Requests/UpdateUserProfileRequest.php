@@ -22,12 +22,33 @@ class UpdateUserProfileRequest extends FormRequest
             'persona.direccion' => 'sometimes|string|max:255',
             'persona.observacion' => 'sometimes|string|max:255',
 
-            // 'nombre' => 'required|string|max:255',
-            // 'apellido' => 'required|string|max:255',
-            // 'telefono' => 'nullable|string|max:20',
-            // 'direccion' => 'nullable|string|max:255',
-            // 'observacion' => 'nullable|string',
-            // 'foto_url' => 'nullable|url',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.string' => 'El nombre debe ser texto.',
+            'name.max' => 'Máximo 255 caracteres en el nombre.',
+
+            'email.email' => 'Correo inválido.',
+            'email.unique' => 'Correo ya registrado.',
+
+            'persona.nombre.string' => 'El nombre debe ser texto.',
+            'persona.nombre.max' => 'Máximo 255 caracteres en el nombre.',
+
+            'persona.apellido.string' => 'El apellido debe ser texto.',
+            'persona.apellido.max' => 'Máximo 255 caracteres en el apellido.',
+
+            'persona.telefono.string' => 'El teléfono debe ser texto.',
+            'persona.telefono.max' => 'Máximo 15 caracteres en el teléfono.',
+
+            'persona.direccion.string' => 'La dirección debe ser texto.',
+            'persona.direccion.max' => 'Máximo 255 caracteres en la dirección.',
+
+            'persona.observacion.string' => 'La observación debe ser texto.',
+            'persona.observacion.max' => 'Máximo 255 caracteres en la observación.',
+
         ];
     }
 }

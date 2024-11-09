@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\User;
+use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -41,21 +43,23 @@ class PerfilUsuarioService
         ];
     }
 
-    public function actualizarPerfil(array $data): array
+    public function actualizarPerfil(array $data): JsonResponse
     {
         $user = Auth::user();
 
         if (!$user instanceof User) {
-            return ResponseService::unauthorized('Usuario no autenticado.');
+            return ResponseService::error('Usuario no autenticado', 401);
         }
 
         DB::beginTransaction();
         try {
+            // Actualizar los datos del usuario
             $user->update([
                 'name' => $data['name'] ?? $user->name,
                 'email' => $data['email'] ?? $user->email,
                 'tipo' => $data['tipo'] ?? $user->tipo
             ]);
+
 
             if (isset($data['persona']) && $user->persona) {
                 $user->persona->update($data['persona']);
@@ -63,17 +67,18 @@ class PerfilUsuarioService
 
             DB::commit();
 
-            return [
-                'status' => 'success',
-                'message' => 'Perfil actualizado correctamente.',
-                'data' => $user->load('persona'),
-                'status_code' => 200
-            ];
-        } catch (\Exception $e) {
+            return ResponseService::success(
+                $user->load('persona'),
+                'Perfil actualizado correctamente.',
+                200
+            );
+        } catch (Exception $e) {
             DB::rollBack();
             return ResponseService::error('Error al actualizar el perfil. ' . $e->getMessage(), 500);
         }
     }
+
+
 
     public function cambiarPassword(array $data): array
     {
@@ -94,12 +99,12 @@ class PerfilUsuarioService
         ];
     }
 
-    public function actualizarFotoPerfil($foto): array
+    public function actualizarFotoPerfil($foto): JsonResponse
     {
         $user = Auth::user();
 
-        if (!$user || !$user->persona) {
-            return ResponseService::unauthorized('Usuario no autenticado o sin perfil asociado.');
+        if (!$user instanceof User) {
+            return ResponseService::error('Usuario no autenticado', 401);
         }
 
         if (!$foto || !$foto->isValid()) {
@@ -110,9 +115,9 @@ class PerfilUsuarioService
             Storage::disk('public')->delete($user->persona->foto_url);
         }
 
-        $nombreUsuario = $user->persona->nombre;
         $extension = $foto->getClientOriginalExtension();
-        $nombreArchivo = Str::slug($nombreUsuario) . '_' . $user->persona->apellido . '.' . $extension;
+        $nombreArchivo = Str::slug($user->persona->nombre . '_' . $user->persona->apellido) . '_' . time() . '.' . $extension;
+
 
         $rutaFoto = $foto->storeAs('fotos_perfil', $nombreArchivo, 'public');
 
@@ -122,11 +127,10 @@ class PerfilUsuarioService
 
         $user->persona->update(['foto_url' => $rutaFoto]);
 
-        return [
-            'status' => 'success',
-            'message' => 'Foto de perfil actualizada correctamente.',
-            'data' => ['foto_url' => Storage::url($rutaFoto)],
-            'status_code' => 200
-        ];
+        return ResponseService::success(
+            ['foto_url' => $rutaFoto],
+            'Foto de perfil actualizada correctamente.',
+            200
+        );
     }
 }

@@ -11,22 +11,18 @@ class ResponseService
         $response = [
             'status' => 'success',
             'message' => $message,
+            'data' => !empty($data) ? $data : null,
         ];
-
-        if (!empty($data)) {
-            $response['data'] = $data;
-        }
 
         return response()->json($response, $status);
     }
-
 
     public static function error($message = 'Ocurrió un error.', $status = 500, $errors = null): JsonResponse
     {
         return response()->json([
             'status' => 'error',
             'message' => $message,
-            'errors' => $errors,
+            'errors' => $errors instanceof \Illuminate\Support\MessageBag ? $errors->toArray() : $errors,
         ], $status);
     }
 
@@ -35,7 +31,7 @@ class ResponseService
         return response()->json([
             'status' => 'error',
             'message' => $message,
-            'errors' => $errors,
+            'errors' => $errors instanceof \Illuminate\Support\MessageBag ? $errors->toArray() : $errors,
         ], $status);
     }
 

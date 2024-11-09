@@ -6,6 +6,7 @@ use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\UpdateUserProfileRequest;
 use App\Services\PerfilUsuarioService;
 use App\Services\ResponseService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -34,14 +35,13 @@ class PerfilUsuarioController extends Controller
     {
         try {
             $validatedData = $request->validated();
-            $response = $this->perfilUsuarioService->actualizarPerfil($validatedData);
-            return $response['status'] === 'success'
-                ? ResponseService::success($response['data'], $response['message'], $response['status_code'])
-                : ResponseService::error($response['message'], $response['status_code']);
-        } catch (\Exception $e) {
+            return $this->perfilUsuarioService->actualizarPerfil($validatedData);
+        } catch (Exception $e) {
             return ResponseService::error('Error inesperado al actualizar el perfil.', 500);
         }
     }
+
+
 
     public function cambiarPassword(UpdatePasswordRequest $request): JsonResponse
     {
@@ -59,12 +59,10 @@ class PerfilUsuarioController extends Controller
     public function actualizarFotoPerfil(Request $request): JsonResponse
     {
         try {
+
             $foto = $request->file('foto');
-            $response = $this->perfilUsuarioService->actualizarFotoPerfil($foto);
-            return $response['status'] === 'success'
-                ? ResponseService::success($response['data'], $response['message'], $response['status_code'])
-                : ResponseService::error($response['message'], $response['status_code']);
-        } catch (\Exception $e) {
+            return $this->perfilUsuarioService->actualizarFotoPerfil($foto);
+        } catch (Exception $e) {
             return ResponseService::error('Error inesperado al actualizar la foto de perfil.', 500);
         }
     }
