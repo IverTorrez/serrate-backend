@@ -77,7 +77,7 @@ class PerfilUsuarioService
         }
     }
 
-    public function cambiarPassword(array $data): array
+    public function cambiarPassword(array $data): JsonResponse
     {
         $user = Auth::user();
 
@@ -89,11 +89,11 @@ class PerfilUsuarioService
             'password' => Hash::make($data['new_password']),
         ]);
 
-        return [
-            'status' => 'success',
-            'message' => SuccessMessages::CONTRASENA_ACTUALIZADA_CORRECTAMENTE,
-            'status_code' => 200
-        ];
+        return ResponseService::success(
+            '',
+            SuccessMessages::CONTRASENA_ACTUALIZADA_CORRECTAMENTE,
+            200
+        );
     }
 
     public function actualizarFotoPerfil($foto): JsonResponse

@@ -43,10 +43,7 @@ class PerfilUsuarioController extends Controller
     {
         try {
             $validatedData = $request->validated();
-            $response = $this->perfilUsuarioService->cambiarPassword($validatedData);
-            return $response['status'] === 'success'
-                ? ResponseService::success([], $response['message'])
-                : ResponseService::error($response['message'], $response['status_code']);
+            return $this->perfilUsuarioService->cambiarPassword($validatedData);
         } catch (Exception $e) {
             return ResponseService::error(ErrorMessages::ERROR_CAMBIAR_CONTRASENA, 500);
         }
