@@ -9,6 +9,7 @@ use App\Services\ResponseService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Constants\ErrorMessages; // Importa la clase de mensajes de error
 
 class PerfilUsuarioController extends Controller
 {
@@ -22,12 +23,9 @@ class PerfilUsuarioController extends Controller
     public function obtenerPerfil(): JsonResponse
     {
         try {
-            $response = $this->perfilUsuarioService->obtenerPerfil();
-            return $response['status'] === 'success'
-                ? ResponseService::success($response['data'], $response['message'], $response['status_code'])
-                : ResponseService::error($response['message'], $response['status_code']);
-        } catch (\Exception $e) {
-            return ResponseService::error('Error inesperado al obtener el perfil.', 500);
+            return $this->perfilUsuarioService->obtenerPerfil();
+        } catch (Exception $e) {
+            return ResponseService::error(ErrorMessages::ERROR_OBTENER_USUARIO, 500);
         }
     }
 
@@ -37,11 +35,9 @@ class PerfilUsuarioController extends Controller
             $validatedData = $request->validated();
             return $this->perfilUsuarioService->actualizarPerfil($validatedData);
         } catch (Exception $e) {
-            return ResponseService::error('Error inesperado al actualizar el perfil.', 500);
+            return ResponseService::error(ErrorMessages::ERROR_ACTUALIZAR, 500);
         }
     }
-
-
 
     public function cambiarPassword(UpdatePasswordRequest $request): JsonResponse
     {
@@ -51,19 +47,18 @@ class PerfilUsuarioController extends Controller
             return $response['status'] === 'success'
                 ? ResponseService::success([], $response['message'])
                 : ResponseService::error($response['message'], $response['status_code']);
-        } catch (\Exception $e) {
-            return ResponseService::error('Error inesperado al cambiar la contraseña.', 500);
+        } catch (Exception $e) {
+            return ResponseService::error(ErrorMessages::ERROR_CAMBIAR_CONTRASENA, 500);
         }
     }
 
     public function actualizarFotoPerfil(Request $request): JsonResponse
     {
         try {
-
             $foto = $request->file('foto');
             return $this->perfilUsuarioService->actualizarFotoPerfil($foto);
         } catch (Exception $e) {
-            return ResponseService::error('Error inesperado al actualizar la foto de perfil.', 500);
+            return ResponseService::error(ErrorMessages::ERROR_CARGAR_IMAGEN, 500);
         }
     }
 }

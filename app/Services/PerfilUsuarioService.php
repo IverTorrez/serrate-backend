@@ -10,20 +10,21 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Constants\SuccessMessages;
+use App\Constants\ErrorMessages;
 
 class PerfilUsuarioService
 {
-    public function obtenerPerfil(): array
+    public function obtenerPerfil(): JsonResponse
     {
         $user = User::with('persona')->find(Auth::id());
 
         if (!$user) {
-            return ResponseService::unauthorized('Usuario no autenticado.');
+            return ResponseService::unauthorized(ErrorMessages::ERROR_OBTENER_USUARIO);
         }
 
-        return [
-            'status' => 'success',
-            'data' => [
+        return ResponseService::success(
+            [
                 'user' => [
                     'name' => $user->name,
                     'email' => $user->email,
@@ -38,9 +39,9 @@ class PerfilUsuarioService
                     ] : null,
                 ]
             ],
-            'status_code' => 200,
-            'message' => 'Perfil obtenido correctamente.'
-        ];
+            SuccessMessages::OBTENIDO_CORRECTAMENTE,
+            200
+        );
     }
 
     public function actualizarPerfil(array $data): JsonResponse
@@ -48,18 +49,16 @@ class PerfilUsuarioService
         $user = Auth::user();
 
         if (!$user instanceof User) {
-            return ResponseService::error('Usuario no autenticado', 401);
+            return ResponseService::unauthorized(ErrorMessages::ERROR_OBTENER_USUARIO);
         }
 
         DB::beginTransaction();
         try {
-            // Actualizar los datos del usuario
             $user->update([
                 'name' => $data['name'] ?? $user->name,
                 'email' => $data['email'] ?? $user->email,
                 'tipo' => $data['tipo'] ?? $user->tipo
             ]);
-
 
             if (isset($data['persona']) && $user->persona) {
                 $user->persona->update($data['persona']);
@@ -69,23 +68,21 @@ class PerfilUsuarioService
 
             return ResponseService::success(
                 $user->load('persona'),
-                'Perfil actualizado correctamente.',
+                SuccessMessages::ACTUALIZADO_CORRECTAMENTE,
                 200
             );
         } catch (Exception $e) {
             DB::rollBack();
-            return ResponseService::error('Error al actualizar el perfil. ' . $e->getMessage(), 500);
+            return ResponseService::error(ErrorMessages::ERROR_ACTUALIZAR . ' ' . $e->getMessage(), 500);
         }
     }
-
-
 
     public function cambiarPassword(array $data): array
     {
         $user = Auth::user();
 
         if (!$user instanceof User) {
-            return ResponseService::unauthorized('Usuario no autenticado.');
+            return ResponseService::unauthorized(ErrorMessages::ERROR_OBTENER_USUARIO);
         }
 
         $user->update([
@@ -94,7 +91,7 @@ class PerfilUsuarioService
 
         return [
             'status' => 'success',
-            'message' => 'Contraseña cambiada correctamente.',
+            'message' => SuccessMessages::CONTRASENA_ACTUALIZADA_CORRECTAMENTE,
             'status_code' => 200
         ];
     }
@@ -104,11 +101,11 @@ class PerfilUsuarioService
         $user = Auth::user();
 
         if (!$user instanceof User) {
-            return ResponseService::error('Usuario no autenticado', 401);
+            return ResponseService::unauthorized(ErrorMessages::ERROR_OBTENER_USUARIO);
         }
 
         if (!$foto || !$foto->isValid()) {
-            return ResponseService::error('Foto no válida.', 400);
+            return ResponseService::error(ErrorMessages::ERROR_CARGAR_IMAGEN, 400);
         }
 
         if ($user->persona->foto_url) {
@@ -118,18 +115,17 @@ class PerfilUsuarioService
         $extension = $foto->getClientOriginalExtension();
         $nombreArchivo = Str::slug($user->persona->nombre . '_' . $user->persona->apellido) . '_' . time() . '.' . $extension;
 
-
         $rutaFoto = $foto->storeAs('fotos_perfil', $nombreArchivo, 'public');
 
         if (!$rutaFoto) {
-            return ResponseService::error('Error al guardar la foto.', 500);
+            return ResponseService::error(ErrorMessages::ERROR_CARGAR_IMAGEN, 500);
         }
 
         $user->persona->update(['foto_url' => $rutaFoto]);
 
         return ResponseService::success(
             ['foto_url' => $rutaFoto],
-            'Foto de perfil actualizada correctamente.',
+            SuccessMessages::FOTO_ACTUALIZADA_CORRECTAMENTE,
             200
         );
     }
