@@ -2,31 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreCompraPaqueteRequest;
-use App\Models\CompraPaquete;
-use App\Services\CompraPaqueteService;
-use App\Services\PaqueteService;
+use Exception;
+use Carbon\Carbon;
+use App\Enums\MessageHttp;
 use Illuminate\Http\Request;
+use App\Models\CompraPaquete;
+use App\Services\PaqueteService;
 
+use App\Constants\TipoTransaccion;
+use App\Services\BilleteraService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Exception;
-use App\Enums\MessageHttp;
-use App\Http\Resources\CompraPaqueteCollection;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use App\Services\CompraPaqueteService;
+use App\Http\Resources\CompraPaqueteCollection;
+use App\Http\Requests\StoreCompraPaqueteRequest;
+use App\Services\BilleteraTransaccionService;
 
 class CompraPaqueteController extends Controller
 {
     protected $compraPaqueteService;
     protected $paqueteService;
+    protected $billeteraService;
+    protected $billeteraTransaccionService;
 
     public function __construct(
         CompraPaqueteService $compraPaqueteService,
-        PaqueteService $paqueteService
+        PaqueteService $paqueteService,
+        BilleteraService $billeteraService,
+        BilleteraTransaccionService $billeteraTransaccionService
     ) {
         $this->compraPaqueteService = $compraPaqueteService;
         $this->paqueteService = $paqueteService;
+        $this->billeteraService = $billeteraService;
+        $this->billeteraTransaccionService = $billeteraTransaccionService;
     }
     /**
      * Display a listing of the resource.
@@ -63,6 +72,15 @@ class CompraPaqueteController extends Controller
      */
     public function store(StoreCompraPaqueteRequest $request)
     {
+        $idUser = Auth::id();
+        $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($idUser);
+        if (!$billetera || $billetera->monto < $request->monto) {
+            return response()->json([
+                'message' => 'No tiene suficiente saldo en su billetera',
+                'data' => null
+            ], 409);
+        }
+
         DB::beginTransaction();
         try {
             $paquete = $this->paqueteService->obtenerUno($request->paquete_id);
@@ -78,15 +96,21 @@ class CompraPaqueteController extends Controller
                 'cantidad_causas' => $paquete->cantidad_causas,
                 'dias_vigente' => $cantidadDias,
                 'paquete_id' => $request->paquete_id,
-                'usuario_id' => Auth::user()->id,
+                'usuario_id' => $idUser,
             ];
             $compraPaquete = $this->compraPaqueteService->store($data);
+            //Registro de transaccion en billetera
+            $billeteraId = $billetera->id;
+            $monto = $request->monto;
+            $tipoTransaccion = TipoTransaccion::DEBITO;
+            $glosa = 'Débito por compra de paquete';
+            $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId,$monto,$tipoTransaccion,$glosa);
 
             DB::commit();
             return response()->json([
                 'message' => MessageHttp::CREADO_CORRECTAMENTE,
                 'data' => $compraPaquete
-            ], 200);
+            ], 201);
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error al crear la orden: ' . $e->getMessage());

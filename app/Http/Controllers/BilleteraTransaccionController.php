@@ -92,29 +92,14 @@ class BilleteraTransaccionController extends Controller
                 'data' => null
             ], 403); // Código 403 para "Prohibido"
         }
-        $idUser = Auth::user()->id;
         DB::beginTransaction();
         try {
-            $now = Carbon::now('America/La_Paz');
-            $fechaHora = $now->toDateTimeString();
+            $billeteraId = $request->billetera_id;
+            $monto = $request->monto;
+            $tipoTransaccion = TipoTransaccion::CREDITO;
+            $glosa = 'Depósito a billetera';
+            $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa);
 
-            $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($idUser);
-
-            $data = [
-                'monto' => $request->monto,
-                'fecha_transaccion' => $fechaHora,
-                'tipo' => TipoTransaccion::DEPOSITO,
-                'billetera_id' => $request->billetera_id,
-                'usuario_id' => $idUser
-            ];
-            $billeteraTransaccion = $this->billeteraTransaccionService->store($data);
-            //Suma a la billetera del abogado
-            $montoBilletera = $billetera->monto;
-            $montoActualizado = $montoBilletera + $billeteraTransaccion->monto;
-            $dataBilletera = [
-                'monto' => $montoActualizado
-            ];
-            $billetera = $this->billeteraService->update($dataBilletera, $request->billetera_id);
 
             DB::commit();
             return response()->json([

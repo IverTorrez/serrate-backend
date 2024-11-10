@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\OrdenCollection;
 use App\Http\Requests\StoreOrdenRequest;
 use App\Http\Requests\UpdateOrdenRequest;
+use App\Services\CausaService;
 use App\Services\MatrizCotizacionService;
 
 
@@ -26,15 +27,18 @@ class OrdenController extends Controller
     protected $matrizCotizacionService;
     protected $cotizacionService;
     protected $ordenService;
+    protected $causaService;
 
     public function __construct(
         MatrizCotizacionService $matrizCotizacionService,
         CotizacionService $cotizacionService,
-        OrdenService $ordenService
+        OrdenService $ordenService,
+        CausaService $causaService
     ) {
         $this->matrizCotizacionService = $matrizCotizacionService;
         $this->cotizacionService = $cotizacionService;
         $this->ordenService = $ordenService;
+        $this->causaService = $causaService;
     }
 
     public function index(Request $request)
@@ -57,6 +61,13 @@ class OrdenController extends Controller
 
     public function store(StoreOrdenRequest $request)
     {
+        if($this->causaService->cuasaNoEstaActiva($request->causa_id)){
+            return response()->json([
+                'message' => 'No se puede girar orden, porque la causa no está activa.',
+                'data' => null
+            ], 409);
+        }
+
         DB::beginTransaction();
         try {
             $response = $this->obtenetMatrizCotizacion($request->fecha_inicio, $request->fecha_fin, $request->prioridad);

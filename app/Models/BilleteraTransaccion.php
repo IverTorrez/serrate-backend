@@ -13,6 +13,7 @@ class BilleteraTransaccion extends Model
         'monto',
         'fecha_transaccion',
         'tipo',
+        'glosa',
         'billetera_id',
         'usuario_id',
         'estado',

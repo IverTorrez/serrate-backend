@@ -118,6 +118,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::patch('clase-tribunal/eliminar/{claseTribunal}', [ClaseTribunalController::class, 'destroy']);
         //Causa
         Route::get('causas', [CausaController::class, 'index']);
+        Route::get('causas/listado/terminadas', [CausaController::class, 'indexTerminadas']);
         Route::post('causas', [CausaController::class, 'store']);
         Route::get('causas/{causa}', [CausaController::class, 'show']);
         Route::patch('causas/{causa}', [CausaController::class, 'update']);
