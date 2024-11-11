@@ -2,80 +2,55 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreAuthRequest;
+use App\Http\Requests\StoreLoginRequest;
 use App\Services\AuthService;
-use Illuminate\Support\Facades\Log;
+use App\Services\ResponseService;
+use Illuminate\Http\JsonResponse;
+use Exception;
 
 class AuthController extends Controller
 {
-
-    protected $authService;
+    protected AuthService $authService;
 
     public function __construct(AuthService $authService)
     {
         $this->authService = $authService;
     }
 
-    public function register(Request $request)
+    public function register(StoreAuthRequest $request): JsonResponse
     {
         try {
+            $result = $this->authService->register($request->validated());
 
-            $result = $this->authService->register($request->all());
-
-
-            if (isset($result['errors'])) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Errores de validación',
-                    'errors' => $result['errors']
-                ], 400);
-            }
-
-
-            if (isset($result['error'])) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => $result['error'],
-                ], $result['status']);
-            }
-
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Registro exitoso',
-                'data' => $result['data'],
-                'access_token' => $result['access_token'],
-                'token_type' => $result['token_type']
-            ], 201);
-        } catch (\Exception $e) {
-
-            Log::error('Error inesperado al registrar usuario: ' . $e->getMessage());
-
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.'
-            ], 500);
+            return $result['status'] === 'success'
+                ? ResponseService::success($result['data'], $result['status_code'])
+                : ResponseService::error($result['message'], $result['status_code']);
+        } catch (Exception $e) {
+            return ResponseService::error('Error inesperado al registrar usuario.', 500);
         }
     }
 
-
-
-    public function login(Request $request)
+    public function login(StoreLoginRequest $request): JsonResponse
     {
-        $result = $this->authService->login($request->only('email', 'password'));
+        try {
+            $result = $this->authService->login($request->validated());
 
-        if (isset($result['status'])) {
-            return response()->json(['message' => $result['message']], $result['status']);
+            return $result['status'] === 'success'
+                ? ResponseService::success($result['data'], $result['status_code'])
+                : ResponseService::unauthorized($result['message'], $result['status_code']);
+        } catch (Exception $e) {
+            return ResponseService::error('Error inesperado al iniciar sesión.', 500);
         }
-
-        return response()->json($result);
     }
 
-
-    public function logout()
+    public function logout(): JsonResponse
     {
-        $result = $this->authService->logout();
-        return response()->json($result);
+        try {
+            $result = $this->authService->logout();
+            return ResponseService::success($result);
+        } catch (Exception $e) {
+            return ResponseService::error('Error inesperado al cerrar sesión.', 500);
+        }
     }
 }
