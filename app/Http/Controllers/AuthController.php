@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\ErrorMessages;
 use App\Http\Requests\StoreAuthRequest;
 use App\Http\Requests\StoreLoginRequest;
 use App\Services\AuthService;
@@ -34,13 +35,9 @@ class AuthController extends Controller
     public function login(StoreLoginRequest $request): JsonResponse
     {
         try {
-            $result = $this->authService->login($request->validated());
-
-            return $result['status'] === 'success'
-                ? ResponseService::success($result['data'], $result['status_code'])
-                : ResponseService::unauthorized($result['message'], $result['status_code']);
+            return $this->authService->login($request->validated());
         } catch (Exception $e) {
-            return ResponseService::error('Error inesperado al iniciar sesión.', 500);
+            return ResponseService::error(ErrorMessages::ERROR_LOGIN, 500);
         }
     }
 
