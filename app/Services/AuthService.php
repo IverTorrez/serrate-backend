@@ -2,15 +2,21 @@
 
 namespace App\Services;
 
+use App\Constants\ErrorMessages;
 use App\Models\User;
 use App\Models\Persona;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Constants\Estado;
+use App\Constants\GeneralMessages;
+use App\Constants\SuccessMessages;
 use App\Constants\TipoUsuario;
+use App\Constants\ValidationMessages;
 use App\Models\Billetera;
+use Error;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
 class AuthService
@@ -81,37 +87,36 @@ class AuthService
         }
     }
 
-    public function login(array $credentials): array
+    public function login(array $credentials): JsonResponse
     {
         $user = User::where('email', $credentials['email'])->first();
 
         if (!$user) {
-            return [
-                'status' => 'error',
-                'message' => 'Correo electrónico no encontrado',
-                'status_code' => 404
-            ];
+            return ResponseService::validationError(
+                ['email' => [ValidationMessages::ERROR_VALIDACION_EMAIL]],
+                ErrorMessages::ERROR_AUTENTICACION
+            );
         }
 
         if (!Hash::check($credentials['password'], $user->password)) {
-            return [
-                'status' => 'error',
-                'message' => 'Contraseña incorrecta',
-                'status_code' => 401
-            ];
+            return ResponseService::validationError(
+                ['password' => [ValidationMessages::ERROR_VALIDACION_PASSWORD]],
+                ErrorMessages::ERROR_AUTENTICACION
+            );
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return [
-            'status' => 'success',
-            'data' => [
+        return ResponseService::success(
+            [
                 'user' => $user,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ],
-            'status_code' => 200
-        ];
+
+            GeneralMessages::INICIO_SESION_EXITOSO,
+            200
+        );
     }
 
     public function logout(): array
