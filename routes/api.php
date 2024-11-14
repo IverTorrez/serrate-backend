@@ -212,6 +212,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('orden/listado/entregar-presupuesto/procurador/{procuradorId}', [OrdenController::class, 'ordenesParaEntregarPresupuesto']);
         Route::get('orden/listado/devolver-presupuesto/procurador/{procuradorId}', [OrdenController::class, 'ordenesParaDevolverPresupuesto']);
         Route::get('orden/listado/sin-costojudicial-venta/admin', [OrdenController::class, 'ordenesParaColocarCostoJudicialVenta']);
+        Route::get('orden/cantidad-orden-etapas', [OrdenController::class, 'cantidadOrdenesEnEtapas']);
         //Cotizacion
 
         //Presupuesto

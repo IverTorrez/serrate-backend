@@ -248,14 +248,13 @@ class OrdenService
                 })
                 ->whereDoesntHave('descarga'); //Verifica que no exista registros en descarga
 
-                $query->where('procurador_id', $procuradorId);
-                $result = $query->get();
+            $query->where('procurador_id', $procuradorId);
+            $result = $query->get();
 
-                return [
-                    'message' => 'Ordenes obtenidas correctamente',
-                    'data' => $result
-                ];
-
+            return [
+                'message' => 'Ordenes obtenidas correctamente',
+                'data' => $result
+            ];
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
         }
@@ -299,20 +298,19 @@ class OrdenService
                 ->active()
                 ->whereHas('descarga', function ($query) {
                     $query->where('es_validado', 0)
-                          ->whereHas('confirmacion', function ($query) {
-                              $query->whereNull('fecha_confir_contador');
-                          });
+                        ->whereHas('confirmacion', function ($query) {
+                            $query->whereNull('fecha_confir_contador');
+                        });
                 });
 
 
-                $query->where('procurador_id', $procuradorId);
-                $result = $query->get();
+            $query->where('procurador_id', $procuradorId);
+            $result = $query->get();
 
-                return [
-                    'message' => 'Ordenes obtenidas correctamente',
-                    'data' => $result
-                ];
-
+            return [
+                'message' => 'Ordenes obtenidas correctamente',
+                'data' => $result
+            ];
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
         }
@@ -359,13 +357,12 @@ class OrdenService
                 ->whereHas('finalCostos', function ($query) {
                     $query->where('es_validado', 0);
                 });
-                $result = $query->get();
+            $result = $query->get();
 
-                return [
-                    'message' => 'Ordenes obtenidas correctamente',
-                    'data' => $result
-                ];
-
+            return [
+                'message' => 'Ordenes obtenidas correctamente',
+                'data' => $result
+            ];
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
         }
