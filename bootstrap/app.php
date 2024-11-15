@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
-use Throwable;
+//use Throwable;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
