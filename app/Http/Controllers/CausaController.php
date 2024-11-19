@@ -4,24 +4,37 @@ namespace App\Http\Controllers;
 
 use Exception;
 use App\Models\Causa;
+use App\Constants\Estado;
+use App\Models\TipoLegal;
 use App\Enums\MessageHttp;
 use Illuminate\Http\Request;
+use App\Constants\EtapaOrden;
 use App\Services\UserService;
 use App\Constants\EstadoCausa;
 use App\Constants\TipoUsuario;
 use App\Services\CausaService;
 use App\Services\PostaService;
 use Illuminate\Support\Facades\DB;
+
 use App\Services\CausaPostaService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-
+use App\Services\PaqueteCausaService;
 use App\Http\Resources\CausaCollection;
 use App\Http\Requests\StoreCausaRequest;
 use App\Services\AvancePlantillaService;
 use App\Http\Requests\UpdateCausaRequest;
-use App\Models\TipoLegal;
-use App\Services\PaqueteCausaService;
+use App\Services\ListadoCausasOrdenGiradaService;
+use App\Services\ListadoCausasOrdenAceptadasService;
+use App\Services\ListadoCausasOrdenDescargadaService;
+use App\Services\ListadoCausasOrdenListaRealizarService;
+use App\Services\ListadoCausasOrdenVencidasLevesService;
+use App\Services\ListadoCausasOrdenPresupuestadasService;
+use App\Services\ListadoCausasOrdenVencidasGravesService;
+use App\Services\ListadoCausasOrdenDineroEntregadoService;
+use App\Services\ListadoCausasOrdenPronuncioAbogadoService;
+use App\Services\ListadoCausasOrdenPrePresupuestadasService;
+use App\Services\ListadoCausasOrdenCuentasConciliadasService;
 
 class CausaController extends Controller
 {
@@ -31,6 +44,17 @@ class CausaController extends Controller
     protected $causaPostaService;
     protected $userService;
     protected $paqueteCausaService;
+    protected $listadoCausasOrdenGiradaService;
+    protected $listadoCausasOrdenPrePresupuestadasService;
+    protected $listadoCausasOrdenPresupuestadasService;
+    protected $listadoCausasOrdenAceptadasService;
+    protected $listadoCausasOrdenDineroEntregadoService;
+    protected $listadoCausasOrdenListaRealizarService;
+    protected $listadoCausasOrdenDescargadaService;
+    protected $listadoCausasOrdenPronuncioAbogadoService;
+    protected $listadoCausasOrdenCuentasConciliadaService;
+    protected $listadoCausasOrdenVencidasLevesService;
+    protected $listadoCausasOrdenVencidasGravesService;
 
     public function __construct(
         CausaService $causaService,
@@ -38,7 +62,18 @@ class CausaController extends Controller
         PostaService $postaService,
         CausaPostaService $causaPostaService,
         UserService $userService,
-        PaqueteCausaService $paqueteCausaService
+        PaqueteCausaService $paqueteCausaService,
+        ListadoCausasOrdenGiradaService $listadoCausasOrdenGiradaService,
+        ListadoCausasOrdenPrePresupuestadasService $listadoCausasOrdenPrePresupuestadasService,
+        ListadoCausasOrdenPresupuestadasService $listadoCausasOrdenPresupuestadasService,
+        ListadoCausasOrdenAceptadasService $listadoCausasOrdenAceptadasService,
+        ListadoCausasOrdenDineroEntregadoService $listadoCausasOrdenDineroEntregadoService,
+        ListadoCausasOrdenListaRealizarService $listadoCausasOrdenListaRealizarService,
+        ListadoCausasOrdenDescargadaService $listadoCausasOrdenDescargadaService,
+        ListadoCausasOrdenPronuncioAbogadoService $listadoCausasOrdenPronuncioAbogadoService,
+        ListadoCausasOrdenCuentasConciliadasService $listadoCausasOrdenCuentasConciliadaService,
+        ListadoCausasOrdenVencidasLevesService $listadoCausasOrdenVencidasLevesService,
+        ListadoCausasOrdenVencidasGravesService $listadoCausasOrdenVencidasGravesService
     ) {
         $this->causaService = $causaService;
         $this->avancePlantillaService = $avancePlantillaService;
@@ -46,6 +81,17 @@ class CausaController extends Controller
         $this->causaPostaService = $causaPostaService;
         $this->userService = $userService;
         $this->paqueteCausaService = $paqueteCausaService;
+        $this->listadoCausasOrdenGiradaService = $listadoCausasOrdenGiradaService;
+        $this->listadoCausasOrdenPrePresupuestadasService = $listadoCausasOrdenPrePresupuestadasService;
+        $this->listadoCausasOrdenPresupuestadasService = $listadoCausasOrdenPresupuestadasService;
+        $this->listadoCausasOrdenAceptadasService = $listadoCausasOrdenAceptadasService;
+        $this->listadoCausasOrdenDineroEntregadoService = $listadoCausasOrdenDineroEntregadoService;
+        $this->listadoCausasOrdenListaRealizarService = $listadoCausasOrdenListaRealizarService;
+        $this->listadoCausasOrdenDescargadaService = $listadoCausasOrdenDescargadaService;
+        $this->listadoCausasOrdenPronuncioAbogadoService = $listadoCausasOrdenPronuncioAbogadoService;
+        $this->listadoCausasOrdenCuentasConciliadaService = $listadoCausasOrdenCuentasConciliadaService;
+        $this->listadoCausasOrdenVencidasLevesService = $listadoCausasOrdenVencidasLevesService;
+        $this->listadoCausasOrdenVencidasGravesService = $listadoCausasOrdenVencidasGravesService;
     }
     /**
      * Display a listing of the resource.
@@ -356,5 +402,138 @@ class CausaController extends Controller
             'data' => $causas
         ];
         return response()->json($data);
+    }
+    //Listado de causas para seguimiento de ordenes
+    public function listadoCausasOrdenGiradas(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasOrdenGiradaService->devuelveListadoCausasOrdenGirada($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenPrePresupuestadas(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasOrdenPrePresupuestadasService->devuelveListadoCausasOrdenPrePresupuestadas($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenPresupuestadas(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasOrdenPresupuestadasService->devuelveListadoCausasOrdenPresupuestadas($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenAceptadas(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasOrdenAceptadasService->devuelveListadoCausasOrdenAceptadas($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenDineroEntregado(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasOrdenDineroEntregadoService->devuelveListadoCausasOrdenDineroEntregado($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenListaRealizar(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasOrdenListaRealizarService->devuelveListadoCausasOrdenListaRealizar($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenDescargadas(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasOrdenDescargadaService->devuelveListadoCausasOrdenDescargada($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenPronuncioAbogado(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasOrdenPronuncioAbogadoService->devuelveListadoCausasOrdenPronuncioAbogado($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenCuentasConciliadas(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasOrdenCuentasConciliadaService->devuelveListadoCausasOrdenCuentasConciliadas($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenVencidasLeves(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasOrdenVencidasLevesService->devuelveListadoCausasOrdenVencidasLeves($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenVencidasGraves(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasOrdenVencidasGravesService->devuelveListadoCausasOrdenVencidasGraves($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
     }
 }
