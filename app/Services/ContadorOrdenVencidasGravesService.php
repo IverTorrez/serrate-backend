@@ -22,7 +22,7 @@ class ContadorOrdenVencidasGravesService
         return Orden::where('etapa_orden', '!=', EtapaOrden::CERRADA)
             ->where('estado', Estado::ACTIVO)
             ->where('es_eliminado', 0)
-            ->where('fecha_fin', '<=', $fechaHora)
+            ->where('fecha_fin', '<', $fechaHora)
             ->whereDoesntHave('descarga') //Verifica que no exista registros en descarga
             ->whereHas('causa', function ($query) use ($usuarioId) {
                 $query->where('usuario_id', $usuarioId);
@@ -38,7 +38,7 @@ class ContadorOrdenVencidasGravesService
         return Orden::where('etapa_orden', '!=', EtapaOrden::CERRADA)
             ->where('estado', Estado::ACTIVO)
             ->where('es_eliminado', 0)
-            ->where('fecha_fin', '<=', $fechaHora)
+            ->where('fecha_fin', '<', $fechaHora)
             ->whereDoesntHave('descarga') //Verifica que no exista registros en descarga
             ->whereHas('causa', function ($query) use ($usuarioId) {
                 $query->where('abogado_id', $usuarioId);
@@ -55,7 +55,7 @@ class ContadorOrdenVencidasGravesService
             ->where('estado', Estado::ACTIVO)
             ->where('es_eliminado', 0)
             ->where('procurador_id', $usuarioId)
-            ->where('fecha_fin', '<=', $fechaHora)
+            ->where('fecha_fin', '<', $fechaHora)
             ->whereDoesntHave('descarga') //Verifica que no exista registros en descarga
             ->count();
     }
@@ -67,7 +67,7 @@ class ContadorOrdenVencidasGravesService
         return Orden::where('etapa_orden', '!=', EtapaOrden::CERRADA)
             ->where('estado', Estado::ACTIVO)
             ->where('es_eliminado', 0)
-            ->where('fecha_fin', '<=', $fechaHora)
+            ->where('fecha_fin', '<', $fechaHora)
             ->whereDoesntHave('descarga') //Verifica que no exista registros en descarga
             ->count();
     }
