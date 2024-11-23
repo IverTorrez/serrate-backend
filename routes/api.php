@@ -124,6 +124,18 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::patch('causas/{causa}', [CausaController::class, 'update']);
         Route::patch('causas/eliminar/{causa}', [CausaController::class, 'destroy']);
         Route::get('causas/listado/sin-paquete', [CausaController::class, 'listarCausasParaPaquete']);
+        //Rutas de listado para seguimiento de ordenes
+        Route::get('causas/listado/orden-giradas', [CausaController::class, 'listadoCausasOrdenGiradas']);
+        Route::get('causas/listado/orden-pre-presupuestadas', [CausaController::class, 'listadoCausasOrdenPrePresupuestadas']);
+        Route::get('causas/listado/orden-presupuestadas', [CausaController::class, 'listadoCausasOrdenPresupuestadas']);
+        Route::get('causas/listado/orden-aceptadas', [CausaController::class, 'listadoCausasOrdenAceptadas']);
+        Route::get('causas/listado/orden-dinero-entregado', [CausaController::class, 'listadoCausasOrdenDineroEntregado']);
+        Route::get('causas/listado/orden-lista-realizar', [CausaController::class, 'listadoCausasOrdenListaRealizar']);
+        Route::get('causas/listado/orden-descargadas', [CausaController::class, 'listadoCausasOrdenDescargadas']);
+        Route::get('causas/listado/orden-pronuncio-abogado', [CausaController::class, 'listadoCausasOrdenPronuncioAbogado']);
+        Route::get('causas/listado/orden-cuenta-conciliadas', [CausaController::class, 'listadoCausasOrdenCuentasConciliadas']);
+        Route::get('causas/listado/orden-vencidas-leves', [CausaController::class, 'listadoCausasOrdenVencidasLeves']);
+        Route::get('causas/listado/orden-vencidas-graves', [CausaController::class, 'listadoCausasOrdenVencidasGraves']);
         //Tribunal
         Route::get('tribunal', [TribunalController::class, 'index']);
         Route::post('tribunal', [TribunalController::class, 'store']);
@@ -213,6 +225,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('orden/listado/entregar-presupuesto/procurador/{procuradorId}', [OrdenController::class, 'ordenesParaEntregarPresupuesto']);
         Route::get('orden/listado/devolver-presupuesto/procurador/{procuradorId}', [OrdenController::class, 'ordenesParaDevolverPresupuesto']);
         Route::get('orden/listado/sin-costojudicial-venta/admin', [OrdenController::class, 'ordenesParaColocarCostoJudicialVenta']);
+        Route::get('orden/cantidad-orden-etapas', [OrdenController::class, 'cantidadOrdenesEnEtapas']);
         //Cotizacion
 
         //Presupuesto

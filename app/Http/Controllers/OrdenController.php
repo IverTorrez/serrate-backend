@@ -9,6 +9,7 @@ use App\Constants\Estado;
 use App\Enums\MessageHttp;
 use Illuminate\Http\Request;
 use App\Constants\EtapaOrden;
+use App\Constants\TipoUsuario;
 use App\Services\OrdenService;
 use Illuminate\Support\Facades\DB;
 use App\Services\CotizacionService;
@@ -19,6 +20,17 @@ use App\Http\Resources\OrdenCollection;
 use App\Http\Requests\StoreOrdenRequest;
 use App\Http\Requests\UpdateOrdenRequest;
 use App\Services\CausaService;
+use App\Services\ContadorOrdenAceptadasService;
+use App\Services\ContadorOrdenCuentasConciliadaService;
+use App\Services\ContadorOrdenDescargadaService;
+use App\Services\ContadorOrdenDineroEntregadoService;
+use App\Services\ContadorOrdenGiradasService;
+use App\Services\ContadorOrdenListasRealizarService;
+use App\Services\ContadorOrdenPrePresupuestadaService;
+use App\Services\ContadorOrdenPresupuestadaService;
+use App\Services\ContadorOrdenPronuncioAbogadoService;
+use App\Services\ContadorOrdenVencidasGravesService;
+use App\Services\ContadorOrdenVencidasLevesService;
 use App\Services\MatrizCotizacionService;
 
 
@@ -28,17 +40,51 @@ class OrdenController extends Controller
     protected $cotizacionService;
     protected $ordenService;
     protected $causaService;
+    protected $contadorOrdenGiradasService;
+    protected $contadorOrdenPrePresupuestadasService;
+    protected $contadorOrdenPresupuestadaService;
+    protected $contadorOrdenAceptadaService;
+    protected $contadorOrdenDineroEntregadoService;
+    protected $contadorOrdenListasRealizarService;
+    protected $contadorOrdenDescargadaService;
+    protected $contadorOrdenPronuncioAbogadoService;
+    protected $contadorOrdenCuentasConciliadaService;
+    protected $contadorOrdenVencidasLevesService;
+    protected $contadorOrdenVencidasGravesService;
 
     public function __construct(
         MatrizCotizacionService $matrizCotizacionService,
         CotizacionService $cotizacionService,
         OrdenService $ordenService,
-        CausaService $causaService
+        CausaService $causaService,
+        ContadorOrdenGiradasService $contadorOrdenGiradasService,
+        ContadorOrdenPrePresupuestadaService $contadorOrdenPrePresupuestadasService,
+        ContadorOrdenPresupuestadaService $contadorOrdenPresupuestadaService,
+        ContadorOrdenAceptadasService $contadorOrdenAceptadaService,
+        ContadorOrdenDineroEntregadoService $contadorOrdenDineroEntregadoService,
+        ContadorOrdenListasRealizarService $contadorOrdenListasRealizarService,
+        ContadorOrdenDescargadaService $contadorOrdenDescargadaService,
+        ContadorOrdenPronuncioAbogadoService $contadorOrdenPronuncioAbogadoService,
+        ContadorOrdenCuentasConciliadaService $contadorOrdenCuentasConciliadaService,
+        ContadorOrdenVencidasLevesService $contadorOrdenVencidasLevesService,
+        ContadorOrdenVencidasGravesService $contadorOrdenVencidasGravesService
     ) {
         $this->matrizCotizacionService = $matrizCotizacionService;
         $this->cotizacionService = $cotizacionService;
         $this->ordenService = $ordenService;
         $this->causaService = $causaService;
+        //Contadores de ordenes
+        $this->contadorOrdenGiradasService = $contadorOrdenGiradasService;
+        $this->contadorOrdenPrePresupuestadasService = $contadorOrdenPrePresupuestadasService;
+        $this->contadorOrdenPresupuestadaService = $contadorOrdenPresupuestadaService;
+        $this->contadorOrdenAceptadaService = $contadorOrdenAceptadaService;
+        $this->contadorOrdenDineroEntregadoService = $contadorOrdenDineroEntregadoService;
+        $this->contadorOrdenListasRealizarService = $contadorOrdenListasRealizarService;
+        $this->contadorOrdenDescargadaService = $contadorOrdenDescargadaService;
+        $this->contadorOrdenPronuncioAbogadoService = $contadorOrdenPronuncioAbogadoService;
+        $this->contadorOrdenCuentasConciliadaService = $contadorOrdenCuentasConciliadaService;
+        $this->contadorOrdenVencidasLevesService = $contadorOrdenVencidasLevesService;
+        $this->contadorOrdenVencidasGravesService = $contadorOrdenVencidasGravesService;
     }
 
     public function index(Request $request)
@@ -61,7 +107,7 @@ class OrdenController extends Controller
 
     public function store(StoreOrdenRequest $request)
     {
-        if($this->causaService->cuasaNoEstaActiva($request->causa_id)){
+        if ($this->causaService->cuasaNoEstaActiva($request->causa_id)) {
             return response()->json([
                 'message' => 'No se puede girar orden, porque la causa no está activa.',
                 'data' => null
@@ -209,8 +255,7 @@ class OrdenController extends Controller
 
     public function aceptarOrden(Orden $orden)
     {
-        if($orden->fecha_recepcion)
-        {
+        if ($orden->fecha_recepcion) {
             return response()->json([
                 'message' => 'Esta orden ya fue aceptada',
                 'data' => null
@@ -292,5 +337,36 @@ class OrdenController extends Controller
     {
         $data = $this->ordenService->listarOrdenParaColocarCostoJudicialVenta();
         return response()->json($data);
+    }
+    public function cantidadOrdenesEnEtapas()
+    {
+        $cantidadGiradas = $this->contadorOrdenGiradasService->devuelveCantidadOrdenesGiradas();
+        $cantidadPrePresupuestadas = $this->contadorOrdenPrePresupuestadasService->devuelveCantidadOrdenesPrePresupuestadas();
+        $cantidadPresupuestadas = $this->contadorOrdenPresupuestadaService->devuelveCantidadOrdenesPresupuestadas();
+        $cantidadAceptadas = $this->contadorOrdenAceptadaService->devuelveCantidadOrdenesAceptadas();
+        $cantidadDineroEntregado = $this->contadorOrdenDineroEntregadoService->devuelveCantidadOrdenesDineroEntregado();
+        $cantidadListasRealizar = $this->contadorOrdenListasRealizarService->devuelveCantidadOrdenesListasRealizar();
+        $cantidadDescargada = $this->contadorOrdenDescargadaService->devuelveCantidadOrdenesDescargadas();
+        $cantidadPronuncioAbogado = $this->contadorOrdenPronuncioAbogadoService->devuelveCantidadOrdenesPronuncioAbogado();
+        $cantidadCuentasConciliadas = $this->contadorOrdenCuentasConciliadaService->devuelveCantidadOrdenesCuentasConciliadas();
+        $cantidadVencidasLeves = $this->contadorOrdenVencidasLevesService->devuelveCantidadOrdenesVencidasLeves();
+        $cantidadVencidasGraves = $this->contadorOrdenVencidasGravesService->devuelveCantidadOrdenesVencidasGraves();
+        $data = [
+            'cantidad_giradas' => $cantidadGiradas,
+            'cantidad_pre_presupuestadas' => $cantidadPrePresupuestadas,
+            'cantidad_presupuestadas' => $cantidadPresupuestadas,
+            'cantidad_aceptadas' => $cantidadAceptadas,
+            'cantidad_dinero_entregado' => $cantidadDineroEntregado,
+            'cantidad_lista_realizar' => $cantidadListasRealizar,
+            'cantidad_descargadas' => $cantidadDescargada,
+            'cantidad_pronuncio_abogado' => $cantidadPronuncioAbogado,
+            'cantidad_cuentas_conciliadas' => $cantidadCuentasConciliadas,
+            'cantidad_vencidas_leves' => $cantidadVencidasLeves,
+            'cantidad_vencidas_graves' => $cantidadVencidasGraves
+        ];
+        return response()->json([
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $data
+        ], 200);
     }
 }
