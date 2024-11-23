@@ -15,29 +15,26 @@ class StoreAuthRequest extends FormRequest
     public function rules(): array
     {
         return [
-
-            'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'tipo' => 'required|string|in:' . implode(',', TipoUsuario::getValues()),
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'telefono' => 'nullable|string|max:20',
+            'direccion' => 'nullable|string|max:255',
 
-            'persona.nombre' => 'required|string|max:255',
-            'persona.apellido' => 'required|string|max:255',
-            'persona.telefono' => 'nullable|string|max:20',
-            'persona.direccion' => 'nullable|string|max:255',
-            //'persona.coordenadas' => 'nullable|string|max:255',
-            //'persona.observacion' => 'nullable|string',
-            //'persona.foto_url' => 'nullable|url',
-            //'persona.estado' => 'nullable|boolean',
-            //'persona.es_eliminado' => 'nullable|boolean',
+            // Opciones moto
+            'opciones_moto' => 'nullable|array',
+            'opciones_moto.NO_MOTO' => 'nullable|boolean',
+            'opciones_moto.SI_MANEJA_NO_TIENE' => 'nullable|boolean',
+            'opciones_moto.SI_MOTO' => 'nullable|boolean',
         ];
     }
+
 
     public function messages(): array
     {
         return [
-
-            'name.required' => 'El campo nombre es obligatorio.',
             'email.required' => 'El campo email es obligatorio.',
             'email.email' => 'El campo email debe ser una dirección de correo válida.',
             'email.unique' => 'Este correo electrónico ya está registrado.',
@@ -45,15 +42,15 @@ class StoreAuthRequest extends FormRequest
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'tipo.required' => 'El campo tipo es obligatorio.',
             'tipo.in' => 'El tipo seleccionado no es válido.',
-
-            'persona.nombre.required' => 'El campo nombre de la persona es obligatorio.',
-            'persona.apellido.required' => 'El campo apellido es obligatorio.',
-            'persona.telefono.max' => 'El teléfono no debe exceder los 20 caracteres.',
-            'persona.direccion.max' => 'La dirección no debe exceder los 255 caracteres.',
-            // 'persona.coordenadas.max' => 'Las coordenadas no deben exceder los 255 caracteres.',
-            // 'persona.foto_url.url' => 'La URL de la foto debe ser válida.',
-            // 'persona.estado.boolean' => 'El estado debe ser verdadero o falso.',
-            // 'persona.es_eliminado.boolean' => 'El campo "es eliminado" debe ser verdadero o falso.',
+            'nombre.required' => 'El campo nombre de la persona es obligatorio.',
+            'apellido.required' => 'El campo apellido es obligatorio.',
+            'telefono.max' => 'El teléfono no debe exceder los 20 caracteres.',
+            'direccion.max' => 'La dirección no debe exceder los 255 caracteres.',
+            // Opciones moto
+            'opciones_moto.array' => 'Las opciones de moto deben ser un arreglo.',
+            'opciones_moto.NO_MOTO.boolean' => 'El valor de NO_MOTO debe ser verdadero o falso.',
+            'opciones_moto.SI_MANEJA_NO_TIENE.boolean' => 'El valor de SI_MANEJA_NO_TIENE debe ser verdadero o falso.',
+            'opciones_moto.SI_MOTO.boolean' => 'El valor de SI_MOTO debe ser verdadero o falso.',
         ];
     }
 }
