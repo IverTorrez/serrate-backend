@@ -40,6 +40,7 @@ use App\Http\Controllers\VideoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BilleteraController;
+use App\Http\Controllers\VerificationController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -59,6 +60,11 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
             Route::post('logout', [AuthController::class, 'logout']);
         });
     });
+
+    // Rutas para la verificación de códigos a correo
+    Route::post('send-verification-code', [VerificationController::class, 'sendVerificationCode']);
+    Route::post('verify-code', [VerificationController::class, 'verifyCode']);
+
     //Rutas sin autenticacion
     Route::get('tabla-config/datos', [TablaConfigController::class, 'show']);
     Route::get('paquetes/listado', [PaqueteController::class, 'listadoPaquetes']);
