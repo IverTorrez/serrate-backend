@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Constants\ErrorMessages;
 use App\Http\Requests\SendVerificationCodeRequest;
+use App\Http\Requests\VerifyCodeRequest;
 use App\Services\ResponseService;
 use App\Services\VerificationService;
-use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Http\JsonResponse;
 
@@ -29,20 +29,14 @@ class VerificationController extends Controller
         }
     }
 
-    // Verificar el código de verificación
-    public function verifyCode(Request $request)
+
+    public function verifyCode(VerifyCodeRequest $request): JsonResponse
     {
-        // Validación de la entrada
-        $request->validate([
-            'email' => 'required|email',
-            'verification_code' => 'required|string|size:6',
-        ]);
 
         try {
-            $response = $this->verificationCodeService->verifyCode($request->email, $request->verification_code);
-            return response()->json($response, 200);
+            return $this->verificationCodeService->verifyCode($request->email, $request->verification_code);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
+            return ResponseService::error(ErrorMessages::ERROR_VALIDACION, 500);
         }
     }
 }
