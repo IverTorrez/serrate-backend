@@ -22,13 +22,9 @@ class AuthController extends Controller
     public function register(StoreAuthRequest $request): JsonResponse
     {
         try {
-            $result = $this->authService->register($request->validated());
-
-            return $result['status'] === 'success'
-                ? ResponseService::success($result['data'], $result['status_code'])
-                : ResponseService::error($result['message'], $result['status_code']);
+            return $this->authService->register($request->validated());
         } catch (Exception $e) {
-            return ResponseService::error('Error inesperado al registrar usuario.', 500);
+            return ResponseService::error(ErrorMessages::ERROR_CREAR, 500);
         }
     }
 

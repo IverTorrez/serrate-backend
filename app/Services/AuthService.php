@@ -9,19 +9,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Constants\Estado;
 use App\Constants\GeneralMessages;
-use App\Constants\SuccessMessages;
 use App\Constants\TipoUsuario;
 use App\Constants\ValidationMessages;
 use App\Models\Billetera;
-use Error;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 
 class AuthService
 {
-    public function register(array $data): array
+    public function register(array $data): JsonResponse
     {
         DB::beginTransaction();
 
@@ -30,7 +27,7 @@ class AuthService
             $datosJson = $data['opciones_moto'] ?? null;
 
             $user = User::create([
-                'name' => $data['name'],
+                'name' => $data['nombre'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
                 'tipo' => $data['tipo'],
@@ -41,13 +38,13 @@ class AuthService
             ]);
 
             $persona = Persona::create([
-                'nombre' => $data['persona']['nombre'],
-                'apellido' => $data['persona']['apellido'],
-                'telefono' => $data['persona']['telefono'],
-                'direccion' => $data['persona']['direccion'],
-                'coordenadas' => $data['persona']['coordenadas'] ?? null,
-                'observacion' => $data['persona']['observacion'] ?? null,
-                'foto_url' => $data['persona']['foto_url'] ?? null,
+                'nombre' => $data['nombre'],
+                'apellido' => $data['apellido'],
+                'telefono' => $data['telefono'],
+                'direccion' => $data['direccion'] ?? null,
+                'coordenadas' => $data['coordenadas'] ?? null,
+                'observacion' => $data['observacion'] ?? null,
+                'foto_url' => $data['foto_url'] ?? null,
                 'estado' => Estado::ACTIVO,
                 'es_eliminado' => 0,
                 'usuario_id' => $user->id,
@@ -66,24 +63,20 @@ class AuthService
 
             $user->load('persona');
             $token = $user->createToken('auth_token')->plainTextToken;
-
-            return [
-                'status' => 'success',
-                'data' => [
+            return ResponseService::success(
+                [
                     'user' => $user,
                     'access_token' => $token,
                     'token_type' => 'Bearer',
                 ],
-                'status_code' => 201
-            ];
+
+                GeneralMessages::REGISTRO_EXITOSO,
+                200
+            );
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Error al registrar usuario: ' . $e->getMessage());
-            return [
-                'status' => 'error',
-                'message' => 'Error al registrar usuario.',
-                'status_code' => 500
-            ];
+
+            return ResponseService::error(ErrorMessages::ERROR_CREAR, 500);
         }
     }
 
