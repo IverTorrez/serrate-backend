@@ -226,6 +226,18 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('orden/listado/devolver-presupuesto/procurador/{procuradorId}', [OrdenController::class, 'ordenesParaDevolverPresupuesto']);
         Route::get('orden/listado/sin-costojudicial-venta/admin', [OrdenController::class, 'ordenesParaColocarCostoJudicialVenta']);
         Route::get('orden/cantidad-orden-etapas', [OrdenController::class, 'cantidadOrdenesEnEtapas']);
+        //Seguimiento
+        Route::get('orden/giradas/causa/{idCausa}', [OrdenController::class, 'listadoOrdenGiradas']);
+        Route::get('orden/pre-presupuestadas/causa/{idCausa}', [OrdenController::class, 'listadoOrdenPrePresupuestadas']);
+        Route::get('orden/presupuestadas/causa/{idCausa}', [OrdenController::class, 'listadoOrdenPresupuestadas']);
+        Route::get('orden/aceptadas/causa/{idCausa}', [OrdenController::class, 'listadoOrdenAceptadas']);
+        Route::get('orden/dinero-entregado/causa/{idCausa}', [OrdenController::class, 'listadoOrdenDineroEntregado']);
+        Route::get('orden/lista-realizar/causa/{idCausa}', [OrdenController::class, 'listadoOrdenListaRealizar']);
+        Route::get('orden/descargadas/causa/{idCausa}', [OrdenController::class, 'listadoOrdenDescargadas']);
+        Route::get('orden/pronuncio-abogado/causa/{idCausa}', [OrdenController::class, 'listadoOrdenPronuncioAbogado']);
+        Route::get('orden/cuenta-conciliada/causa/{idCausa}', [OrdenController::class, 'listadoOrdenCuentaConciliadas']);
+        Route::get('orden/vencidas-leves/causa/{idCausa}', [OrdenController::class, 'listadoOrdenVencidasLeves']);
+        Route::get('orden/vencidas-graves/causa/{idCausa}', [OrdenController::class, 'listadoOrdenVencidasGraves']);
         //Cotizacion
 
         //Presupuesto

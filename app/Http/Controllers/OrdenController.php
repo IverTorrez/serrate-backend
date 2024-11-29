@@ -10,29 +10,39 @@ use App\Enums\MessageHttp;
 use Illuminate\Http\Request;
 use App\Constants\EtapaOrden;
 use App\Constants\TipoUsuario;
+use App\Services\CausaService;
 use App\Services\OrdenService;
 use Illuminate\Support\Facades\DB;
 use App\Services\CotizacionService;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\OrdenCollection;
 use App\Http\Requests\StoreOrdenRequest;
 use App\Http\Requests\UpdateOrdenRequest;
-use App\Services\CausaService;
-use App\Services\ContadorOrdenAceptadasService;
-use App\Services\ContadorOrdenCuentasConciliadaService;
-use App\Services\ContadorOrdenDescargadaService;
-use App\Services\ContadorOrdenDineroEntregadoService;
-use App\Services\ContadorOrdenGiradasService;
-use App\Services\ContadorOrdenListasRealizarService;
-use App\Services\ContadorOrdenPrePresupuestadaService;
-use App\Services\ContadorOrdenPresupuestadaService;
-use App\Services\ContadorOrdenPronuncioAbogadoService;
-use App\Services\ContadorOrdenVencidasGravesService;
-use App\Services\ContadorOrdenVencidasLevesService;
 use App\Services\MatrizCotizacionService;
-
+use App\Services\ListaOrdenGiradasService;
+use App\Services\ListaOrdenAceptadasService;
+use App\Services\ContadorOrdenGiradasService;
+use App\Services\ListaOrdenDescargadasService;
+use App\Services\ContadorOrdenAceptadasService;
+use App\Services\ContadorOrdenDescargadaService;
+use App\Services\ListaOrdenListaRealizarService;
+use App\Services\ListaOrdenPresupuestadaService;
+use App\Services\ListaOrdenVencidasLevesService;
+use App\Services\ListaOrdenVencidasGravesService;
+use App\Services\ListaOrdenDineroEntregadoService;
+use App\Services\ContadorOrdenPresupuestadaService;
+use App\Services\ContadorOrdenVencidasLevesService;
+use App\Services\ListaOrdenCuentaConciliadaService;
+use App\Services\ListaOrdenPronuncioAbogadoService;
+use App\Services\ContadorOrdenListasRealizarService;
+use App\Services\ContadorOrdenVencidasGravesService;
+use App\Services\ListaOrdenPrePresupuestadasService;
+use App\Services\ContadorOrdenDineroEntregadoService;
+use App\Services\ContadorOrdenPrePresupuestadaService;
+use App\Services\ContadorOrdenPronuncioAbogadoService;
+use App\Services\ContadorOrdenCuentasConciliadaService;
 
 class OrdenController extends Controller
 {
@@ -51,6 +61,17 @@ class OrdenController extends Controller
     protected $contadorOrdenCuentasConciliadaService;
     protected $contadorOrdenVencidasLevesService;
     protected $contadorOrdenVencidasGravesService;
+    protected $listaOrdenGiradasService;
+    protected $listaOrdenPrePresupuestadasService;
+    protected $listaOrdenPresupuestadaService;
+    protected $listaOrdenAceptadasService;
+    protected $listaOrdenDineroEntregadoService;
+    protected $listaOrdenListaRealizarService;
+    protected $listaOrdenDescargadasService;
+    protected $listaOrdenPronuncioAbogadoService;
+    protected $listaOrdenCuentaConciliadaService;
+    protected $listaOrdenVencidasLevesService;
+    protected $listaOrdenVencidasGravesService;
 
     public function __construct(
         MatrizCotizacionService $matrizCotizacionService,
@@ -67,7 +88,18 @@ class OrdenController extends Controller
         ContadorOrdenPronuncioAbogadoService $contadorOrdenPronuncioAbogadoService,
         ContadorOrdenCuentasConciliadaService $contadorOrdenCuentasConciliadaService,
         ContadorOrdenVencidasLevesService $contadorOrdenVencidasLevesService,
-        ContadorOrdenVencidasGravesService $contadorOrdenVencidasGravesService
+        ContadorOrdenVencidasGravesService $contadorOrdenVencidasGravesService,
+        ListaOrdenGiradasService $listaOrdenGiradasService,
+        ListaOrdenPrePresupuestadasService $listaOrdenPrePresupuestadasService,
+        ListaOrdenPresupuestadaService $listaOrdenPresupuestadaService,
+        ListaOrdenAceptadasService $listaOrdenAceptadasService,
+        ListaOrdenDineroEntregadoService $listaOrdenDineroEntregadoService,
+        ListaOrdenListaRealizarService $listaOrdenListaRealizarService,
+        ListaOrdenDescargadasService $listaOrdenDescargadasService,
+        ListaOrdenPronuncioAbogadoService $listaOrdenPronuncioAbogadoService,
+        ListaOrdenCuentaConciliadaService $listaOrdenCuentaConciliadaService,
+        ListaOrdenVencidasLevesService $listaOrdenVencidasLevesService,
+        ListaOrdenVencidasGravesService $listaOrdenVencidasGravesService
     ) {
         $this->matrizCotizacionService = $matrizCotizacionService;
         $this->cotizacionService = $cotizacionService;
@@ -85,6 +117,18 @@ class OrdenController extends Controller
         $this->contadorOrdenCuentasConciliadaService = $contadorOrdenCuentasConciliadaService;
         $this->contadorOrdenVencidasLevesService = $contadorOrdenVencidasLevesService;
         $this->contadorOrdenVencidasGravesService = $contadorOrdenVencidasGravesService;
+        //Lista para seguimiento
+        $this->listaOrdenGiradasService = $listaOrdenGiradasService;
+        $this->listaOrdenPrePresupuestadasService = $listaOrdenPrePresupuestadasService;
+        $this->listaOrdenPresupuestadaService = $listaOrdenPresupuestadaService;
+        $this->listaOrdenAceptadasService = $listaOrdenAceptadasService;
+        $this->listaOrdenDineroEntregadoService = $listaOrdenDineroEntregadoService;
+        $this->listaOrdenListaRealizarService = $listaOrdenListaRealizarService;
+        $this->listaOrdenDescargadasService = $listaOrdenDescargadasService;
+        $this->listaOrdenPronuncioAbogadoService = $listaOrdenPronuncioAbogadoService;
+        $this->listaOrdenCuentaConciliadaService = $listaOrdenCuentaConciliadaService;
+        $this->listaOrdenVencidasLevesService = $listaOrdenVencidasLevesService;
+        $this->listaOrdenVencidasGravesService = $listaOrdenVencidasGravesService;
     }
 
     public function index(Request $request)
@@ -368,5 +412,140 @@ class OrdenController extends Controller
             'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data' => $data
         ], 200);
+    }
+    public function listadoOrdenGiradas(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listaOrdenGiradasService->devuelveListaOrdenGiradas($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenPrePresupuestadas(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listaOrdenPrePresupuestadasService->devuelveListaOrdenPrePresupuestadas($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenPresupuestadas(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listaOrdenPresupuestadaService->devuelveListaOrdenPresupuestadas($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenAceptadas(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listaOrdenAceptadasService->devuelveListaOrdenAceptadas($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenDineroEntregado(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listaOrdenDineroEntregadoService->devuelveListaOrdenDineroEntregado($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenListaRealizar(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listaOrdenListaRealizarService->devuelveListaOrdenListaRealizar($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    public function listadoOrdenDescargadas(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listaOrdenDescargadasService->devuelveListaOrdenDescargadas($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenPronuncioAbogado(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listaOrdenPronuncioAbogadoService->devuelveListaOrdenPronuncioAbogado($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenCuentaConciliadas(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listaOrdenCuentaConciliadaService->devuelveListaOrdenCuentaConciliadas($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    public function listadoOrdenVencidasLeves(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listaOrdenVencidasLevesService->devuelveListaOrdenVencidasLeves($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    public function listadoOrdenVencidasGraves(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listaOrdenVencidasGravesService->devuelveListaOrdenVencidasGraves($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
     }
 }
