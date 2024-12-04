@@ -113,13 +113,16 @@ class AuthService
             ] : null,
         ];
 
+
         $token = $user->createToken('auth_token')->plainTextToken;
+        $expiresAt = now('America/La_Paz')->addMinutes(2)->format('Y-m-d H:i:s');
 
         return ResponseService::success(
             [
                 'user' => $userData,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
+                'expires_at' => $expiresAt
             ],
 
             GeneralMessages::INICIO_SESION_EXITOSO,
