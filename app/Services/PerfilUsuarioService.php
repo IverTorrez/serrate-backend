@@ -55,7 +55,7 @@ class PerfilUsuarioService
         DB::beginTransaction();
         try {
             $user->update([
-                'name' => $data['name'] ?? $user->name,
+                'name' => $data['persona']['nombre'] ?? $user->name,
                 'email' => $data['email'] ?? $user->email,
                 'tipo' => $data['tipo'] ?? $user->tipo
             ]);
