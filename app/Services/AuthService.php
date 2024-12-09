@@ -115,7 +115,7 @@ class AuthService
 
 
         $token = $user->createToken('auth_token')->plainTextToken;
-        $expiresAt = now('America/La_Paz')->addMinutes(2)->format('Y-m-d H:i:s');
+        $expiresAt = now('America/La_Paz')->addMinutes(60)->format('Y-m-d H:i:s');
 
         return ResponseService::success(
             [

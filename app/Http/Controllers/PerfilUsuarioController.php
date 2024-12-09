@@ -9,7 +9,7 @@ use App\Services\ResponseService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Constants\ErrorMessages; // Importa la clase de mensajes de error
+use App\Constants\ErrorMessages;
 
 class PerfilUsuarioController extends Controller
 {

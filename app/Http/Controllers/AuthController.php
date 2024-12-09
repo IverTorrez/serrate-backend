@@ -38,11 +38,11 @@ class AuthController extends Controller
         }
     }
 
-    // En el controlador
+
     public function logout(Request $request): JsonResponse
     {
         try {
-            // Pasamos el request al servicio de logout
+
             return $this->authService->logout($request);
         } catch (Exception $e) {
             return ResponseService::error('Error inesperado al cerrar sesión.', 500);

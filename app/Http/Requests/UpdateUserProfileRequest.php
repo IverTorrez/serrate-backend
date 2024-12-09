@@ -20,6 +20,7 @@ class UpdateUserProfileRequest extends FormRequest
             'persona.apellido' => 'sometimes|string|max:255',
             'persona.telefono' => 'sometimes|string|max:15',
             'persona.direccion' => 'sometimes|string|max:255',
+            'persona.coordenadas' => 'sometimes|string|max:255',
             'persona.observacion' => 'sometimes|string|max:255',
 
         ];
@@ -45,6 +46,8 @@ class UpdateUserProfileRequest extends FormRequest
 
             'persona.direccion.string' => 'La dirección debe ser texto.',
             'persona.direccion.max' => 'Máximo 255 caracteres en la dirección.',
+            'persona.coordenadas.string' => 'Debe ingresar coordenadas',
+            'persona.coordenadas.max' => 'Máximo 255 caracteres en la dirección.',
 
             'persona.observacion.string' => 'La observación debe ser texto.',
             'persona.observacion.max' => 'Máximo 255 caracteres en la observación.',

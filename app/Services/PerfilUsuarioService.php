@@ -34,6 +34,7 @@ class PerfilUsuarioService
                         'apellido' => $user->persona->apellido,
                         'telefono' => $user->persona->telefono,
                         'direccion' => $user->persona->direccion,
+                        'coordenadas' => $user->persona->coordenadas,
                         'observacion' => $user->persona->observacion,
                         'foto_url' => $user->persona->foto_url,
                     ] : null,
@@ -47,7 +48,6 @@ class PerfilUsuarioService
     public function actualizarPerfil(array $data): JsonResponse
     {
         $user = Auth::user();
-
         if (!$user instanceof User) {
             return ResponseService::unauthorized(ErrorMessages::ERROR_OBTENER_USUARIO);
         }
