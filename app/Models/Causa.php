@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Constants\Estado;
+use App\Constants\TipoParticipante;
 use App\Traits\CommonsScopesCausa;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -97,10 +99,44 @@ class Causa extends Model
     {
         return $this->hasMany(PaqueteCausa::class, 'causa_id');
     }
+    public function TransaccionesCausas()
+    {
+        return $this->hasMany(TransaccionesCausa::class, 'causa_id');
+    }
     public function ultimaDescarga()
     {
         return $this->hasManyThrough(ProcuraduriaDescarga::class, Orden::class)
             ->latest('created_at') // Ordena por la columna de fecha de creación
             ->first(); // Obtiene solo el primer (último) registro
+    }
+
+    public function primerDemandante()
+    {
+        return $this->hasOne(Participante::class)
+            ->where('tipo', TipoParticipante::DEMANDANTE)
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->orderBy('id');
+    }
+    public function primerDemandado()
+    {
+        return $this->hasOne(Participante::class)
+            ->where('tipo', TipoParticipante::DEMANDADO)
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->orderBy('id');
+    }
+    public function primerTribunal()
+    {
+        return $this->hasOne(Tribunal::class)
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->with([
+                'claseTribunal',
+                'juzgado.distrito',
+                'juzgado.piso',
+                'cuerpoExpedientes'
+            ])
+            ->orderBy('id');
     }
 }

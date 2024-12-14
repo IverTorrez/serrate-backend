@@ -40,6 +40,7 @@ use App\Http\Controllers\VideoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BilleteraController;
+use App\Http\Controllers\TransaccionesCausaController;
 use App\Http\Controllers\VerificationController;
 
 Route::get('/user', function (Request $request) {
@@ -142,6 +143,10 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('causas/listado/orden-cuenta-conciliadas', [CausaController::class, 'listadoCausasOrdenCuentasConciliadas']);
         Route::get('causas/listado/orden-vencidas-leves', [CausaController::class, 'listadoCausasOrdenVencidasLeves']);
         Route::get('causas/listado/orden-vencidas-graves', [CausaController::class, 'listadoCausasOrdenVencidasGraves']);
+        Route::get('causas/listado/con-billeteras/paginado', [CausaController::class, 'causasConBilletera']);
+        Route::get('causas/listado/para-transaccion/origen', [CausaController::class, 'listarCausasConBilletera']);
+        Route::get('causas/listado/para-transaccion/destino', [CausaController::class, 'listarCausasDestinoTransaccion']);
+        Route::get('causas/listado/billeteras/usuario', [CausaController::class, 'listaCausasConBilleteraUsuario']);
         //Tribunal
         Route::get('tribunal', [TribunalController::class, 'index']);
         Route::post('tribunal', [TribunalController::class, 'store']);
@@ -328,5 +333,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('billetera-transaccion/listado-billetera/{billeteraId}', [BilleteraTransaccionController::class, 'listadoPorBilletera']);
         Route::post('billetera-transaccion', [BilleteraTransaccionController::class, 'store']);
         Route::patch('billetera-transaccion/eliminar/{billeteraTransaccion}', [BilleteraTransaccionController::class, 'destroy']);
+        //Transacciones Causas
+        Route::post('transacciones-causas', [TransaccionesCausaController::class, 'store']);
     });
 });

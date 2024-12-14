@@ -536,4 +536,66 @@ class CausaController extends Controller
             ], 500);
         }
     }
+    public function causasConBilletera(Request $request)
+    {
+        $query = Causa::where('estado', '!=', EstadoCausa::TERMINADA)
+            ->where('es_eliminado', 0)
+            ->where('tiene_billetera', 1);
+
+        $usuario = Auth::user();
+        //Filtrado por usuario
+        if ($usuario->tipo === TipoUsuario::ABOGADO_LIDER || $usuario->tipo === TipoUsuario::ABOGADO_INDEPENDIENTE) {
+            $query->where('usuario_id', $usuario->id);
+        }
+
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $causas = $query->paginate($perPage);
+
+        $causas->load('materia');
+        $causas->load('tipoLegal');
+        $causas->load('categoria');
+        $causas->load('abogado.persona');
+        $causas->load('procurador.persona');
+        return new CausaCollection($causas);
+    }
+    public function listarCausasConBilletera()
+    {
+        $causas = $this->causaService->listarCausasConBilletera();
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $causas
+        ];
+        return response()->json($data);
+    }
+    public function listarCausasDestinoTransaccion()
+    {
+        $causas = $this->causaService->listarCausasDestinoTransaccion();
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $causas
+        ];
+        return response()->json($data);
+    }
+    public function listaCausasConBilleteraUsuario()
+    {
+        $causas = $this->causaService->listadoDetallesCausasConBilleterasDeUsuario();
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $causas
+        ];
+        return response()->json($data);
+    }
 }

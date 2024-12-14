@@ -100,4 +100,43 @@ class CausaService
             ->where('es_eliminado', 0)
             ->exists();
     }
+    public function listarCausasConBilletera()
+    {
+        $usuarioId = Auth::user()->id;
+        $causas = Causa::where('estado', '!=', EstadoCausa::TERMINADA)
+            ->where('es_eliminado', 0)
+            ->where('tiene_billetera', 1)
+            ->where('usuario_id', $usuarioId)
+            ->with([
+                'materia',
+                'tipoLegal'
+            ])
+            ->get();
+        return $causas;
+    }
+    public function listarCausasDestinoTransaccion()
+    {
+        $usuarioId = Auth::user()->id;
+        $causas = Causa::where('estado', '!=', EstadoCausa::TERMINADA)
+            ->where('es_eliminado', 0)
+            ->where('tiene_billetera', 1)
+            ->where('usuario_id', $usuarioId)
+            ->with([
+                'materia',
+                'tipoLegal'
+            ])
+            ->get();
+        return $causas;
+    }
+    public function listadoDetallesCausasConBilleterasDeUsuario()
+    {
+        $usuarioId = Auth::user()->id;
+        $causas = Causa::where('estado', '!=', EstadoCausa::TERMINADA)
+            ->where('es_eliminado', 0)
+            ->where('tiene_billetera', 1)
+            ->where('usuario_id', $usuarioId)
+            ->with(['materia', 'tipoLegal', 'primerDemandante', 'primerDemandado', 'primerTribunal'])
+            ->get();
+        return $causas;
+    }
 }
