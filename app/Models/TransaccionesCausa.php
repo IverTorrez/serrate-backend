@@ -2,24 +2,28 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\CommonScopes;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Deposito extends Model
+class TransaccionesCausa extends Model
 {
-    use HasFactory;
+    use CommonScopes, HasFactory;
     protected $fillable=[
-        'fecha_deposito',
-        'detalle_deposito',
         'monto',
+        'fecha_transaccion',
         'tipo',
+        'transaccion',
+        'glosa',
         'causa_id',
+        'causa_origen_destino',
+        'usuario_id',
         'estado',
         'es_eliminado'
     ];
 
     /**
-     * Get the user that owns the Deposito
+     * Get the user that owns the TransaccionesCausa
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
