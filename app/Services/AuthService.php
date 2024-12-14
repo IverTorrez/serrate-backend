@@ -15,6 +15,7 @@ use App\Models\Billetera;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AuthService
 {
@@ -98,13 +99,30 @@ class AuthService
             );
         }
 
+        $user->load('persona');
+        $userData = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'tipo' => $user->tipo,
+            'persona' => $user->persona ? [
+                'nombre' => $user->persona->nombre,
+                'apellido' => $user->persona->apellido,
+                'telefono' => $user->persona->telefono,
+                'foto_url' => $user->persona->foto_url,
+            ] : null,
+        ];
+
+
         $token = $user->createToken('auth_token')->plainTextToken;
+        $expiresAt = now('America/La_Paz')->addMinutes(60)->format('Y-m-d H:i:s');
 
         return ResponseService::success(
             [
-                'user' => $user,
+                'user' => $userData,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
+                'expires_at' => $expiresAt
             ],
 
             GeneralMessages::INICIO_SESION_EXITOSO,
@@ -112,24 +130,19 @@ class AuthService
         );
     }
 
-    public function logout(): array
+    public function logout(Request $request): JsonResponse
     {
-        $user = Auth::user();
+        try {
+            $user = $request->user();
 
-        if ($user) {
-            $user->tokens->each(function ($token) {
-                $token->delete();
-            });
-            return [
-                'status' => 'success',
-                'message' => 'Cierre de sesión exitoso'
-            ];
+            if (!$user) {
+                return ResponseService::unauthorized('Usuario no autenticado.');
+            }
+            $user->currentAccessToken()->delete();
+
+            return ResponseService::success(message: GeneralMessages::CIERRE_SESION_EXITOSO);
+        } catch (Exception $e) {
+            return ResponseService::error('Error inesperado al cerrar sesión.', 500);
         }
-
-        return [
-            'status' => 'error',
-            'message' => 'Usuario no autenticado',
-            'status_code' => 401
-        ];
     }
 }

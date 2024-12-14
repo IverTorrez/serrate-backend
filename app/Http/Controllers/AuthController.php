@@ -9,6 +9,7 @@ use App\Services\AuthService;
 use App\Services\ResponseService;
 use Illuminate\Http\JsonResponse;
 use Exception;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -37,11 +38,12 @@ class AuthController extends Controller
         }
     }
 
-    public function logout(): JsonResponse
+
+    public function logout(Request $request): JsonResponse
     {
         try {
-            $result = $this->authService->logout();
-            return ResponseService::success($result);
+
+            return $this->authService->logout($request);
         } catch (Exception $e) {
             return ResponseService::error('Error inesperado al cerrar sesión.', 500);
         }
