@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\GlosaTransaccion;
 use Exception;
 use Carbon\Carbon;
 use App\Enums\MessageHttp;
@@ -103,7 +104,7 @@ class CompraPaqueteController extends Controller
             $billeteraId = $billetera->id;
             $monto = $request->monto;
             $tipoTransaccion = TipoTransaccion::DEBITO;
-            $glosa = 'Débito por compra de paquete';
+            $glosa = GlosaTransaccion::DEBITO_POR_COMPRA_DEL_PAQUETE." (".$paquete->nombre.")";
             $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId,$monto,$tipoTransaccion,$glosa);
 
             DB::commit();

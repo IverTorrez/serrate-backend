@@ -51,5 +51,40 @@ class TransaccionesCausaService
         $transaccionesCausa = TransaccionesCausa::findOrFail($transaccionesCausaId);
         return $transaccionesCausa;
     }
+    public function obtenerTransaccionesDeCausa(Request $request, $causaId)
+    {
+        try {
+            $query = TransaccionesCausa::select([
+                'id',
+                'monto',
+                'fecha_transaccion',
+                'tipo',
+                'transaccion',
+                'glosa',
+                'causa_id',
+                'causa_origen_destino',
+                'estado'
+            ])->active()
+            ->where('estado', Estado::ACTIVO)
+                ->where('es_eliminado', 0);
+            $query->where('causa_id', $causaId);
 
+            if ($request->has('search')) {
+                $search = json_decode($request->input('search'), true);
+                $query->search($search);
+            }
+
+            if ($request->has('sort')) {
+                $sort = json_decode($request->input('sort'), true);
+                $query->sort($sort);
+            }
+
+            $perPage = $request->input('perPage', 10);
+            return $query->paginate($perPage);
+
+            //$result = $query->get();
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al obtener las transacciones de causa.'], 500);
+        }
+    }
 }

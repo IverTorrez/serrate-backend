@@ -139,4 +139,14 @@ class CausaService
             ->get();
         return $causas;
     }
+    public function obtenerCodigoIdentificadorVisual($causaId): ?string
+    {
+        $causa = Causa::with(['materia', 'tipoLegal'])->find($causaId);
+
+        if (!$causa || !$causa->materia || !$causa->tipoLegal) {
+            return null;
+        }
+        $codigo = $causa->materia->abreviatura . '-' . $causa->tipoLegal->abreviatura . '-' . $causa->id;
+        return $codigo;
+    }
 }

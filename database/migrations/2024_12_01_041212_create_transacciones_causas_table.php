@@ -16,7 +16,7 @@ return new class extends Migration
             $table->decimal('monto',10,2)->comment('monto de la transaccion');
             $table->timestamp('fecha_transaccion')->nullable()->comment('fecha de la transaccion');
             $table->string('tipo', 30)->comment('tipo de transaccin, DEBITO, CREDITO');
-            $table->string('transaccion', 30)->comment('transaccin que se hizo, DEPOSITO, TRANSFERENCIA_ENVIO, TRANSFERECIA_RECIBO');
+            $table->string('transaccion', 30)->comment('transaccin que se hizo, DEPOSITO, TRANSFERENCIA_ENVIADA, TRANSFERECIA_RECIBIDA');
             $table->string('glosa', 200)->comment('glosa de la transaccion, escrito por el sistema');
             $table->integer('causa_id')->comment('id de la tabla causas');
             $table->integer('causa_origen_destino')->comment('id de tabla causa origen, de donde esta saliendo el dinero, si esque es una traspaso entre causas');
