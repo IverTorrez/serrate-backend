@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use App\Services\TransaccionesCausaService;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreTransaccionesCausaRequest;
+use App\Http\Resources\TransaccionesCausaCollection;
 use App\Services\BilleteraService;
 use App\Services\BilleteraTransaccionService;
 use App\Services\CausaService;
@@ -68,9 +69,8 @@ class TransaccionesCausaController extends Controller
             ], 409);
         }
         //Validacion cuando es transaccion entre causas
-        if($esTransaccionDesdeBilletera === 0)
-        {
-            if($request->causa_origen_destino === $causaId){
+        if ($esTransaccionDesdeBilletera === 0) {
+            if ($request->causa_origen_destino === $causaId) {
                 return response()->json([
                     'message' => 'No puede hacer transferencias entre la misma causa,',
                     'data' => null
@@ -78,7 +78,7 @@ class TransaccionesCausaController extends Controller
             }
             //Valida el saldo de la causa origen
             $causaOrigenSaldo = $this->causaService->obtenerUno($request->causa_origen_destino);
-            if($causaOrigenSaldo->billetera < $monto){
+            if ($causaOrigenSaldo->billetera < $monto) {
                 return response()->json([
                     'message' => 'Esta causa no tiene suficiente saldo en su billetera para hacer transferencias.',
                     'data' => null
@@ -92,16 +92,17 @@ class TransaccionesCausaController extends Controller
                 $transaccionDestino = TransaccionCausa::DEPOSITO;
                 $causa_origen_destino = 0;
                 //Actualizacion de saldo de billetera
+                $codigoCausa = $this->causaService->obtenerCodigoIdentificadorVisual($causaId);
                 $tipoTrn = TipoTransaccion::DEBITO;
-                $glosabilletera = GlosaTransaccion::DEBITO_DESDE_BILLETERA_POR_TRANSFERENCIA_A_CAUSA;
+                $glosabilletera = GlosaTransaccion::DEBITO_DESDE_BILLETERA_POR_TRANSFERENCIA_A_CAUSA.": ".$codigoCausa;
                 $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($usuarioId);
                 $billeterTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billetera->id, $monto, $tipoTrn, $glosabilletera);
             } else {
                 $glosaDestino = GlosaTransaccion::CREDITO_DESDE_CAUSA;
-                $transaccionDestino = TransaccionCausa::TRANSFERENCIA_RECIBO;
+                $transaccionDestino = TransaccionCausa::TRANSFERENCIA_RECIBIDA;
                 $causa_origen_destino = $request->causa_origen_destino;
                 //Para el registro de causa origin transaccion
-                $transaccionOrigen = TransaccionCausa::TRANSFERENCIA_ENVIO;
+                $transaccionOrigen = TransaccionCausa::TRANSFERENCIA_ENVIADA;
                 $glosaOrigen = GlosaTransaccion::DEBITO_POR_TRASPASO;
                 $esTransferenciaEntreCausas = 1;
             }
@@ -194,5 +195,18 @@ class TransaccionesCausaController extends Controller
     public function destroy(TransaccionesCausa $transaccionesCausa)
     {
         //
+    }
+
+    public function obtenerTransaccionesDeCausa(Request $request, $causaId)
+    {
+        try {
+            $data = $this->transaccionesCausaService->obtenerTransaccionesDeCausa($request, $causaId);
+            return new TransaccionesCausaCollection($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las transacciones de causa.',
+                'data' => null
+            ], 500);
+        }
     }
 }

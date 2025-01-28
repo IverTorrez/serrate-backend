@@ -92,6 +92,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::patch('tipo-legal/{tipoLegal}', [TipoLegalController::class, 'update']);
         Route::patch('tipo-legal/eliminar/{tipoLegal}', [TipoLegalController::class, 'destroy']);
         Route::get('tipo-legal/materia/{materiaId}', [TipoLegalController::class, 'listarPorMateriaId']);
+        Route::get('tipo-legal/listado-con-materia', [TipoLegalController::class, 'listarActivosConMateria']);
         //Categoria
         Route::get('categorias', [CategoriaController::class, 'index']);
         Route::post('categorias', [CategoriaController::class, 'store']);
@@ -335,5 +336,6 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::patch('billetera-transaccion/eliminar/{billeteraTransaccion}', [BilleteraTransaccionController::class, 'destroy']);
         //Transacciones Causas
         Route::post('transacciones-causas', [TransaccionesCausaController::class, 'store']);
+        Route::get('transacciones-causas/listado-causa/{causaId}', [TransaccionesCausaController::class, 'obtenerTransaccionesDeCausa']);
     });
 });

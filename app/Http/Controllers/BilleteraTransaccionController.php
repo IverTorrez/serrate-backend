@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\GlosaTransaccion;
 use App\Constants\TipoTransaccion;
 use App\Constants\TipoUsuario;
 use Exception;
@@ -97,7 +98,7 @@ class BilleteraTransaccionController extends Controller
             $billeteraId = $request->billetera_id;
             $monto = $request->monto;
             $tipoTransaccion = TipoTransaccion::CREDITO;
-            $glosa = 'Depósito a billetera';
+            $glosa = GlosaTransaccion::CREDITO_DEPOSITO_A_BILLETERA;
             $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa);
 
 
