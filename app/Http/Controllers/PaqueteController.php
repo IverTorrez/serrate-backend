@@ -74,11 +74,13 @@ class PaqueteController extends Controller
         $data = [
             'nombre' => $request->nombre,
             'precio' => $request->precio,
-            'cantidad_mes' => $request->cantidad_mes,
-            'cantidad_causas' => $request->cantidad_causas,
+            'cantidad_dias' => $request->cantidad_dias,
             'descripcion' => $request->descripcion,
             'fecha_creacion' => $fechaHora,
-            'usuario_id' => Auth::user()->id
+            'usuario_id' => Auth::user()->id,
+            'tiene_fecha_limite' => $request->tiene_fecha_limite,
+            'fecha_limite_compra' => $request->fecha_limite_compra,
+            'tipo' => $request->tipo
         ];
         $paquete = $this->paqueteService->store($data);
         return response()->json([
@@ -130,9 +132,11 @@ class PaqueteController extends Controller
         $data = $request->only([
             'nombre',
             'precio',
-            'cantidad_mes',
-            'cantidad_causas',
+            'cantidad_dias',
             'descripcion',
+            'tiene_fecha_limite',
+            'fecha_limite_compra',
+            'tipo'
         ]);
         $paquete = $this->paqueteService->update($data,$paquete->id);
 

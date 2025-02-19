@@ -15,7 +15,6 @@ class CompraPaquete extends Model
         'fecha_ini_vigencia',
         'fecha_fin_vigencia',
         'fecha_compra',
-        'cantidad_causas',
         'dias_vigente',
         'paquete_id',
         'usuario_id',

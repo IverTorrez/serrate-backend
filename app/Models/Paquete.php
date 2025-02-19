@@ -12,11 +12,13 @@ class Paquete extends Model
     protected $fillable = [
         'nombre',
         'precio',
-        'cantidad_mes',
-        'cantidad_causas',
+        'cantidad_dias',
         'descripcion',
         'fecha_creacion',
         'usuario_id',
+        'tiene_fecha_limite',
+        'fecha_limite_compra',
+        'tipo',
         'estado',
         'es_eliminado'
     ];

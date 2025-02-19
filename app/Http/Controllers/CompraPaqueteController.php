@@ -86,15 +86,14 @@ class CompraPaqueteController extends Controller
         try {
             $paquete = $this->paqueteService->obtenerUno($request->paquete_id);
             $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
-            $fechaInicioVigencia = Carbon::now();
-            $fechaFinalVigencia = $fechaInicioVigencia->copy()->addMonths($paquete->cantidad_mes);
+            $fechaInicioVigencia = Carbon::now('America/La_Paz');
+            $fechaFinalVigencia = $fechaInicioVigencia->copy()->addDays($paquete->cantidad_dias);
             $cantidadDias = $fechaInicioVigencia->diffInDays($fechaFinalVigencia);
             $data = [
                 'monto' => $request->monto,
-                'fecha_ini_vigencia' => $fechaInicioVigencia->format('Y-m-d'),
-                'fecha_fin_vigencia' => $fechaFinalVigencia->format('Y-m-d'),
+                'fecha_ini_vigencia' => $fechaInicioVigencia->format('Y-m-d H:i'),
+                'fecha_fin_vigencia' => $fechaFinalVigencia->format('Y-m-d H:i'),
                 'fecha_compra' => $fechaHora,
-                'cantidad_causas' => $paquete->cantidad_causas,
                 'dias_vigente' => $cantidadDias,
                 'paquete_id' => $request->paquete_id,
                 'usuario_id' => $idUser,
@@ -114,7 +113,7 @@ class CompraPaqueteController extends Controller
             ], 201);
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Error al crear la orden: ' . $e->getMessage());
+            Log::error('Error al comprar paquete: ' . $e->getMessage());
 
             return response()->json([
                 'message' => MessageHttp::ERROR_CREAR,

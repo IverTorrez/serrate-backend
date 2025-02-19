@@ -14,10 +14,9 @@ return new class extends Migration
         Schema::create('compra_paquetes', function (Blueprint $table) {
             $table->id();
             $table->decimal('monto',10,2)->comment('monto pagado por el paquete');
-            $table->timestamp('fecha_ini_vigencia')->nullable()->comment('fecha de inicio de vigencia del paquete');
-            $table->timestamp('fecha_fin_vigencia')->nullable()->comment('fecha de fin de vigencia del paquete');
+            $table->timestamp('fecha_ini_vigencia')->nullable()->comment('fecha y hora de inicio de vigencia del paquete');
+            $table->timestamp('fecha_fin_vigencia')->nullable()->comment('fecha y hora de fin de vigencia del paquete');
             $table->timestamp('fecha_compra')->nullable()->comment('fecha y hora de compra del paquete');
-            $table->integer('cantidad_causas')->comment('cantidad de causas que podra usar en este paquete');
             $table->integer('dias_vigente')->comment('cantidad en dias que estara vigente el paquete comprado');
             $table->integer('paquete_id')->comment('id de la tabla paquetes');
             $table->integer('usuario_id')->comment('id del usuario que compro el paquete, de la tabla user');
