@@ -24,9 +24,11 @@ class StorePaqueteRequest extends FormRequest
         return [
             'nombre'=>['required','string','max:200'],
             'precio'=>['required','numeric'],
-            'cantidad_mes'=>['required','numeric'],
-            'cantidad_causas'=>['required','numeric'],
-            'descripcion'=>['required','string']
+            'cantidad_dias'=>['required','numeric'],
+            'descripcion'=>['required','string'],
+            'tiene_fecha_limite' => ['required','numeric'],
+            'fecha_limite_compra' => ['sometimes','date_format:Y-m-d'],
+            'tipo'=>['required','string','max:20'],
         ];
     }
 }

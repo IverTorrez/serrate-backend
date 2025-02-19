@@ -28,7 +28,6 @@ class CompraPaqueteService
             'fecha_ini_vigencia' => $data['fecha_ini_vigencia'],
             'fecha_fin_vigencia' => $data['fecha_fin_vigencia'],
             'fecha_compra' => $data['fecha_compra'],
-            'cantidad_causas' => $data['cantidad_causas'],
             'dias_vigente' => $data['dias_vigente'],
             'paquete_id' => $data['paquete_id'],
             'usuario_id' => $data['usuario_id'],
@@ -51,7 +50,7 @@ class CompraPaqueteService
         }
         return $compraPaquete;
     }
-    public function isCompraPaqueteAgotado($compraPaqueteId)
+    /*public function isCompraPaqueteAgotado($compraPaqueteId)
     {
         $compraPaquete = CompraPaquete::find($compraPaqueteId);
 
@@ -64,7 +63,7 @@ class CompraPaqueteService
         } else {
             return false;
         }
-    }
+    }*/
     public function isCompraPaqueteExpirado($compraPaqueteId)
     {
         $fechaActual = Carbon::now();

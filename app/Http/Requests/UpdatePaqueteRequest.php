@@ -24,9 +24,11 @@ class UpdatePaqueteRequest extends FormRequest
         return [
             'nombre'=>['sometimes','string','max:200'],
             'precio'=>['sometimes','numeric'],
-            'cantidad_mes'=>['sometimes','numeric'],
-            'cantidad_causas'=>['sometimes','numeric'],
+            'cantidad_dias'=>['sometimes','numeric'],
             'descripcion'=>['sometimes','string'],
+            'tiene_fecha_limite' => ['sometimes','numeric'],
+            'fecha_limite_compra' => ['sometimes','date_format:Y-m-d'],
+            'tipo'=>['sometimes','string','max:20'],
         ];
     }
 }

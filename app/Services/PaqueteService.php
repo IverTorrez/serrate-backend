@@ -23,11 +23,13 @@ class PaqueteService
         $paquete = Paquete::create([
             'nombre' => $data['nombre'],
             'precio' => $data['precio'],
-            'cantidad_mes' => $data['cantidad_mes'],
-            'cantidad_causas' => $data['cantidad_causas'],
+            'cantidad_dias' => $data['cantidad_dias'],
             'descripcion' => $data['descripcion'],
             'fecha_creacion' => $data['fecha_creacion'],
             'usuario_id' => $data['usuario_id'],
+            'tiene_fecha_limite' => $data['tiene_fecha_limite'],
+            'fecha_limite_compra' => $data['fecha_limite_compra'],
+            'tipo' => $data['tipo'],
             'estado' => Estado::ACTIVO,
             'es_eliminado' => 0
         ]);
