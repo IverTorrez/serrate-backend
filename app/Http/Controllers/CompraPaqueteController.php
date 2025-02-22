@@ -105,6 +105,7 @@ class CompraPaqueteController extends Controller
             $tipoTransaccion = TipoTransaccion::DEBITO;
             $glosa = GlosaTransaccion::DEBITO_POR_COMPRA_DEL_PAQUETE." (".$paquete->nombre.")";
             $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId,$monto,$tipoTransaccion,$glosa);
+            /*Actualiza la fecha del parametro de vigencia */
 
             DB::commit();
             return response()->json([
