@@ -40,6 +40,7 @@ use App\Http\Controllers\VideoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BilleteraController;
+use App\Http\Controllers\ParametroVigenciaController;
 use App\Http\Controllers\TransaccionesCausaController;
 use App\Http\Controllers\VerificationController;
 
@@ -155,6 +156,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('tribunal/causa/listar/{causaId}', [TribunalController::class, 'listarActivosPorCausa']);
         Route::patch('tribunal/{tribunal}', [TribunalController::class, 'update']);
         Route::patch('tribunal/eliminar/{tribunal}', [TribunalController::class, 'destroy']);
+        Route::get('tribunal/causa/{causaId}', [TribunalController::class, 'listarPorCausaId']);
         //Cuerpo Expediente
         Route::get('cuerpo-expedientes', [CuerpoExpedienteController::class, 'index']);
         Route::get('cuerpo-expedientes/tribunal/listar/{tribunalId}', [CuerpoExpedienteController::class, 'listadoPorTribunal']);
@@ -169,6 +171,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('participantes/{participante}', [ParticipanteController::class, 'show']);
         Route::patch('participantes/{participante}', [ParticipanteController::class, 'update']);
         Route::patch('participantes/eliminar/{participante}', [ParticipanteController::class, 'destroy']);
+        Route::get('participantes/causa/{causaId}', [ParticipanteController::class, 'listarPorCausaId']);
         //Depositos
         Route::get('depositos', [DepositoController::class, 'index']);
         Route::post('depositos', [DepositoController::class, 'store']);
@@ -337,5 +340,9 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         //Transacciones Causas
         Route::post('transacciones-causas', [TransaccionesCausaController::class, 'store']);
         Route::get('transacciones-causas/listado-causa/{causaId}', [TransaccionesCausaController::class, 'obtenerTransaccionesDeCausa']);
+        //Parametro vigencia
+        Route::get('parametro-vigencias/obtener', [ParametroVigenciaController::class, 'obtenerUnoUsuario']);
+
+
     });
 });

@@ -19,6 +19,7 @@ use App\Services\CompraPaqueteService;
 use App\Http\Resources\CompraPaqueteCollection;
 use App\Http\Requests\StoreCompraPaqueteRequest;
 use App\Services\BilleteraTransaccionService;
+use App\Services\ParametroVigenciaService;
 
 class CompraPaqueteController extends Controller
 {
@@ -26,17 +27,20 @@ class CompraPaqueteController extends Controller
     protected $paqueteService;
     protected $billeteraService;
     protected $billeteraTransaccionService;
+    protected $parametroVigenciaService;
 
     public function __construct(
         CompraPaqueteService $compraPaqueteService,
         PaqueteService $paqueteService,
         BilleteraService $billeteraService,
-        BilleteraTransaccionService $billeteraTransaccionService
+        BilleteraTransaccionService $billeteraTransaccionService,
+        ParametroVigenciaService $parametroVigenciaService
     ) {
         $this->compraPaqueteService = $compraPaqueteService;
         $this->paqueteService = $paqueteService;
         $this->billeteraService = $billeteraService;
         $this->billeteraTransaccionService = $billeteraTransaccionService;
+        $this->parametroVigenciaService = $parametroVigenciaService;
     }
     /**
      * Display a listing of the resource.
@@ -73,6 +77,8 @@ class CompraPaqueteController extends Controller
      */
     public function store(StoreCompraPaqueteRequest $request)
     {
+        $fechaHoraSistema = Carbon::now('America/La_Paz')->format('Y-m-d H:i');
+        $fechaFinalVigenciaGeneral = '';
         $idUser = Auth::id();
         $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($idUser);
         if (!$billetera || $billetera->monto < $request->monto) {
@@ -84,17 +90,38 @@ class CompraPaqueteController extends Controller
 
         DB::beginTransaction();
         try {
+            /* obtener la fecha de vigencia general del usuario*/
+            $parametroVigencia = $this->parametroVigenciaService->obtenerUnoPorUsuario($idUser);
+
             $paquete = $this->paqueteService->obtenerUno($request->paquete_id);
             $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
-            $fechaInicioVigencia = Carbon::now('America/La_Paz');
-            $fechaFinalVigencia = $fechaInicioVigencia->copy()->addDays($paquete->cantidad_dias);
-            $cantidadDias = $fechaInicioVigencia->diffInDays($fechaFinalVigencia);
+            //*Actualiza la fecha del parametro de vigencia
+            if ($parametroVigencia->fecha_ultima_vigencia < $fechaHoraSistema) {
+                $fechaInicioVigencia = Carbon::now('America/La_Paz');
+                $fechaFinalVigencia = $fechaInicioVigencia->copy()->addDays($paquete->cantidad_dias);
+                //Fecha vigencia general
+                $fechaFinalVigenciaGeneral = $fechaFinalVigencia;
+            } else { //Por falso se aumenta a la fecha general
+                $fechaFinalVigenciaGeneralActual = Carbon::parse($parametroVigencia->fecha_ultima_vigencia); //parseo de ultima fecha vigencia
+                $fechaFinalVigenciaGeneralActual->addMinute(); // Aumenta 1 minuto
+
+                $fechaInicioVigencia = $fechaFinalVigenciaGeneralActual;
+                $fechaFinalVigencia = $fechaInicioVigencia->copy()->addDays($paquete->cantidad_dias);
+
+                $fechaFinalVigenciaGeneral =$fechaFinalVigencia;//* $nuevaFechaVigenciaGeneral;
+            }
+            $dataParametroVigencia = [
+                'fecha_ultima_vigencia' => $fechaFinalVigenciaGeneral->format('Y-m-d H:i')
+            ];
+            $this->parametroVigenciaService->update($dataParametroVigencia, $parametroVigencia->id);
+
+            //*Carga de datos
             $data = [
                 'monto' => $request->monto,
                 'fecha_ini_vigencia' => $fechaInicioVigencia->format('Y-m-d H:i'),
                 'fecha_fin_vigencia' => $fechaFinalVigencia->format('Y-m-d H:i'),
                 'fecha_compra' => $fechaHora,
-                'dias_vigente' => $cantidadDias,
+                'dias_vigente' => $paquete->cantidad_dias,
                 'paquete_id' => $request->paquete_id,
                 'usuario_id' => $idUser,
             ];
@@ -103,9 +130,8 @@ class CompraPaqueteController extends Controller
             $billeteraId = $billetera->id;
             $monto = $request->monto;
             $tipoTransaccion = TipoTransaccion::DEBITO;
-            $glosa = GlosaTransaccion::DEBITO_POR_COMPRA_DEL_PAQUETE." (".$paquete->nombre.")";
-            $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId,$monto,$tipoTransaccion,$glosa);
-            /*Actualiza la fecha del parametro de vigencia */
+            $glosa = GlosaTransaccion::DEBITO_POR_COMPRA_DEL_PAQUETE . " (" . $paquete->nombre . ")";
+            $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa);
 
             DB::commit();
             return response()->json([

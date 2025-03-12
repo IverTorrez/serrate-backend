@@ -27,6 +27,7 @@ class StoreTribunalRequest extends FormRequest
             'clasetribunal_id'=>['required'],
             'causa_id'=>['required'],
             'juzgado_id'=>['required'],
+            'tribunal_dominante'=>['required'],
         ];
     }
 }

@@ -3,10 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\ParametroVigencia;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Enums\MessageHttp;
+use App\Services\ParametroVigenciaService;
 
 class ParametroVigenciaController extends Controller
 {
+    protected $parametroVigenciaService;
+
+    public function __construct(ParametroVigenciaService $parametroVigenciaService)
+    {
+        $this->parametroVigenciaService = $parametroVigenciaService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -61,5 +70,15 @@ class ParametroVigenciaController extends Controller
     public function destroy(ParametroVigencia $parametroVigencia)
     {
         //
+    }
+    public function obtenerUnoUsuario()
+    {
+        $idUser = Auth::id();
+        $parametroVigencia = $this->parametroVigenciaService->obtenerUnoPorUsuario($idUser);
+        $data = [
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $parametroVigencia
+        ];
+        return response()->json($data);
     }
 }

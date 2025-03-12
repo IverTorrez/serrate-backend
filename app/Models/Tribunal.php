@@ -17,6 +17,7 @@ class Tribunal extends Model
         'clasetribunal_id',
         'causa_id',
         'juzgado_id',
+        'tribunal_dominante',
         'estado',
         'es_eliminado'
     ];

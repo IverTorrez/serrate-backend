@@ -58,13 +58,17 @@ class TribunalController extends Controller
      */
     public function store(StoreTribunalRequest $request)
     {
+        if ($request->tribunal_dominante === 1){
+            $this->tribunalService->desmarcarTribunaDominanteDeCausa($request->causa_id);
+        }
         $data = ([
             'expediente' => $request->expediente,
             'codnurejianuj' => $request->codnurejianuj,
-            'link_carpeta' => $request->link_carpeta,
+            'link_carpeta' => '', //$request->link_carpeta,
             'clasetribunal_id' => $request->clasetribunal_id,
             'causa_id' => $request->causa_id,
             'juzgado_id' => $request->juzgado_id,
+            'tribunal_dominante' => $request->tribunal_dominante,
         ]);
         $tribunal = $this->tribunalService->store($data);
 
@@ -121,6 +125,7 @@ class TribunalController extends Controller
             'clasetribunal_id',
             'causa_id',
             'juzgado_id',
+            'tribunal_dominante',
             'estado',
             'es_eliminado'
         ]);
@@ -141,6 +146,15 @@ class TribunalController extends Controller
         $data = [
             'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
             'data' => $tribunal
+        ];
+        return response()->json($data);
+    }
+    public function listarPorCausaId($causaId)
+    {
+        $tribunales = $this->tribunalService->listarPorCausaId($causaId);
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $tribunales
         ];
         return response()->json($data);
     }

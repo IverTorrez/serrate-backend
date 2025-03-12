@@ -17,6 +17,7 @@ class TribunalService
             'clasetribunal_id' => $data['clasetribunal_id'],
             'causa_id' => $data['causa_id'],
             'juzgado_id' => $data['juzgado_id'],
+            'tribunal_dominante' => $data['tribunal_dominante'],
             'estado' => Estado::ACTIVO,
             'es_eliminado' => 0,
 
@@ -41,7 +42,7 @@ class TribunalService
     {
         $tribunal = Tribunal::where('estado', Estado::ACTIVO)
             ->where('es_eliminado', 0)
-            ->where('causa_id',$causaId)
+            ->where('causa_id', $causaId)
             ->with([
                 'claseTribunal',
                 'juzgado.distrito',
@@ -56,5 +57,21 @@ class TribunalService
         $tribunal->es_eliminado = 1;
         $tribunal->save();
         return $tribunal;
+    }
+    public function listarPorCausaId($causaId)
+    {
+        $tribunal = Tribunal::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('causa_id', $causaId)
+            ->get();
+        return $tribunal;
+    }
+
+    public function desmarcarTribunaDominanteDeCausa($causaId)
+    {
+        return Tribunal::where('causa_id', $causaId)
+            ->where('tribunal_dominante', 1)
+            ->where('es_eliminado', 0)
+            ->update(['tribunal_dominante' => 0]);
     }
 }

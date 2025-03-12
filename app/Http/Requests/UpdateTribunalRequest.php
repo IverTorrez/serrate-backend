@@ -25,10 +25,11 @@ class UpdateTribunalRequest extends FormRequest
         return [
             'expediente'=>['sometimes','string','max:50'],
             'codnurejianuj'=>['sometimes','string','max:50'],
-            'link_carpeta'=>['sometimes','string'],
+            'link_carpeta'=>['sometimes'],
             'clasetribunal_id'=>['sometimes'],
             'causa_id'=>['sometimes'],
             'juzgado_id'=>['sometimes'],
+            'tribunal_dominante'=>['sometimes'],
           ];
     }
 }
