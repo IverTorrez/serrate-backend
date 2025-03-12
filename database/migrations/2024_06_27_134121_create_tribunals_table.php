@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('clasetribunal_id')->comment('id de la tabla clase_tribunals');
             $table->integer('causa_id')->comment('id de la tabla causa');
             $table->integer('juzgado_id')->comment('id de la tabla juzgados');
+            $table->integer('tribunal_dominante')->comment('1 es dominante, 0 no es dominandte');
             $table->string('estado', 20)->comment('estado ACTIVO,INACTIVO');
             $table->integer('es_eliminado')->comment('1 es eliminado, 0 no es eliminado');
             $table->timestamps();

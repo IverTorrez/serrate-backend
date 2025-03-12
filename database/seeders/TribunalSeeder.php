@@ -14,16 +14,17 @@ class TribunalSeeder extends Seeder
      */
     public function run(): void
     {
-        $estado=Estado::ACTIVO;
+        $estado = Estado::ACTIVO;
         Tribunal::create([
-              'expediente'=>'219/2017',
-              'codnurejianuj'=>'70307424',
-              'link_carpeta'=>'C-EXTRAORD-1[1-Público Mixto]-1',
-              'clasetribunal_id'=>1,
-              'causa_id'=>1,
-              'juzgado_id'=>1,
-              'estado'=>$estado,
-             'es_eliminado'=>0
+            'expediente' => '219/2017',
+            'codnurejianuj' => '70307424',
+            'link_carpeta' => 'C-EXTRAORD-1[1-Público Mixto]-1',
+            'clasetribunal_id' => 1,
+            'causa_id' => 1,
+            'juzgado_id' => 1,
+            'tribunal_dominante' => 1,
+            'estado' => $estado,
+            'es_eliminado' => 0
         ]);
     }
 }

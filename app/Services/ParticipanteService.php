@@ -46,4 +46,13 @@ class ParticipanteService
         $participante->save();
         return $participante;
     }
+    public function listarPorCausaId($causaId)
+    {
+        $participantes = Participante::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('causa_id', $causaId)
+            ->orderBy('id', 'asc')
+            ->get();
+        return $participantes;
+    }
 }

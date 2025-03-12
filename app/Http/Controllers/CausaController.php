@@ -205,6 +205,12 @@ class CausaController extends Controller
                 $procuradorId = $usuarioPmaestro->id;
                 $abogadoId = $idUser;
             }
+            if(empty($request->color))
+            {
+                $color = '#ffffff';
+            }else{
+                $color = $request->color;
+            }
 
             $data = [
                 'nombre' => $request->nombre,
@@ -217,7 +223,7 @@ class CausaController extends Controller
                 'tiene_billetera' => $request->tiene_billetera,
                 'billetera' => 0,
                 'saldo_devuelto' => 0,
-                'color' => $request->color,
+                'color' => $color,
                 'materia_id' => $request->materia_id,
                 'tipolegal_id' => $request->tipolegal_id,
                 'categoria_id' => $request->categoria_id,

@@ -140,4 +140,13 @@ class ParticipanteController extends Controller
             'data' => $participante
         ]);
     }
+    public function listarPorCausaId($causaId)
+    {
+        $participantes = $this->participanteService->listarPorCausaId($causaId);
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $participantes
+        ];
+        return response()->json($data);
+    }
 }

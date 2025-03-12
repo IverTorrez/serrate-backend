@@ -34,7 +34,7 @@ class CausaService
             'usuario_id' => $data['usuario_id'],
             'plantilla_id' => $data['plantilla_id'],
 
-            'estado' => EstadoCausa::CONGELADA,
+            'estado' => EstadoCausa::ACTIVA,
             'es_eliminado' => 0
         ]);
         return $causa;
