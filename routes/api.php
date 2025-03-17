@@ -149,6 +149,18 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('causas/listado/para-transaccion/origen', [CausaController::class, 'listarCausasConBilletera']);
         Route::get('causas/listado/para-transaccion/destino', [CausaController::class, 'listarCausasDestinoTransaccion']);
         Route::get('causas/listado/billeteras/usuario', [CausaController::class, 'listaCausasConBilleteraUsuario']);
+        //Listado de seguimiento de causas de ordenes de lider
+        Route::get('causas/listado/orden-giradas/lider', [CausaController::class, 'listadoCausasOrdenGiradasDeLider']);
+        Route::get('causas/listado/orden-pre-presupuestadas/lider', [CausaController::class, 'listadoCausasOrdenPrePresupuestadasDeLider']);
+        Route::get('causas/listado/orden-presupuestadas/lider', [CausaController::class, 'listadoCausasOrdenPresupuestadasDeLider']);
+        Route::get('causas/listado/orden-aceptadas/lider', [CausaController::class, 'listadoCausasOrdenAceptadasDeLider']);
+        Route::get('causas/listado/orden-dinero-entregado/lider', [CausaController::class, 'listadoCausasOrdenDineroEntregadoDeLider']);
+        Route::get('causas/listado/orden-lista-realizar/lider', [CausaController::class, 'listadoCausasOrdenListaRealizarDeLider']);
+        Route::get('causas/listado/orden-descargadas/lider', [CausaController::class, 'listadoCausasOrdenDescargadasDeLider']);
+        Route::get('causas/listado/orden-pronuncio-abogado/lider', [CausaController::class, 'listadoCausasOrdenPronuncioAbogadoDeLider']);
+        Route::get('causas/listado/orden-cuenta-conciliadas/lider', [CausaController::class, 'listadoCausasOrdenCuentasConciliadasDeLider']);
+        Route::get('causas/listado/orden-vencidas-leves/lider', [CausaController::class, 'listadoCausasOrdenVencidasLevesDeLider']);
+        Route::get('causas/listado/orden-vencidas-graves/lider', [CausaController::class, 'listadoCausasOrdenVencidasGravesDeLider']);
         //Tribunal
         Route::get('tribunal', [TribunalController::class, 'index']);
         Route::post('tribunal', [TribunalController::class, 'store']);
@@ -240,7 +252,10 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('orden/listado/entregar-presupuesto/procurador/{procuradorId}', [OrdenController::class, 'ordenesParaEntregarPresupuesto']);
         Route::get('orden/listado/devolver-presupuesto/procurador/{procuradorId}', [OrdenController::class, 'ordenesParaDevolverPresupuesto']);
         Route::get('orden/listado/sin-costojudicial-venta/admin', [OrdenController::class, 'ordenesParaColocarCostoJudicialVenta']);
+        //Contador de seguimiento 
         Route::get('orden/cantidad-orden-etapas', [OrdenController::class, 'cantidadOrdenesEnEtapas']);
+        //Contador de seguimiento de ordenes del Lider
+        Route::get('orden/cantidad-orden-etapas/lider', [OrdenController::class, 'cantidadOrdenesEnEtapasDeLider']);
         //Seguimiento
         Route::get('orden/giradas/causa/{idCausa}', [OrdenController::class, 'listadoOrdenGiradas']);
         Route::get('orden/pre-presupuestadas/causa/{idCausa}', [OrdenController::class, 'listadoOrdenPrePresupuestadas']);
@@ -253,6 +268,18 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('orden/cuenta-conciliada/causa/{idCausa}', [OrdenController::class, 'listadoOrdenCuentaConciliadas']);
         Route::get('orden/vencidas-leves/causa/{idCausa}', [OrdenController::class, 'listadoOrdenVencidasLeves']);
         Route::get('orden/vencidas-graves/causa/{idCausa}', [OrdenController::class, 'listadoOrdenVencidasGraves']);
+        //Seguimiento de ordenes de Lider
+        Route::get('orden/giradas-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenGiradasDeLider']);
+        Route::get('orden/pre-presupuestadas-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenPrePresupuestadasDeLider']);
+        Route::get('orden/presupuestadas-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenPresupuestadasDeLider']);
+        Route::get('orden/aceptadas-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenAceptadasDeLider']);
+        Route::get('orden/dinero-entregado-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenDineroEntregadoDeLider']);
+        Route::get('orden/lista-realizar-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenListaRealizarDeLider']);
+        Route::get('orden/descargadas-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenDescargadasDeLider']);
+        Route::get('orden/pronuncio-abogado-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenPronuncioAbogadoDeLider']);
+        Route::get('orden/cuenta-conciliada-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenCuentaConciliadasDeLider']);
+        Route::get('orden/vencidas-leves-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenVencidasLevesDeLider']);
+        Route::get('orden/vencidas-graves-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenVencidasGravesDeLider']);
         //Cotizacion
 
         //Presupuesto

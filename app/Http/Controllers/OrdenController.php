@@ -43,6 +43,8 @@ use App\Services\ContadorOrdenDineroEntregadoService;
 use App\Services\ContadorOrdenPrePresupuestadaService;
 use App\Services\ContadorOrdenPronuncioAbogadoService;
 use App\Services\ContadorOrdenCuentasConciliadaService;
+use App\Services\SeguimientoLider\ContadorOrdenesDeLiderService;
+use App\Services\SeguimientoLider\ListadoOrdenesSeguimientoDeLiderService;
 
 class OrdenController extends Controller
 {
@@ -72,6 +74,8 @@ class OrdenController extends Controller
     protected $listaOrdenCuentaConciliadaService;
     protected $listaOrdenVencidasLevesService;
     protected $listaOrdenVencidasGravesService;
+    protected $contadorOrdenesDeLiderService;
+    protected $listadoOrdenesSeguimientoDeLiderService;
 
     public function __construct(
         MatrizCotizacionService $matrizCotizacionService,
@@ -99,7 +103,10 @@ class OrdenController extends Controller
         ListaOrdenPronuncioAbogadoService $listaOrdenPronuncioAbogadoService,
         ListaOrdenCuentaConciliadaService $listaOrdenCuentaConciliadaService,
         ListaOrdenVencidasLevesService $listaOrdenVencidasLevesService,
-        ListaOrdenVencidasGravesService $listaOrdenVencidasGravesService
+        ListaOrdenVencidasGravesService $listaOrdenVencidasGravesService,
+        //Orden de lider
+        ContadorOrdenesDeLiderService $contadorOrdenesDeLiderService,
+        ListadoOrdenesSeguimientoDeLiderService $listadoOrdenesSeguimientoDeLiderService
     ) {
         $this->matrizCotizacionService = $matrizCotizacionService;
         $this->cotizacionService = $cotizacionService;
@@ -129,6 +136,9 @@ class OrdenController extends Controller
         $this->listaOrdenCuentaConciliadaService = $listaOrdenCuentaConciliadaService;
         $this->listaOrdenVencidasLevesService = $listaOrdenVencidasLevesService;
         $this->listaOrdenVencidasGravesService = $listaOrdenVencidasGravesService;
+        //ordenes de lider
+        $this->contadorOrdenesDeLiderService = $contadorOrdenesDeLiderService;
+        $this->listadoOrdenesSeguimientoDeLiderService = $listadoOrdenesSeguimientoDeLiderService;
     }
 
     public function index(Request $request)
@@ -413,6 +423,37 @@ class OrdenController extends Controller
             'data' => $data
         ], 200);
     }
+    public function cantidadOrdenesEnEtapasDeLider()
+    {
+        $cantidadGiradas = $this->contadorOrdenesDeLiderService->contarOrdenesGiradaDeLider();
+        $cantidadPrePresupuestadas = $this->contadorOrdenesDeLiderService->contarOrdenesPrePresupuestadasDeLider();
+        $cantidadPresupuestadas = $this->contadorOrdenesDeLiderService->contarOrdenesPresupuestadasDeLider();
+        $cantidadAceptadas = $this->contadorOrdenesDeLiderService->contarOrdenesAceptadasDeLider();
+        $cantidadDineroEntregado = $this->contadorOrdenesDeLiderService->contarOrdenesDineroEntregadoDeLider();
+        $cantidadListasRealizar = $this->contadorOrdenesDeLiderService->contarOrdenesListasRealizarDeLider();
+        $cantidadDescargada = $this->contadorOrdenesDeLiderService->contarOrdenesDescargadaDeLider();
+        $cantidadPronuncioAbogado = $this->contadorOrdenesDeLiderService->contarOrdenesPronuncioAbogadoDeLider();
+        $cantidadCuentasConciliadas = $this->contadorOrdenesDeLiderService->contarOrdenesCuentaConciliadaDeLider();
+        $cantidadVencidasLeves = $this->contadorOrdenesDeLiderService->contarOrdenesVencidasLevesDeLider();
+        $cantidadVencidasGraves = $this->contadorOrdenesDeLiderService->contarOrdenesVencidasGravesDeLider();
+        $data = [
+            'cantidad_giradas' => $cantidadGiradas,
+            'cantidad_pre_presupuestadas' => $cantidadPrePresupuestadas,
+            'cantidad_presupuestadas' => $cantidadPresupuestadas,
+            'cantidad_aceptadas' => $cantidadAceptadas,
+            'cantidad_dinero_entregado' => $cantidadDineroEntregado,
+            'cantidad_lista_realizar' => $cantidadListasRealizar,
+            'cantidad_descargadas' => $cantidadDescargada,
+            'cantidad_pronuncio_abogado' => $cantidadPronuncioAbogado,
+            'cantidad_cuentas_conciliadas' => $cantidadCuentasConciliadas,
+            'cantidad_vencidas_leves' => $cantidadVencidasLeves,
+            'cantidad_vencidas_graves' => $cantidadVencidasGraves
+        ];
+        return response()->json([
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $data
+        ], 200);
+    }
     public function listadoOrdenGiradas(Request $request, $idCausa)
     {
         try {
@@ -540,6 +581,139 @@ class OrdenController extends Controller
     {
         try {
             $ordenes = $this->listaOrdenVencidasGravesService->devuelveListaOrdenVencidasGraves($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    //Listado de ordenes de Lider
+    public function listadoOrdenGiradasDeLider(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listadoOrdenesSeguimientoDeLiderService->getOrdenesDeCausaGiradasDeLider($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenPrePresupuestadasDeLider(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listadoOrdenesSeguimientoDeLiderService->getOrdenesDeCausaPrePresupuestadasDeLider($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenPresupuestadasDeLider(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listadoOrdenesSeguimientoDeLiderService->getOrdenesDeCausaPresupuestadasDeLider($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenAceptadasDeLider(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listadoOrdenesSeguimientoDeLiderService->getOrdenesDeCausaAceptadasDeLider($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenDineroEntregadoDeLider(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listadoOrdenesSeguimientoDeLiderService->getOrdenesDeCausaDineroEntregadoDeLider($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenListaRealizarDeLider(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listadoOrdenesSeguimientoDeLiderService->getOrdenesDeCausaListaRealizarDeLider($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenDescargadasDeLider(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listadoOrdenesSeguimientoDeLiderService->getOrdenesDeCausaDescargadasDeLider($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenPronuncioAbogadoDeLider(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listadoOrdenesSeguimientoDeLiderService->getOrdenesDeCausaPronuncioAbogadoGeneral($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenCuentaConciliadasDeLider(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listadoOrdenesSeguimientoDeLiderService->getOrdenesDeCausaCuentaConciliadaDeLider($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenVencidasLevesDeLider(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listadoOrdenesSeguimientoDeLiderService->getOrdenesDeCausaVencidasLevesDeLider($request, $idCausa);
+            return new OrdenCollection($ordenes);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las ordenes.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoOrdenVencidasGravesDeLider(Request $request, $idCausa)
+    {
+        try {
+            $ordenes = $this->listadoOrdenesSeguimientoDeLiderService->getOrdenesDeCausaVencidasGravesDeLider($request, $idCausa);
             return new OrdenCollection($ordenes);
         } catch (\Exception $e) {
             return response()->json([
