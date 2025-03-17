@@ -158,7 +158,7 @@ class ListadoCausasOrdenDineroEntregadoService
     public function devuelveListadoCausasOrdenDineroEntregado(Request $request)
     {
         $tipoUsuario = Auth::user()->tipo;
-        if ($tipoUsuario === TipoUsuario::ABOGADO_INDEPENDIENTE || $tipoUsuario === TipoUsuario::ABOGADO_LIDER); {
+        if ($tipoUsuario === TipoUsuario::ABOGADO_INDEPENDIENTE || $tipoUsuario === TipoUsuario::ABOGADO_LIDER) {
             $causas = $this->listarCausasConOrdenesDineroEntregadoUsuario($request);
         }
         if ($tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE) {

@@ -154,7 +154,7 @@ class ListadoCausasOrdenPresupuestadasService
     public function devuelveListadoCausasOrdenPresupuestadas(Request $request)
     {
         $tipoUsuario = Auth::user()->tipo;
-        if ($tipoUsuario === TipoUsuario::ABOGADO_INDEPENDIENTE || $tipoUsuario === TipoUsuario::ABOGADO_LIDER); {
+        if ($tipoUsuario === TipoUsuario::ABOGADO_INDEPENDIENTE || $tipoUsuario === TipoUsuario::ABOGADO_LIDER) {
             $causas = $this->listarCausasConOrdenesPresupuestadasUsuario($request);
         }
         if ($tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE) {

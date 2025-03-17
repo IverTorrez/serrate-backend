@@ -35,6 +35,7 @@ use App\Services\ListadoCausasOrdenDineroEntregadoService;
 use App\Services\ListadoCausasOrdenPronuncioAbogadoService;
 use App\Services\ListadoCausasOrdenPrePresupuestadasService;
 use App\Services\ListadoCausasOrdenCuentasConciliadasService;
+use App\Services\SeguimientoLider\ListadoCausasSeguimientoLiderService;
 
 class CausaController extends Controller
 {
@@ -55,6 +56,8 @@ class CausaController extends Controller
     protected $listadoCausasOrdenCuentasConciliadaService;
     protected $listadoCausasOrdenVencidasLevesService;
     protected $listadoCausasOrdenVencidasGravesService;
+    //Servicios para seguimiento para Lider
+    protected $listadoCausasSeguimientoLiderService;
 
     public function __construct(
         CausaService $causaService,
@@ -73,7 +76,9 @@ class CausaController extends Controller
         ListadoCausasOrdenPronuncioAbogadoService $listadoCausasOrdenPronuncioAbogadoService,
         ListadoCausasOrdenCuentasConciliadasService $listadoCausasOrdenCuentasConciliadaService,
         ListadoCausasOrdenVencidasLevesService $listadoCausasOrdenVencidasLevesService,
-        ListadoCausasOrdenVencidasGravesService $listadoCausasOrdenVencidasGravesService
+        ListadoCausasOrdenVencidasGravesService $listadoCausasOrdenVencidasGravesService,
+        //Listado para user lider
+        ListadoCausasSeguimientoLiderService $listadoCausasSeguimientoLiderService
     ) {
         $this->causaService = $causaService;
         $this->avancePlantillaService = $avancePlantillaService;
@@ -92,6 +97,8 @@ class CausaController extends Controller
         $this->listadoCausasOrdenCuentasConciliadaService = $listadoCausasOrdenCuentasConciliadaService;
         $this->listadoCausasOrdenVencidasLevesService = $listadoCausasOrdenVencidasLevesService;
         $this->listadoCausasOrdenVencidasGravesService = $listadoCausasOrdenVencidasGravesService;
+        //Lista para user lider
+        $this->listadoCausasSeguimientoLiderService = $listadoCausasSeguimientoLiderService;
     }
     /**
      * Display a listing of the resource.
@@ -205,10 +212,9 @@ class CausaController extends Controller
                 $procuradorId = $usuarioPmaestro->id;
                 $abogadoId = $idUser;
             }
-            if(empty($request->color))
-            {
+            if (empty($request->color)) {
                 $color = '#ffffff';
-            }else{
+            } else {
                 $color = $request->color;
             }
 
@@ -603,5 +609,138 @@ class CausaController extends Controller
             'data' => $causas
         ];
         return response()->json($data);
+    }
+    //Listados de causas para seguimiento, para el usuario Lider
+    public function listadoCausasOrdenGiradasDeLider(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasSeguimientoLiderService->listarCausasConOrdenesGiradasDeLider($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenPrePresupuestadasDeLider(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasSeguimientoLiderService->listarCausasConOrdenesPrePresupuestadasDeLider($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenPresupuestadasDeLider(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasSeguimientoLiderService->listarCausasConOrdenesPresupuesDeLider($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenAceptadasDeLider(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasSeguimientoLiderService->listarCausasConOrdenesAceptadasDeLider($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenDineroEntregadoDeLider(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasSeguimientoLiderService->listarCausasConOrdenesDineroEntregadoDeLider($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenListaRealizarDeLider(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasSeguimientoLiderService->listarCausasConOrdenesListaRealizarDeLider($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenDescargadasDeLider(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasSeguimientoLiderService->listarCausasConOrdenesDescargadasDeLider($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenPronuncioAbogadoDeLider(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasSeguimientoLiderService->listarCausasConOrdenesPronuncioAbogadoDeLider($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenCuentasConciliadasDeLider(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasSeguimientoLiderService->listarCausasConOrdenesCuentasConciliadasDeLider($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenVencidasLevesDeLider(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasSeguimientoLiderService->listarCausasConOrdenesVencidasLevesDeLider($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function listadoCausasOrdenVencidasGravesDeLider(Request $request)
+    {
+        try {
+            $causas = $this->listadoCausasSeguimientoLiderService->listarCausasConOrdenesVencidasGravesDeLider($request);
+            return $causas;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las causas.',
+                'data' => null
+            ], 500);
+        }
     }
 }
