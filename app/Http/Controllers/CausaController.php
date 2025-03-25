@@ -204,14 +204,19 @@ class CausaController extends Controller
         try {
             $usuarioPmaestro = $this->userService->obtenerUnPMaestro();
             $idUser = Auth::user()->id;
+            $tipoUsuario = Auth::user()->tipo;
 
-            if (Auth::user()->tipo === TipoUsuario::ABOGADO_LIDER) {
+            /*if (Auth::user()->tipo === TipoUsuario::ABOGADO_LIDER) {
                 $procuradorId = $request->procurador_id;
                 $abogadoId = $request->abogado_id;
             } else {
                 $procuradorId = $usuarioPmaestro->id;
                 $abogadoId = $idUser;
+            }*/
+            if($tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE){
+                $idUser = Auth::user()->abogado_id; //Id de su abogado lider
             }
+            //Asignacion de color
             if (empty($request->color)) {
                 $color = '#ffffff';
             } else {
@@ -233,8 +238,8 @@ class CausaController extends Controller
                 'materia_id' => $request->materia_id,
                 'tipolegal_id' => $request->tipolegal_id,
                 'categoria_id' => $request->categoria_id,
-                'abogado_id' => $abogadoId,
-                'procurador_id' => $procuradorId,
+                'abogado_id' => $request->abogado_id,
+                'procurador_id' => $request->procurador_id,
                 'usuario_id' => $idUser,
             ];
             $data['plantilla_id'] = $request->has('plantilla_id') ? $request->plantilla_id : 0;

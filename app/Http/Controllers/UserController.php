@@ -47,28 +47,29 @@ class UserController extends Controller
      */
     public function show(User $user = null)
     {
-        if ($user){
+        if ($user) {
             $data = [
-              'message'=>MessageHttp::OBTENIDO_CORRECTAMENTE,
-              'data'=>$user
+                'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+                'data' => $user
             ];
-        }else {
+        } else {
             $usuarios = $this->userService->listarActivos();
             $data = [
-                'message'=>MessageHttp::OBTENIDOS_CORRECTAMENTE,
-                'data'=>$usuarios
+                'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+                'data' => $usuarios
             ];
         }
 
         return response()->json($data);
     }
 
-    public function obtenerUnPMaestro(){
+    public function obtenerUnPMaestro()
+    {
         $usuario = User::where('tipo', TipoUsuario::PROCURADOR_MAESTRO)
-                       ->where('estado', Estado::ACTIVO)
-                       ->where('es_eliminado', 0)
-                       ->first();
-        if ($usuario){
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->first();
+        if ($usuario) {
 
             return $usuario;
         } else {
@@ -101,42 +102,38 @@ class UserController extends Controller
     }
     public function listarAbogados()
     {
+        $tipoUsuario = Auth::user()->tipo;
         $usuarios = '';
-        if (Auth::user()->tipo === TipoUsuario::ABOGADO_LIDER)
-        {
+        if ($tipoUsuario === TipoUsuario::ABOGADO_LIDER) {
             //Lista abogados dependientes del usuario logueado
             $usuarios = $this->userService->abogadosDependientes();
         }
-        if (Auth::user()->tipo === TipoUsuario::ADMINISTRADOR)
-        {
+        if ($tipoUsuario === TipoUsuario::ADMINISTRADOR || $tipoUsuario === TipoUsuario::CONTADOR || $tipoUsuario === TipoUsuario::PROCURADOR_MAESTRO) {
             //Todos los abogados
             $usuarios = $this->userService->listarAbogados();
         }
-        $data=[
-            'message'=> MessageHttp::OBTENIDOS_CORRECTAMENTE,
-            'data'=>$usuarios
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $usuarios
         ];
         return response()->json($data);
-
     }
     public function listarAbogadosDependientes($abogadoLiderId)
     {
         $usuarios = $this->userService->listarAbogadosDependientes($abogadoLiderId);
-        $data=[
-            'message'=> MessageHttp::OBTENIDOS_CORRECTAMENTE,
-            'data'=>$usuarios
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $usuarios
         ];
         return response()->json($data);
-
     }
     public function listarProcuradores()
     {
         $usuarios = $this->userService->listarProcuradores();
-        $data=[
-            'message'=> MessageHttp::OBTENIDOS_CORRECTAMENTE,
-            'data'=>$usuarios
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $usuarios
         ];
         return response()->json($data);
-
     }
 }
