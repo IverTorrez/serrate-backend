@@ -95,9 +95,7 @@ class TribunalController extends Controller
     public function listarActivosPorCausa($causaId)
     {
         $tribunales = $this->tribunalService->listarActivosPorCausa($causaId);
-        /*if ($tribunales->isEmpty()) {
-            return response()->json(['message' => 'No se encontraron tribunales activos'], 404);
-        }*/
+       
         $data = [
             'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
             'data' => $tribunales
@@ -118,6 +116,9 @@ class TribunalController extends Controller
      */
     public function update(UpdateTribunalRequest $request, Tribunal $tribunal)
     {
+        if ($request->tribunal_dominante === 1){
+            $this->tribunalService->desmarcarTribunaDominanteDeCausa($request->causa_id);
+        }
         $data = $request->only([
             'expediente',
             'codnurejianuj',
