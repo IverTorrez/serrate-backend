@@ -9,6 +9,7 @@ use App\Enums\MessageHttp;
 use Illuminate\Http\Request;
 use App\Constants\TipoTransaccion;
 use App\Constants\TransaccionCausa;
+use App\Http\Requests\StoreTransaccionCausaDevolucionABilleteraGran;
 use App\Models\TransaccionesCausa;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -64,7 +65,7 @@ class TransaccionesCausaController extends Controller
         //Validacion cuando es transaccion desde billeta
         if ($esTransaccionDesdeBilletera === 1 && $billetera->monto < $monto) {
             return response()->json([
-                'message' => 'No tiene suficiente saldo en su billetera.',
+                'message' => 'No tiene suficiente saldo en su billetera general.',
                 'data' => null
             ], 409);
         }
@@ -153,6 +154,67 @@ class TransaccionesCausaController extends Controller
             return response()->json([
                 'message' => MessageHttp::CREADO_CORRECTAMENTE,
                 'data' => $transaccionCausaDestino
+            ], 201);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error registrar transaccion en causa: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error interno al registrar transaccion',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function devolucionABGeneral(StoreTransaccionCausaDevolucionABilleteraGran $request)
+    {//Devolucion de saldo a Billetera General desde billetera de causa
+        $monto = $request->monto;
+        $causaId = $request->causa_origen_destino;
+        $usuarioId = Auth::user()->id;
+            //Valida el saldo de la causa origen
+            $causaOrigenSaldo = $this->causaService->obtenerUno($causaId);
+            if ($causaOrigenSaldo->billetera < $monto) {
+                return response()->json([
+                    'message' => 'Esta causa no tiene suficiente saldo en su billetera para hacer transferencias.',
+                    'data' => null
+                ], 409);
+            }
+       
+        DB::beginTransaction();
+        try {   
+                //Actualizacion de saldo de billetera general
+                $codigoCausa = $this->causaService->obtenerCodigoIdentificadorVisual($causaId);
+                $tipoTrn = TipoTransaccion::CREDITO;
+                $glosabilletera = GlosaTransaccion::CREDITO_DEVOLUCION_DE_CAUSA.": ".$codigoCausa;
+                $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($usuarioId);
+                $billeterGeneralTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billetera->id, $monto, $tipoTrn, $glosabilletera);
+                //Actualizacion de saldo de billetera de causa
+                $transaccionOrigen = TransaccionCausa::TRANSFERENCIA_ENVIADA;
+                $glosaOrigen = GlosaTransaccion::DEBITO_POR_DEVOLUCION_A_BILLETERA_GRAL;
+                $now = Carbon::now('America/La_Paz');
+                $fechaHora = $now->toDateTimeString();
+                $dataOrigen = [
+                    'monto' => $monto,
+                    'fecha_transaccion' => $fechaHora,
+                    'tipo' => TipoTransaccion::DEBITO,
+                    'transaccion' => $transaccionOrigen,
+                    'glosa' => $glosaOrigen,
+                    'causa_id' => $causaId,
+                    'causa_origen_destino' => 0,
+                    'usuario_id' => Auth::user()->id
+                ];
+                $transaccionCausaOrigen = $this->transaccionesCausaService->store($dataOrigen);
+                //Actualiza saldo de la causa origen
+                $causaOrigen = $this->causaService->obtenerUno($causaId);
+                $saldoCausaOrigen = $causaOrigen->billetera - $monto;
+                $dataCausaOrigen = [
+                    'billetera' => $saldoCausaOrigen
+                ];
+                $causaOrig = $this->causaService->update($dataCausaOrigen, $causaId);
+
+            DB::commit();
+            return response()->json([
+                'message' => MessageHttp::CREADO_CORRECTAMENTE,
+                'data' => $causaOrig
             ], 201);
         } catch (Exception $e) {
             DB::rollBack();
