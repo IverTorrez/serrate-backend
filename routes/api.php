@@ -366,6 +366,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::patch('billetera-transaccion/eliminar/{billeteraTransaccion}', [BilleteraTransaccionController::class, 'destroy']);
         //Transacciones Causas
         Route::post('transacciones-causas', [TransaccionesCausaController::class, 'store']);
+        Route::post('transacciones-causas/devolucion', [TransaccionesCausaController::class, 'devolucionABGeneral']);
         Route::get('transacciones-causas/listado-causa/{causaId}', [TransaccionesCausaController::class, 'obtenerTransaccionesDeCausa']);
         //Parametro vigencia
         Route::get('parametro-vigencias/obtener', [ParametroVigenciaController::class, 'obtenerUnoUsuario']);
