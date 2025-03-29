@@ -55,12 +55,37 @@ Route::get('/user', function (Request $request) {
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function () {
 
     Route::prefix('auth')->group(function () {
-        Route::post('register', [AuthController::class, 'register']);
+        Route::post('crearUsuario', [UserController::class, 'crearUsuario']);
         Route::post('login', [AuthController::class, 'login']);
 
         Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('logout', [AuthController::class, 'logout']);
         });
+    });
+
+    //Usuarios
+    Route::prefix('usuarios')->group(function () {
+        //paginado
+        Route::get('abogados-dependientes/{abogadoLiderId}/paginado', [UserController::class, 'obtenerUsuariosDependientes']);
+
+        // Listar usuarios
+        Route::get('abogados', [UserController::class, 'listarAbogados']);
+        Route::get('abogados-dependientes/{abogadoLiderId}', [UserController::class, 'listarAbogadosDependientes']);
+        Route::get('procuradores', [UserController::class, 'listarProcuradores']);
+        Route::get('listar/{user?}', [UserController::class, 'show']);
+
+        // Creación y gestión de usuarios
+        Route::post('crearUsuario', [UserController::class, 'crearUsuario']);
+        Route::put('{user}', [UserController::class, 'actualizarUsuario']);
+        Route::delete('{user}', [UserController::class, 'eliminarUsuario']);
+    });
+
+    // Perfil del Usuario Autenticado
+    Route::middleware(['auth:sanctum'])->prefix('perfil')->group(function () {
+        Route::get('/', [PerfilUsuarioController::class, 'obtenerPerfil']);
+        Route::post('/actualizar', [PerfilUsuarioController::class, 'actualizarPerfil']);
+        Route::post('/cambiar-foto', [PerfilUsuarioController::class, 'actualizarFotoPerfil']);
+        Route::patch('/cambiar-password', [PerfilUsuarioController::class, 'cambiarPassword']);
     });
 
     // Rutas para la verificación de códigos a correo
@@ -315,17 +340,6 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('compra-paquetes', [CompraPaqueteController::class, 'index']);
         Route::get('compra-paquetes/{compraPaquete}', [CompraPaqueteController::class, 'show']);
         Route::get('compra-paquetes/lista/activos', [CompraPaqueteController::class, 'listarActivosPorUsuario']);
-        //Usuarios
-        Route::get('usuarios/abogados', [UserController::class, 'listarAbogados']);
-        Route::get('usuarios/abogados-dependiantes/{abogadoLiderId}', [UserController::class, 'listarAbogadosDependientes']);
-        Route::get('usuarios/procuradores', [UserController::class, 'listarProcuradores']);
-        Route::get('usuarios/listar/{user?}', [UserController::class, 'show']);
-
-        Route::get('/usuarios/perfil', [PerfilUsuarioController::class, 'obtenerPerfil']);
-        Route::post('/usuarios/perfil/actualizar', [PerfilUsuarioController::class, 'actualizarPerfil']);
-        Route::post('/usuarios/perfil/cambiar-foto', [PerfilUsuarioController::class, 'actualizarFotoPerfil']);
-        Route::patch('/usuarios/perfil/cambiar-password', [PerfilUsuarioController::class, 'cambiarPassword']);
-
 
         //Documentos Categorias
         Route::get('documentos-categorias', [DocumentosCategoriaController::class, 'index']);
