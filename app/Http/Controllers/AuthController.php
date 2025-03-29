@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\ErrorMessages;
-use App\Http\Requests\StoreAuthRequest;
-use App\Http\Requests\StoreLoginRequest;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Services\AuthService;
 use App\Services\ResponseService;
 use Illuminate\Http\JsonResponse;
@@ -20,16 +19,7 @@ class AuthController extends Controller
         $this->authService = $authService;
     }
 
-    public function register(StoreAuthRequest $request): JsonResponse
-    {
-        try {
-            return $this->authService->register($request->validated());
-        } catch (Exception $e) {
-            return ResponseService::error(ErrorMessages::ERROR_CREAR, 500);
-        }
-    }
-
-    public function login(StoreLoginRequest $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
         try {
             return $this->authService->login($request->validated());
@@ -37,7 +27,6 @@ class AuthController extends Controller
             return ResponseService::error(ErrorMessages::ERROR_LOGIN, 500);
         }
     }
-
 
     public function logout(Request $request): JsonResponse
     {

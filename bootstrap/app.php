@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\LogHttpRequests;
 use App\Services\ResponseService;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,7 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__ . '/../routes/channels.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware) {})
+    ->withMiddleware(function (Middleware $middleware) {
+        // Registrar Middleware Global
+        $middleware->append(LogHttpRequests::class);
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->reportable(function (Throwable $e) {
             Log::error($e->getMessage());
