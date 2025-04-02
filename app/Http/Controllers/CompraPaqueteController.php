@@ -78,12 +78,28 @@ class CompraPaqueteController extends Controller
     public function store(StoreCompraPaqueteRequest $request)
     {
         $fechaHoraSistema = Carbon::now('America/La_Paz')->format('Y-m-d H:i');
+        $fechaActual = Carbon::now()->format('Y-m-d');
         $fechaFinalVigenciaGeneral = '';
         $idUser = Auth::id();
+        $tipoUser = Auth::user()->tipo;
         $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($idUser);
+        //Validaciones para compra de paquete
         if (!$billetera || $billetera->monto < $request->monto) {
             return response()->json([
-                'message' => 'No tiene suficiente saldo en su billetera',
+                'message' => 'No tiene suficiente saldo en su billetera general',
+                'data' => null
+            ], 409);
+        }
+        $paquete = $this->paqueteService->obtenerUno($request->paquete_id);
+        if ($tipoUser != $paquete->tipo) {
+            return response()->json([
+                'message' => 'Este paquete es únicamente para usuarios ' . $paquete->tipo,
+                'data' => null
+            ], 409);
+        }
+        if ($paquete->tiene_fecha_limite === 1 &&  $fechaActual > $paquete->fecha_limite_compra) {
+            return response()->json([
+                'message' => 'Ya no puede comprar este paquete, fecha limite de compra era hasta ' . $paquete->fecha_limite_compra,
                 'data' => null
             ], 409);
         }
@@ -93,7 +109,7 @@ class CompraPaqueteController extends Controller
             /* obtener la fecha de vigencia general del usuario*/
             $parametroVigencia = $this->parametroVigenciaService->obtenerUnoPorUsuario($idUser);
 
-            $paquete = $this->paqueteService->obtenerUno($request->paquete_id);
+
             $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
             //*Actualiza la fecha del parametro de vigencia
             if ($parametroVigencia->fecha_ultima_vigencia < $fechaHoraSistema) {
@@ -108,7 +124,7 @@ class CompraPaqueteController extends Controller
                 $fechaInicioVigencia = $fechaFinalVigenciaGeneralActual;
                 $fechaFinalVigencia = $fechaInicioVigencia->copy()->addDays($paquete->cantidad_dias);
 
-                $fechaFinalVigenciaGeneral =$fechaFinalVigencia;//* $nuevaFechaVigenciaGeneral;
+                $fechaFinalVigenciaGeneral = $fechaFinalVigencia; //* $nuevaFechaVigenciaGeneral;
             }
             $dataParametroVigencia = [
                 'fecha_ultima_vigencia' => $fechaFinalVigenciaGeneral->format('Y-m-d H:i')

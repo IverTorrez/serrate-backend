@@ -27,8 +27,8 @@ class UpdatePaqueteRequest extends FormRequest
             'cantidad_dias'=>['sometimes','numeric'],
             'descripcion'=>['sometimes','string'],
             'tiene_fecha_limite' => ['sometimes','numeric'],
-            'fecha_limite_compra' => ['sometimes','date_format:Y-m-d'],
-            'tipo'=>['sometimes','string','max:20'],
+            'fecha_limite_compra' => ['sometimes'],
+            'tipo'=>['sometimes','string','max:50'],
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\TipoUsuario;
 use App\Http\Requests\StorePaqueteRequest;
 use App\Http\Requests\UpdatePaqueteRequest;
 use App\Http\Resources\PaqueteCollection;
@@ -22,8 +23,7 @@ class PaqueteController extends Controller
 
     public function __construct(
         PaqueteService $paqueteService
-    )
-    {
+    ) {
         $this->paqueteService = $paqueteService;
     }
     /**
@@ -54,9 +54,21 @@ class PaqueteController extends Controller
             'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
             'data' => $paquetes
         ]);
-
     }
-
+    public function listadoPaquetesSegunUsuario()
+    {
+        $tipoUser = Auth::user()->tipo;
+        if ($tipoUser === TipoUsuario::ABOGADO_LIDER) {
+            $paquetes = $this->paqueteService->listadoPaquetesParaLider();
+        }
+        if ($tipoUser === TipoUsuario::ABOGADO_INDEPENDIENTE) {
+            $paquetes = $this->paqueteService->listadoPaquetesParaIndependiente();
+        }
+        return response()->json([
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $paquetes
+        ]);
+    }
     /**
      * Show the form for creating a new resource.
      */
@@ -94,14 +106,13 @@ class PaqueteController extends Controller
      */
     public function show(Paquete $paquete)
     {
-        try{
+        try {
             $paquete = $this->paqueteService->obtenerUno($paquete->id);
             return response()->json([
                 'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
                 'data' => $paquete
             ], 200);
-
-        }catch (ModelNotFoundException  $e) {
+        } catch (ModelNotFoundException  $e) {
             Log::error('Paquete no encontrado: ' . $e->getMessage());
             return response()->json([
                 'message' => 'El paquete solicitado no se encontró.',
@@ -113,7 +124,6 @@ class PaqueteController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-
     }
 
     /**
@@ -138,7 +148,10 @@ class PaqueteController extends Controller
             'fecha_limite_compra',
             'tipo'
         ]);
-        $paquete = $this->paqueteService->update($data,$paquete->id);
+        if ($request->tiene_fecha_limite === 0) {
+            $data['fecha_limite_compra'] = null;
+        }
+        $paquete = $this->paqueteService->update($data, $paquete->id);
 
         return response()->json([
             'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,

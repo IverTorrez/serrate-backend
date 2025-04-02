@@ -306,6 +306,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('gestion-alternativa/orden/{ordenId}', [GestionAlternativaController::class, 'obtenerPorOrdenId']);
         //Paquetes
         Route::get('paquetes', [PaqueteController::class, 'index']);
+        Route::get('paquetes/listado/segun-usuario', [PaqueteController::class, 'listadoPaquetesSegunUsuario']);
         Route::post('paquetes', [PaqueteController::class, 'store']);
         Route::patch('paquetes/{paquete}', [PaqueteController::class, 'update']);
         Route::patch('paquetes/eliminar/{paquete}', [PaqueteController::class, 'destroy']);
