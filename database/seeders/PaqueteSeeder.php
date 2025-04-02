@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Constants\Estado;
+use App\Constants\TipoUsuario;
 use App\Models\Paquete;
 use Carbon\Carbon;
 
@@ -28,7 +29,7 @@ class PaqueteSeeder extends Seeder
             'usuario_id'=> 1,
             'tiene_fecha_limite' => 1,
             'fecha_limite_compra' => $fecha,
-            'tipo' => 'INDEPENDIENTE',
+            'tipo' => TipoUsuario::ABOGADO_INDEPENDIENTE,
             'estado' => Estado::ACTIVO,
             'es_eliminado' => 0,
         ]);
@@ -41,7 +42,7 @@ class PaqueteSeeder extends Seeder
             'usuario_id'=> 1,
             'tiene_fecha_limite' => 0,
             'fecha_limite_compra' => null,
-            'tipo' => 'INDEPENDIENTE',
+            'tipo' => TipoUsuario::ABOGADO_INDEPENDIENTE,
             'estado' => Estado::ACTIVO,
             'es_eliminado' => 0,
         ]);
@@ -54,7 +55,7 @@ class PaqueteSeeder extends Seeder
             'usuario_id'=> 1,
             'tiene_fecha_limite' => 0,
             'fecha_limite_compra' => null,
-            'tipo' => 'LIDER',
+            'tipo' => TipoUsuario::ABOGADO_LIDER,
             'estado' => Estado::ACTIVO,
             'es_eliminado' => 0,
         ]);
