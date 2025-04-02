@@ -1,27 +1,35 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Auth;
 
 use App\Constants\TipoUsuario;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreAuthRequest extends FormRequest
+class RegisterRequest extends FormRequest
 {
-    public function authorize()
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
     public function rules(): array
     {
         return [
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'tipo' => 'required|string|in:' . implode(',', TipoUsuario::getValues()),
-            'nombre' => 'required|string|max:255',
-            'apellido' => 'required|string|max:255',
-            'telefono' => 'nullable|string|max:20',
-            'direccion' => 'nullable|string|max:255',
+            'persona.nombre' => 'required|string|max:255',
+            'persona.apellido' => 'required|string|max:255',
+            'persona.telefono' => 'nullable|string|max:20',
+            'persona.direccion' => 'nullable|string|max:255',
 
             // Opciones moto
             'opciones_moto' => 'nullable|array',
@@ -30,8 +38,6 @@ class StoreAuthRequest extends FormRequest
             'opciones_moto.SI_MOTO' => 'nullable|boolean',
         ];
     }
-
-
     public function messages(): array
     {
         return [

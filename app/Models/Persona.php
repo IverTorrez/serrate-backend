@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\CommonScopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Persona extends Model
 {
-    use HasFactory;
-    protected $fillable=[
+    use CommonScopes, HasFactory;
+    protected $fillable = [
         'nombre',
         'apellido',
         'telefono',
@@ -28,6 +29,6 @@ class Persona extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class,'usuario_id');
+        return $this->belongsTo(User::class, 'usuario_id');
     }
 }

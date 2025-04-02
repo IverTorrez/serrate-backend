@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Constants\ErrorMessages;
 use App\Models\User;
 use App\Constants\TipoUsuario;
 use App\Constants\Estado;
 use App\Enums\MessageHttp;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Resources\Usuario\UsuarioResource;
+use App\Services\ResponseService;
 use App\Services\UserService;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
@@ -18,33 +24,28 @@ class UserController extends Controller
     {
         $this->userService = $userService;
     }
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+    public function obtenerUsuariosDependientes(Request $request, $abogadoId)
     {
-        //
+        $usuarios = $this->userService->obtenerUsuariosDependientes(
+            $request,
+            $abogadoId
+
+        );
+        return UsuarioResource::collection($usuarios);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+
+
+    public function crearUsuario(RegisterRequest $request): JsonResponse
     {
-        //
+        try {
+            return $this->userService->crearUsuario($request->validated());
+        } catch (Exception $e) {
+            return ResponseService::error(ErrorMessages::ERROR_CREAR, 500);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
     public function show(User $user = null)
     {
         if ($user) {
@@ -77,38 +78,15 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
     public function listarAbogados()
     {
         $tipoUsuario = Auth::user()->tipo;
         $usuarios = '';
-        if ($tipoUsuario === TipoUsuario::ABOGADO_LIDER) {
+        if (Auth::user()->tipo === TipoUsuario::ABOGADO_LIDER) {
             //Lista abogados dependientes del usuario logueado
             $usuarios = $this->userService->abogadosDependientes();
         }
-        if ($tipoUsuario === TipoUsuario::ADMINISTRADOR || $tipoUsuario === TipoUsuario::CONTADOR || $tipoUsuario === TipoUsuario::PROCURADOR_MAESTRO) {
+        if (Auth::user()->tipo === TipoUsuario::ADMINISTRADOR) {
             //Todos los abogados
             $usuarios = $this->userService->listarAbogados();
         }
