@@ -64,7 +64,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
     });
 
     //Usuarios
-    Route::prefix('usuarios')->group(function () {
+    Route::middleware(['auth:sanctum'])->prefix('usuarios')->group(function () {
         //paginado
         Route::get('abogados-dependientes/{abogadoLiderId}/paginado', [UserController::class, 'obtenerUsuariosDependientes']);
 
@@ -81,7 +81,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
     });
 
     // Perfil del Usuario Autenticado
-    Route::middleware(['auth:sanctum'])->prefix('perfil')->group(function () {
+    Route::middleware(['auth:sanctum'])->prefix('usuarios/perfil')->group(function () {
         Route::get('/', [PerfilUsuarioController::class, 'obtenerPerfil']);
         Route::post('/actualizar', [PerfilUsuarioController::class, 'actualizarPerfil']);
         Route::post('/cambiar-foto', [PerfilUsuarioController::class, 'actualizarFotoPerfil']);
@@ -385,7 +385,5 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function
         Route::get('transacciones-causas/listado-causa/{causaId}', [TransaccionesCausaController::class, 'obtenerTransaccionesDeCausa']);
         //Parametro vigencia
         Route::get('parametro-vigencias/obtener', [ParametroVigenciaController::class, 'obtenerUnoUsuario']);
-
-
     });
 });
