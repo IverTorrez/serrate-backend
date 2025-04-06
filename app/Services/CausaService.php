@@ -35,6 +35,7 @@ class CausaService
             'plantilla_id' => $data['plantilla_id'],
 
             'estado' => EstadoCausa::ACTIVA,
+            'motivo_congelada' => $data['motivo_congelada'],
             'es_eliminado' => 0
         ]);
         return $causa;

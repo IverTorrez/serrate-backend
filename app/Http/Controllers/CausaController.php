@@ -186,6 +186,47 @@ class CausaController extends Controller
         $causas->load('procurador.persona');
         return new CausaCollection($causas);
     }
+    public function indexCausasAdmin(Request $request)
+    {
+        $query = Causa::whereIn('estado', [EstadoCausa::ACTIVA, EstadoCausa::CONGELADA, EstadoCausa::TERMINADA])
+            ->where('es_eliminado', 0);
+        $usuario = Auth::user();
+        //Filtrado por usuario
+        if ($usuario->tipo === TipoUsuario::ABOGADO_LIDER || $usuario->tipo === TipoUsuario::ABOGADO_INDEPENDIENTE) {
+            $query->where('usuario_id', $usuario->id);
+        } else {
+            if ($usuario->tipo === TipoUsuario::ABOGADO_DEPENDIENTE) {
+                $query->where('abogado_id', $usuario->id);
+            } else {
+                if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+                    $query->where('procurador_id', $usuario->id);
+                }
+            }
+        }
+
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $causas = $query->paginate($perPage);
+
+        $causas->load('materia');
+        $causas->load('tipoLegal');
+        $causas->load('categoria');
+        $causas->load('abogado.persona');
+        $causas->load('procurador.persona');
+        return new CausaCollection($causas);
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -213,7 +254,7 @@ class CausaController extends Controller
                 $procuradorId = $usuarioPmaestro->id;
                 $abogadoId = $idUser;
             }*/
-            if($tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE){
+            if ($tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE) {
                 $idUser = Auth::user()->abogado_id; //Id de su abogado lider
             }
             //Asignacion de color
@@ -241,6 +282,7 @@ class CausaController extends Controller
                 'abogado_id' => $request->abogado_id,
                 'procurador_id' => $request->procurador_id,
                 'usuario_id' => $idUser,
+                'motivo_congelada' => '',
             ];
             $data['plantilla_id'] = $request->has('plantilla_id') ? $request->plantilla_id : 0;
             $causa = $this->causaService->store($data);
@@ -327,6 +369,7 @@ class CausaController extends Controller
                 'abogado_id',
                 'procurador_id',
                 'estado',
+                'motivo_congelada',
                 'es_eliminado'
             ]);
             $plantillaId = $request->plantilla_id;

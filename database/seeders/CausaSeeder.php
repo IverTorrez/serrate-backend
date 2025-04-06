@@ -34,6 +34,7 @@ class CausaSeeder extends Seeder
             'procurador_id'=>6,
             'usuario_id'=>2,
             'estado' => $estadoCausa,
+            'motivo_congelada' => '',
             'es_eliminado' => 0,
         ]);
     }
