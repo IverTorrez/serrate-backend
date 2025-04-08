@@ -24,7 +24,8 @@ class StoreVideoRequest extends FormRequest
         return [
             'link' => ['required', 'string', 'max:150'],
             'titulo' => ['required', 'string', 'max:50'],
-            'descripcion' => ['required', 'string', 'max:100']
+            'descripcion' => ['required', 'string', 'max:100'],
+            'tipo' => ['required', 'string', 'max:50'],
         ];
     }
 }
