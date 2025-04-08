@@ -82,11 +82,11 @@ class UserController extends Controller
     {
         $tipoUsuario = Auth::user()->tipo;
         $usuarios = '';
-        if (Auth::user()->tipo === TipoUsuario::ABOGADO_LIDER) {
+        if ($tipoUsuario === TipoUsuario::ABOGADO_LIDER) {
             //Lista abogados dependientes del usuario logueado
             $usuarios = $this->userService->abogadosDependientes();
         }
-        if (Auth::user()->tipo === TipoUsuario::ADMINISTRADOR) {
+        if ($tipoUsuario === TipoUsuario::ADMINISTRADOR || $tipoUsuario === TipoUsuario::CONTADOR || $tipoUsuario === TipoUsuario::PROCURADOR_MAESTRO) {
             //Todos los abogados
             $usuarios = $this->userService->listarAbogados();
         }

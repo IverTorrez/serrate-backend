@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('link', 150)->comment('Link del video de youtube');
             $table->string('titulo', 50)->comment('titulo del video');
             $table->string('descripcion', 100)->comment('descripcion del video');
+            $table->string('tipo', 50)->comment('para que tipo de usuario es');
             $table->string('estado', 20)->comment('estado ACTIVO,INACTIVO');
             $table->integer('es_eliminado')->comment('1 es eliminado, 0 no es eliminado');
             $table->timestamps();

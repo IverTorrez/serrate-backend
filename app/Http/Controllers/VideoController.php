@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\TipoUsuario;
 use App\Models\Video;
 use App\Enums\MessageHttp;
 use Illuminate\Http\Request;
@@ -9,6 +10,7 @@ use App\Services\VideoService;
 use App\Http\Resources\VideoCollection;
 use App\Http\Requests\StoreVideoRequest;
 use App\Http\Requests\UpdateVideoRequest;
+use Illuminate\Support\Facades\Auth;
 
 class VideoController extends Controller
 {
@@ -23,6 +25,50 @@ class VideoController extends Controller
     public function index(Request $request)
     {
         $query = Video::active();
+        $query->where('tipo', 'PUBLICO');
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $videos = $query->paginate($perPage);
+
+        return new VideoCollection($videos);
+    }
+    public function indexProcuradores(Request $request)
+    {
+        $query = Video::active();
+        $query->where('tipo', 'PROCURADOR');
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $videos = $query->paginate($perPage);
+
+        return new VideoCollection($videos);
+    }
+    public function indexAbogados(Request $request)
+    {
+        $query = Video::active();
+        $query->where('tipo', 'ABOGADO');
 
         // Manejo de búsqueda
         if ($request->has('search')) {
@@ -42,6 +88,7 @@ class VideoController extends Controller
         return new VideoCollection($videos);
     }
 
+
     /**
      * Show the form for creating a new resource.
      */
@@ -59,7 +106,8 @@ class VideoController extends Controller
         $data = ([
             'link' => $embedUrl,
             'titulo' => $request->titulo,
-            'descripcion' => $request->descripcion
+            'descripcion' => $request->descripcion,
+            'tipo' => $request->tipo
         ]);
         $video = $this->videoService->store($data);
         return response()
@@ -98,7 +146,8 @@ class VideoController extends Controller
         $embedUrl = $this->videoService->transformarUrlYoutube($request->link);
         $data = $request->only([
             'titulo',
-            'descripcion'
+            'descripcion',
+            'tipo'
         ]);
         $data['link'] = $embedUrl;
         $video = $this->videoService->update($data, $video->id);
@@ -121,7 +170,23 @@ class VideoController extends Controller
     }
     public function listarActivos()
     {
-        $videos = $this->videoService->listarActivos();
+        $videos = $this->videoService->listarActivosPublico();
+        return response()
+            ->json([
+                'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+                'data' => $videos
+            ]);
+    }
+    public function listarActivosSegunUsuario()
+    {
+        $tipoUser = Auth::user()->tipo;
+        $videos = '';
+        if ($tipoUser === TipoUsuario::ABOGADO_DEPENDIENTE || $tipoUser === TipoUsuario::ABOGADO_LIDER || $tipoUser === TipoUsuario::ABOGADO_INDEPENDIENTE) {
+            $videos = $this->videoService->listarActivosAbogado();
+        }
+        if ($tipoUser === TipoUsuario::PROCURADOR) {
+            $videos = $this->videoService->listarActivosProcurador();
+        }
         return response()
             ->json([
                 'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,

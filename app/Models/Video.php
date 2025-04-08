@@ -13,6 +13,7 @@ class Video extends Model
         'link',
         'titulo',
         'descripcion',
+        'tipo',
         'estado',
         'es_eliminado'
     ];

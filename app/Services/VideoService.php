@@ -14,6 +14,7 @@ class VideoService
             'link' => $data['link'],
             'titulo' => $data['titulo'],
             'descripcion' => $data['descripcion'],
+            'tipo' => $data['tipo'],
             'estado' => Estado::ACTIVO,
             'es_eliminado' => 0,
 
@@ -26,10 +27,27 @@ class VideoService
         $video->update($data);
         return $video;
     }
-    public function listarActivos()
+    public function listarActivosPublico()
     {
         $videos = Video::where('estado', Estado::ACTIVO)
             ->where('es_eliminado', 0)
+            ->where('tipo', 'PUBLICO')
+            ->get();
+        return $videos;
+    }
+    public function listarActivosProcurador()
+    {
+        $videos = Video::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('tipo', 'PROCURADOR')
+            ->get();
+        return $videos;
+    }
+    public function listarActivosAbogado()
+    {
+        $videos = Video::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('tipo', 'ABOGADO')
             ->get();
         return $videos;
     }
