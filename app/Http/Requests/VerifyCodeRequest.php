@@ -15,7 +15,7 @@ class VerifyCodeRequest extends FormRequest
     {
         return [
             'email' => 'required|email',
-            'verification_code' => 'required|string|size:6',
+            'code' => 'required|string|size:6',
         ];
     }
 
@@ -24,8 +24,8 @@ class VerifyCodeRequest extends FormRequest
         return [
             'email.required' => 'El campo de correo electrónico es obligatorio.',
             'email.email' => 'El correo electrónico debe ser válido.',
-            'verification_code.required' => 'El código de verificación es obligatorio.',
-            'verification_code.size' => 'El código de verificación debe tener exactamente 6 caracteres.',
+            'code.required' => 'El código de verificación es obligatorio.',
+            'code.size' => 'El código de verificación debe tener exactamente 6 caracteres.',
         ];
     }
 }

@@ -54,7 +54,7 @@ class UserService
         $abogado_id = (auth()->check() && $data['tipo'] === TipoUsuario::ABOGADO_DEPENDIENTE) ? auth()->id() : 0;
 
         $user = User::create([
-            'name' => $data['persona']['nombre'],
+            'name' => $data['nombre'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'tipo' => $data['tipo'],
@@ -71,10 +71,10 @@ class UserService
     private function createPersona(array $data, User $user): void
     {
         Persona::create([
-            'nombre' => $data['persona']['nombre'],
-            'apellido' => $data['persona']['apellido'],
-            'telefono' => $data['persona']['telefono'],
-            'direccion' => $data['persona']['direccion'] ?? null,
+            'nombre' => $data['nombre'],
+            'apellido' => $data['apellido'],
+            'telefono' => $data['telefono'],
+            'direccion' => $data['direccion'] ?? null,
             'coordenadas' => $data['coordenadas'] ?? null,
             'observacion' => $data['observacion'] ?? null,
             'foto_url' => $data['foto_url'] ?? null,
