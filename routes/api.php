@@ -48,44 +48,38 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-
-
-
-
-Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers'], function () {
+Route::prefix('v1')->group(function () {
 
     Route::prefix('auth')->group(function () {
-        Route::post('crearUsuario', [UserController::class, 'crearUsuario']);
         Route::post('login', [AuthController::class, 'login']);
+        Route::post('registro', [UserController::class, 'crearUsuario']);
+    });
 
-        Route::middleware(['auth:sanctum'])->group(function () {
-            Route::post('logout', [AuthController::class, 'logout']);
+    Route::middleware('auth:sanctum')->group(function () {
+
+        Route::post('auth/logout', [AuthController::class, 'logout']);
+
+        // Usuarios
+        Route::prefix('usuarios')->group(function () {
+            Route::get('abogados', [UserController::class, 'listarAbogados']);
+            Route::get('procuradores', [UserController::class, 'listarProcuradores']);
+            Route::get('abogados-dependientes/{abogadoLiderId}', [UserController::class, 'listarAbogadosDependientes']);
+            Route::get('abogados-dependientes/{abogadoLiderId}/paginado', [UserController::class, 'obtenerUsuariosDependientes']);
+            Route::get('listar/{user?}', [UserController::class, 'show']);
+
+
+            Route::post('crear', [UserController::class, 'crearUsuario']);
+            Route::put('{user}', [UserController::class, 'actualizarUsuario']);
+            Route::delete('{user}', [UserController::class, 'eliminarUsuario']);
         });
-    });
 
-    //Usuarios
-    Route::middleware(['auth:sanctum'])->prefix('usuarios')->group(function () {
-        //paginado
-        Route::get('abogados-dependientes/{abogadoLiderId}/paginado', [UserController::class, 'obtenerUsuariosDependientes']);
-
-        // Listar usuarios
-        Route::get('abogados', [UserController::class, 'listarAbogados']);
-        Route::get('abogados-dependientes/{abogadoLiderId}', [UserController::class, 'listarAbogadosDependientes']);
-        Route::get('procuradores', [UserController::class, 'listarProcuradores']);
-        Route::get('listar/{user?}', [UserController::class, 'show']);
-
-        // Creación y gestión de usuarios
-        Route::post('crearUsuario', [UserController::class, 'crearUsuario']);
-        Route::put('{user}', [UserController::class, 'actualizarUsuario']);
-        Route::delete('{user}', [UserController::class, 'eliminarUsuario']);
-    });
-
-    // Perfil del Usuario Autenticado
-    Route::middleware(['auth:sanctum'])->prefix('usuarios/perfil')->group(function () {
-        Route::get('/', [PerfilUsuarioController::class, 'obtenerPerfil']);
-        Route::post('/actualizar', [PerfilUsuarioController::class, 'actualizarPerfil']);
-        Route::post('/cambiar-foto', [PerfilUsuarioController::class, 'actualizarFotoPerfil']);
-        Route::patch('/cambiar-password', [PerfilUsuarioController::class, 'cambiarPassword']);
+        // Perfil del usuario autenticado
+        Route::prefix('perfil')->group(function () {
+            Route::get('/', [PerfilUsuarioController::class, 'obtenerPerfil']);
+            Route::post('actualizar', [PerfilUsuarioController::class, 'actualizarPerfil']);
+            Route::post('cambiar-foto', [PerfilUsuarioController::class, 'actualizarFotoPerfil']);
+            Route::patch('cambiar-password', [PerfilUsuarioController::class, 'cambiarPassword']);
+        });
     });
 
     // Rutas para la verificación de códigos a correo

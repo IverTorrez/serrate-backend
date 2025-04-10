@@ -26,10 +26,10 @@ class RegisterRequest extends FormRequest
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'tipo' => 'required|string|in:' . implode(',', TipoUsuario::getValues()),
-            'persona.nombre' => 'required|string|max:255',
-            'persona.apellido' => 'required|string|max:255',
-            'persona.telefono' => 'nullable|string|max:20',
-            'persona.direccion' => 'nullable|string|max:255',
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'telefono' => 'nullable|string|max:20',
+            'direccion' => 'nullable|string|max:255',
 
             // Opciones moto
             'opciones_moto' => 'nullable|array',
