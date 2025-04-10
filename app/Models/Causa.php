@@ -31,6 +31,7 @@ class Causa extends Model
         'usuario_id',
         'plantilla_id',
         'estado',
+        'motivo_congelada',
         'es_eliminado'
     ];
 

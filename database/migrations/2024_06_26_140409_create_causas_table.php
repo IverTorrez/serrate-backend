@@ -32,6 +32,7 @@ return new class extends Migration
             $table->integer('usuario_id')->comment('id del usuario que hizo el registro');
             $table->integer('plantilla_id')->nullable()->comment('id de la tabla avance_plantillas, (puede ser null)');
             $table->string('estado', 20)->comment('estado de la causa,ACTIVA,CONGELADA,FINALIZADA');
+            $table->string('motivo_congelada', 70)->comment('motivo por el congelamiento');
             $table->integer('es_eliminado')->comment('1 es eliminado, 0 no es eliminado');
             $table->timestamps();
         });

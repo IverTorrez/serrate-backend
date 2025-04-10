@@ -146,6 +146,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('clase-tribunal/eliminar/{claseTribunal}', [ClaseTribunalController::class, 'destroy']);
         //Causa
         Route::get('causas', [CausaController::class, 'index']);
+        Route::get('causas/lista/administrar', [CausaController::class, 'indexCausasAdmin']);
         Route::get('causas/listado/terminadas', [CausaController::class, 'indexTerminadas']);
         Route::post('causas', [CausaController::class, 'store']);
         Route::get('causas/{causa}', [CausaController::class, 'show']);
@@ -362,10 +363,13 @@ Route::prefix('v1')->group(function () {
         Route::patch('paquete-causas/eliminar/{paqueteCausa}', [PaqueteCausaController::class, 'destroy']);
         //Video
         Route::get('videos', [VideoController::class, 'index']);
+        Route::get('videos/procuradores', [VideoController::class, 'indexProcuradores']);
+        Route::get('videos/abogados', [VideoController::class, 'indexAbogados']);
         Route::post('videos', [VideoController::class, 'store']);
         Route::get('videos/{video}', [VideoController::class, 'show']);
         Route::patch('videos/{video}', [VideoController::class, 'update']);
         Route::patch('videos/eliminar/{video}', [VideoController::class, 'destroy']);
+        Route::get('videos/listado/usuarios', [VideoController::class, 'listarActivosSegunUsuario']);
         //Billetera
         Route::get('billetera/abogado/{abogadoId}', [BilleteraController::class, 'obtenerPorAbogadoId']);
         //Billetera Transacciones
