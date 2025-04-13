@@ -11,7 +11,7 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
-//use Throwable;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -22,24 +22,42 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Registrar Middleware Global
+        // Middleware global
         $middleware->append(LogHttpRequests::class);
+
+        // Middleware alias (para rutas)
+        $middleware->alias([
+            'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
+            'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+            'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
+            'can' => \Illuminate\Auth\Middleware\Authorize::class,
+            'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
+            'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
+            'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+            'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+            'auth:sanctum' => EnsureFrontendRequestsAreStateful::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // Registro de excepciones
         $exceptions->reportable(function (Throwable $e) {
-            Log::error($e->getMessage());
+            Log::error($e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTrace(),
+            ]);
         });
 
+        // Manejo de excepciones
         $exceptions->renderable(function (ValidationException $e) {
-            return ResponseService::validationError($e->errors(), 'Error de validación');
+            return ResponseService::validationError($e->errors(), 'Hay errores en los datos enviados.');
         });
 
         $exceptions->renderable(function (AuthenticationException $e) {
-            return ResponseService::unauthorized('No autenticado');
+            return ResponseService::unauthorized('No estás autenticado.');
         });
 
         $exceptions->renderable(function (AuthorizationException $e) {
-            return ResponseService::forbidden('No tienes permiso para realizar esta acción');
+            return ResponseService::forbidden('Acceso no autorizado.');
         });
 
         $exceptions->renderable(function (NotFoundHttpException $e) {
@@ -50,9 +68,9 @@ return Application::configure(basePath: dirname(__DIR__))
             return ResponseService::error('Método no permitido', 405);
         });
 
+        // Error genérico en el servidor
         $exceptions->renderable(function (Throwable $e) {
-            return ResponseService::error('Error interno del servidor', 500);
+            return ResponseService::error('Error interno. Intenta más tarde.', 500);
         });
     })
-
     ->create();
