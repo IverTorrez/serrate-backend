@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Constants\ErrorMessages;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\AuthService;
 use App\Services\ResponseService;
 use Illuminate\Http\JsonResponse;
@@ -17,6 +18,15 @@ class AuthController extends Controller
     public function __construct(AuthService $authService)
     {
         $this->authService = $authService;
+    }
+
+    public function crearUsuario(RegisterRequest $request): JsonResponse
+    {
+        try {
+            return $this->authService->crearUsuario($request->validated());
+        } catch (Exception $e) {
+            return ResponseService::error(ErrorMessages::ERROR_CREAR, 500);
+        }
     }
 
     public function login(LoginRequest $request): JsonResponse

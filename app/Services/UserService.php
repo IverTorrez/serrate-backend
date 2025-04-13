@@ -6,7 +6,6 @@ use App\Constants\ErrorMessages;
 use App\Constants\Estado;
 use App\Constants\SuccessMessages;
 use App\Constants\TipoUsuario;
-use App\Models\Billetera;
 use App\Models\Persona;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -17,6 +16,63 @@ use Illuminate\Support\Facades\Log;
 
 class UserService
 {
+    public function crearUsuario(array $data): JsonResponse
+    {
+        try {
+            DB::transaction(function () use ($data) {
+                $this->createUserWithRelations($data);
+            });
+
+            return ResponseService::success(message: SuccessMessages::CREADO_CORRECTAMENTE);
+        } catch (\Exception $e) {
+
+            Log::error('Error al crear usuario', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return ResponseService::error(ErrorMessages::ERROR_CREAR, 500);
+        }
+    }
+
+    private function createUserWithRelations(array $data): void
+    {
+        $abogadoId = ($data['tipo'] === TipoUsuario::ABOGADO_DEPENDIENTE && auth()->check())
+            ? auth()->id()
+            : ($data['abogado_id'] ?? null);
+
+        $user = User::create([
+            'name'           => $data['name'] ?? null,
+            'email'          => $data['email'] ?? null,
+            'password'       => isset($data['password']) ? Hash::make($data['password']) : 12345678,
+            'tipo'           => $data['tipo'] ?? null,
+            'abogado_id'     => $abogadoId,
+            'opciones_moto'  => isset($data['opciones_moto']) ? json_encode($data['opciones_moto']) : null,
+            'estado'         => Estado::ACTIVO,
+            'es_eliminado'   => false,
+        ]);
+
+        if (isset($data['persona'])) {
+            $this->createPersona($data['persona'], $user);
+        }
+    }
+
+    private function createPersona(array $personaData, User $user): void
+    {
+        Persona::create([
+            'nombre'        => $personaData['nombre'] ?? null,
+            'apellido'      => $personaData['apellido'] ?? null,
+            'telefono'      => $personaData['telefono'] ?? null,
+            'direccion'     => $personaData['direccion'] ?? null,
+            'coordenadas'   => $personaData['coordenadas'] ?? null,
+            'observacion'   => $personaData['observacion'] ?? null,
+            'foto_url'      => $personaData['foto_url'] ?? null,
+            'estado'        => Estado::ACTIVO,
+            'es_eliminado'  => false,
+            'usuario_id'    => $user->id,
+        ]);
+    }
+
     public function obtenerUsuariosDependientes($request, $abogadoId)
     {
         $query = User::where('abogado_id', $abogadoId)
@@ -37,72 +93,6 @@ class UserService
         $perPage = $request->input('perPage', 10);
 
         return $query->paginate($perPage);
-    }
-
-    public function crearUsuario(array $data): JsonResponse
-    {
-        try {
-            DB::transaction(fn() => $this->createUserWithRelations($data));
-            return ResponseService::success(message: SuccessMessages::CREADO_CORRECTAMENTE);
-        } catch (\Exception $e) {
-            Log::error('Error al crear registro: ' . $e->getMessage());
-            return ResponseService::error(ErrorMessages::ERROR_CREAR, 500);
-        }
-    }
-    private function createUserWithRelations(array $data): void
-    {
-        $abogado_id = (auth()->check() && $data['tipo'] === TipoUsuario::ABOGADO_DEPENDIENTE) ? auth()->id() : 0;
-
-        $user = User::create([
-            'name' => $data['nombre'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'tipo' => $data['tipo'],
-            'abogado_id' => $abogado_id,
-            'opciones_moto' => isset($data['opciones_moto']) ? json_encode($data['opciones_moto']) : null,
-            'estado' => Estado::ACTIVO,
-            'es_eliminado' => false,
-        ]);
-
-        $this->createPersona($data, $user);
-        $this->createBilletera($data, $user);
-    }
-
-    private function createPersona(array $data, User $user): void
-    {
-        Persona::create([
-            'nombre' => $data['nombre'],
-            'apellido' => $data['apellido'],
-            'telefono' => $data['telefono'],
-            'direccion' => $data['direccion'] ?? null,
-            'coordenadas' => $data['coordenadas'] ?? null,
-            'observacion' => $data['observacion'] ?? null,
-            'foto_url' => $data['foto_url'] ?? null,
-            'estado' => Estado::ACTIVO,
-            'es_eliminado' => false,
-            'usuario_id' => $user->id,
-        ]);
-    }
-
-    private function createBilletera(array $data, User $user): void
-    {
-        try {
-            if (!in_array($data['tipo'], [TipoUsuario::ABOGADO_INDEPENDIENTE, TipoUsuario::ABOGADO_LIDER])) {
-                return;
-            }
-
-            Billetera::create([
-                'monto'        => 0,
-                'abogado_id'   => $user->id,
-                'estado'       => Estado::ACTIVO,
-                'es_eliminado' => false,
-            ]);
-
-            Log::info('Billetera created for user: ' . $user->id);
-        } catch (\Exception $e) {
-            Log::error('Error in createBilletera: ' . $e->getMessage());
-            throw $e;
-        }
     }
 
     public function update($data, $userId)

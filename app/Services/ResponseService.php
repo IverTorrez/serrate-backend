@@ -17,7 +17,7 @@ class ResponseService
         return response()->json($response, $status);
     }
 
-    public static function error($message = 'Ocurrió un error.', $status = 500, $errors = null): JsonResponse
+    public static function error($message = 'Ocurrió un error.', $status = 401, $errors = null): JsonResponse
     {
         return response()->json([
             'status' => 'error',
@@ -55,6 +55,14 @@ class ResponseService
     {
         return response()->json([
             'status' => 'error',
+            'message' => $message,
+        ], $status);
+    }
+
+    public static function noContent($message = 'Sin contenido.', $status = 204): JsonResponse
+    {
+        return response()->json([
+            'status' => 'success',
             'message' => $message,
         ], $status);
     }

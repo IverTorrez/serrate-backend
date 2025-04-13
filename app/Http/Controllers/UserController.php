@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Constants\ErrorMessages;
 use App\Models\User;
 use App\Constants\TipoUsuario;
 use App\Constants\Estado;
 use App\Enums\MessageHttp;
-use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Usuarios\StoreUserRegisterRequest;
 use App\Http\Resources\Usuario\UsuarioResource;
-use App\Services\ResponseService;
 use App\Services\UserService;
-use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -25,6 +23,11 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
+    public function crearUsuario(StoreUserRegisterRequest $request): JsonResponse
+    {
+        return $this->userService->crearUsuario($request->validated());
+    }
+
     public function obtenerUsuariosDependientes(Request $request, $abogadoId)
     {
         $usuarios = $this->userService->obtenerUsuariosDependientes(
@@ -33,17 +36,6 @@ class UserController extends Controller
 
         );
         return UsuarioResource::collection($usuarios);
-    }
-
-
-
-    public function crearUsuario(RegisterRequest $request): JsonResponse
-    {
-        try {
-            return $this->userService->crearUsuario($request->validated());
-        } catch (Exception $e) {
-            return ResponseService::error(ErrorMessages::ERROR_CREAR, 500);
-        }
     }
 
     public function show(User $user = null)

@@ -3,18 +3,90 @@
 namespace App\Services;
 
 use App\Constants\ErrorMessages;
+use App\Constants\Estado;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Constants\GeneralMessages;
+use App\Constants\SuccessMessages;
+use App\Constants\TipoUsuario;
 use App\Constants\ValidationMessages;
 use App\Http\Resources\Auth\UserResource;
+use App\Models\Billetera;
+use App\Models\Persona;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AuthService
 {
+    public function crearUsuario(array $data): JsonResponse
+    {
+        try {
+            DB::transaction(fn() => $this->createUserWithRelations($data));
+            return ResponseService::success(message: SuccessMessages::CREADO_CORRECTAMENTE);
+        } catch (\Exception $e) {
+            Log::error('Error al crear registro: ' . $e->getMessage());
+            return ResponseService::error(ErrorMessages::ERROR_CREAR, 500);
+        }
+    }
+    private function createUserWithRelations(array $data): void
+    {
+        $abogado_id = (auth()->check() && $data['tipo'] === TipoUsuario::ABOGADO_DEPENDIENTE) ? auth()->id() : 0;
+
+        $user = User::create([
+            'name' => $data['nombre'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'tipo' => $data['tipo'],
+            'abogado_id' => $abogado_id,
+            'opciones_moto' => isset($data['opciones_moto']) ? json_encode($data['opciones_moto']) : null,
+            'estado' => Estado::ACTIVO,
+            'es_eliminado' => false,
+        ]);
+
+        $this->createPersona($data, $user);
+        $this->createBilletera($data, $user);
+    }
+
+    private function createPersona(array $data, User $user): void
+    {
+        Persona::create([
+            'nombre' => $data['nombre'],
+            'apellido' => $data['apellido'],
+            'telefono' => $data['telefono'],
+            'direccion' => $data['direccion'] ?? null,
+            'coordenadas' => $data['coordenadas'] ?? null,
+            'observacion' => $data['observacion'] ?? null,
+            'foto_url' => $data['foto_url'] ?? null,
+            'estado' => Estado::ACTIVO,
+            'es_eliminado' => false,
+            'usuario_id' => $user->id,
+        ]);
+    }
+
+    private function createBilletera(array $data, User $user): void
+    {
+        try {
+            if (!in_array($data['tipo'], [TipoUsuario::ABOGADO_INDEPENDIENTE, TipoUsuario::ABOGADO_LIDER])) {
+                return;
+            }
+
+            Billetera::create([
+                'monto'        => 0,
+                'abogado_id'   => $user->id,
+                'estado'       => Estado::ACTIVO,
+                'es_eliminado' => false,
+            ]);
+
+            Log::info('Billetera created for user: ' . $user->id);
+        } catch (\Exception $e) {
+            Log::error('Error in createBilletera: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
     public function login(array $credentials): JsonResponse
     {
         try {
