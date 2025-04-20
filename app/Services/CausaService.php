@@ -9,9 +9,16 @@ use App\Models\Causa;
 use App\Models\Orden;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\BilleteraService;
 
 class CausaService
 {
+    protected $billeteraService;
+
+    public function __construct(BilleteraService $billeteraService)
+    {
+        $this->billeteraService = $billeteraService;
+    }
     public function store($data)
     {
         $causa = Causa::create([
@@ -149,5 +156,57 @@ class CausaService
         }
         $codigo = $causa->materia->abreviatura . '-' . $causa->tipoLegal->abreviatura . '-' . $causa->id;
         return $codigo;
+    }
+    public function obtenerDineroComprometidoCausa(int $causaId): float
+    {
+        $causa = Causa::findOrFail($causaId);
+
+        return $causa->getTotalDineroComprometidoOrdenesDeCausa();
+    }
+    public function obtenerTotalComprometidoSinBilletera($usuarioId): float
+    {
+        $total = 0;
+        // Obtener causas sin billetera
+        $causas = Causa::where('tiene_billetera', 0)
+            ->where('usuario_id', $usuarioId)
+            ->where('es_eliminado', 0)->with([
+                'ordenes' => function ($query) {
+                    $query->where('etapa_orden', '!=', EtapaOrden::CERRADA)
+                        ->where('estado', Estado::ACTIVO)
+                        ->where('es_eliminado', 0);
+                },
+                'ordenes.cotizacion',
+                'ordenes.presupuesto',
+            ])->get();
+
+        foreach ($causas as $causa) {
+            foreach ($causa->ordenes as $orden) {
+                $venta = $orden->cotizacion->venta ?? 0;
+                $monto = $orden->presupuesto->monto ?? 0;
+                $total += $venta + $monto;
+            }
+        }
+
+        return $total;
+    }
+
+    public function noPasoValidacionEAPECausa($causaId, $montoProbable): bool
+    {
+        $causa = Causa::findOrFail($causaId);
+        $idUserCausa = $causa->usuario_id;
+        $montoTotalProbableComprometido = 0;
+        $saldoTotal=0;
+        //Si la causa tiene billetera individual, se hace un calculo de una causa
+        if ($causa->tiene_billetera === 1) {
+            $montoComprometido = $this->obtenerDineroComprometidoCausa($causaId);
+            $montoTotalProbableComprometido = $montoComprometido + $montoProbable;
+            $saldoTotal = $causa->billetera;
+        } else { //si no tiene billetera, se hace un calculo de las causas sin billeteras y billetera  del usuario
+            $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($idUserCausa);
+            $montoComprometido = $this->obtenerTotalComprometidoSinBilletera($idUserCausa);
+            $montoTotalProbableComprometido = $montoComprometido + $montoProbable;
+            $saldoTotal = $billetera->monto;
+        }
+        return $montoTotalProbableComprometido > $saldoTotal;
     }
 }

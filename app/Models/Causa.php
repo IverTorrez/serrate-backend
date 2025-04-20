@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Constants\Estado;
+use App\Constants\EtapaOrden;
 use App\Constants\TipoParticipante;
 use App\Traits\CommonsScopesCausa;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -139,5 +140,21 @@ class Causa extends Model
                 'cuerpoExpedientes'
             ])
             ->orderBy('id');
+    }
+    public function getTotalDineroComprometidoOrdenesDeCausa(): float
+    {
+        $ordenesAbiertas = $this->ordenes()->where('etapa_orden', '!=', EtapaOrden::CERRADA)
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)->get();
+
+        $total = 0;
+
+        foreach ($ordenesAbiertas as $orden) {
+            $venta = $orden->cotizacion->venta ?? 0;
+            $monto = $orden->presupuesto->monto ?? 0;
+            $total += $venta + $monto;
+        }
+
+        return $total;
     }
 }

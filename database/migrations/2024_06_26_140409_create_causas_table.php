@@ -29,7 +29,7 @@ return new class extends Migration
             $table->integer('categoria_id')->comment('id de la tabla categoria');
             $table->integer('abogado_id')->comment('id del usuario abogado');
             $table->integer('procurador_id')->comment('id del usuario procurador, por defecto es el procurador maestro');
-            $table->integer('usuario_id')->comment('id del usuario que hizo el registro');
+            $table->integer('usuario_id')->comment('id del usuario dueño de la causa');
             $table->integer('plantilla_id')->nullable()->comment('id de la tabla avance_plantillas, (puede ser null)');
             $table->string('estado', 20)->comment('estado de la causa,ACTIVA,CONGELADA,FINALIZADA');
             $table->string('motivo_congelada', 70)->comment('motivo por el congelamiento');

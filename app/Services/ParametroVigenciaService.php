@@ -7,6 +7,16 @@ use Illuminate\Http\Request;
 
 class ParametroVigenciaService
 {
+    public function store($data)
+    {
+        $parametroVigencia = ParametroVigencia::create([
+            'fecha_ultima_vigencia' => $data['fecha_ultima_vigencia'],
+            'usuario_id' => $data['usuario_id'],
+            'estado' => Estado::ACTIVO,
+            'es_eliminado' => 0
+        ]);
+        return $parametroVigencia;
+    }
 
     public function update($data, $parametroVigenciaId)
     {
