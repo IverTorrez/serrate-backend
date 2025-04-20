@@ -6,6 +6,7 @@ use App\Constants\ErrorMessages;
 use App\Constants\Estado;
 use App\Constants\SuccessMessages;
 use App\Constants\TipoUsuario;
+use App\Http\Resources\Usuario\UsuarioResource;
 use App\Models\Persona;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -73,10 +74,55 @@ class UserService
         ]);
     }
 
+    public function actualizarUsuario(User $user, array $data): JsonResponse
+    {
+        $user->update([
+            'name' => $data['persona']['nombre'] ?? $user->name,
+            'email' => $data['email'] ?? $user->email,
+            'tipo' => $data['tipo'] ?? $user->tipo,
+            'abogado_id' => $data['abogado_id'] ?? $user->abogado_id,
+        ]);
+
+        if (isset($data['persona'])) {
+            $user->persona()->update([
+                'nombre' => $data['persona']['nombre'],
+                'apellido' => $data['persona']['apellido'],
+                'telefono' => $data['persona']['telefono'],
+                'direccion' => $data['persona']['direccion'],
+                'coordenadas' => $data['persona']['coordenadas'] ?? '',
+                'observacion' => $data['persona']['observacion'] ?? '',
+                'foto_url' => $data['persona']['foto_url'] ?? '',
+            ]);
+        }
+
+        return response()->json([
+            'message' => SuccessMessages::ACTUALIZADO_CORRECTAMENTE,
+            'data' => new UsuarioResource($user->fresh())
+        ], 200);
+    }
+
+    public function eliminarUsuario(User $user): JsonResponse
+    {
+        $user->update([
+            'estado' => Estado::INACTIVO,
+            'es_eliminado' => 1,
+        ]);
+        if ($user->persona) {
+            $user->persona->update([
+                'estado' => Estado::INACTIVO,
+                'es_eliminado' => 1,
+            ]);
+        }
+        return response()->json([
+            'message' => SuccessMessages::ELIMINADO_CORRECTAMENTE,
+        ], 200);
+    }
+
+
     public function obtenerUsuariosDependientes($request, $abogadoId)
     {
         $query = User::where('abogado_id', $abogadoId)
-            ->active()
+            //->active()
             ->with('persona')
             ->select('users.*');
 

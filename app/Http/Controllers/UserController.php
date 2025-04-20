@@ -12,7 +12,6 @@ use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -27,6 +26,17 @@ class UserController extends Controller
     {
         return $this->userService->crearUsuario($request->validated());
     }
+
+    public function actualizarUsuario(Request $request, User $user): JsonResponse
+    {
+        return $this->userService->actualizarUsuario($user, $request->all());
+    }
+
+    public function eliminarUsuario(User $user): JsonResponse
+    {
+        return $this->userService->eliminarUsuario($user);
+    }
+
 
     public function obtenerUsuariosDependientes(Request $request, $abogadoId)
     {
