@@ -167,11 +167,21 @@ class OrdenController extends Controller
                 'data' => null
             ], 409);
         }
+        //Otiene la cotizacion
+        $response = $this->obtenetMatrizCotizacion($request->fecha_inicio, $request->fecha_fin, $request->prioridad);
+        $matrizCotizacion = $response['matrizCotizacion'];
+
+        if ($this->causaService->noPasoValidacionEAPECausa($request->causa_id, $matrizCotizacion->precio_venta)) {
+            return response()->json([
+                'message' => 'ALERTA!
+                 Su solicitud no puede concretarse por falta de saldo en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                'data' => null
+            ], 409);
+        }
 
         DB::beginTransaction();
         try {
-            $response = $this->obtenetMatrizCotizacion($request->fecha_inicio, $request->fecha_fin, $request->prioridad);
-            $matrizCotizacion = $response['matrizCotizacion'];
+
             $difference = $response['difference'];
             $now = Carbon::now('America/La_Paz');
             $fechaHora = $now->toDateTimeString();

@@ -181,6 +181,8 @@ Route::prefix('v1')->group(function () {
         Route::get('causas/listado/orden-cuenta-conciliadas/lider', [CausaController::class, 'listadoCausasOrdenCuentasConciliadasDeLider']);
         Route::get('causas/listado/orden-vencidas-leves/lider', [CausaController::class, 'listadoCausasOrdenVencidasLevesDeLider']);
         Route::get('causas/listado/orden-vencidas-graves/lider', [CausaController::class, 'listadoCausasOrdenVencidasGravesDeLider']);
+        Route::get('causas/dinero-comprometido/{causaId}', [CausaController::class, 'dineroComprometidoCausa']);
+        Route::get('causas/general-comprometido/saldos', [CausaController::class, 'dineroComprometidoGeneral']);
         //Tribunal
         Route::get('tribunal', [TribunalController::class, 'index']);
         Route::post('tribunal', [TribunalController::class, 'store']);

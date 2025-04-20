@@ -13,6 +13,7 @@ use App\Constants\ValidationMessages;
 use App\Http\Resources\Auth\UserResource;
 use App\Models\Billetera;
 use App\Models\Persona;
+use App\Models\ParametroVigencia;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -48,6 +49,7 @@ class AuthService
 
         $this->createPersona($data, $user);
         $this->createBilletera($data, $user);
+        $this->createParametroVigencia($data, $user);
     }
 
     private function createPersona(array $data, User $user): void
@@ -83,6 +85,26 @@ class AuthService
             Log::info('Billetera created for user: ' . $user->id);
         } catch (\Exception $e) {
             Log::error('Error in createBilletera: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+    private function createParametroVigencia(array $data, User $user): void
+    {
+        try {
+            if (!in_array($data['tipo'], [TipoUsuario::ABOGADO_INDEPENDIENTE, TipoUsuario::ABOGADO_LIDER])) {
+                return;
+            }
+
+            ParametroVigencia::create([
+                'fecha_ultima_vigencia' => null,
+                'usuario_id'   => $user->id,
+                'estado'       => Estado::ACTIVO,
+                'es_eliminado' => 0,
+            ]);
+
+            Log::info('Parametro created for user: ' . $user->id);
+        } catch (\Exception $e) {
+            Log::error('Error in createParametroVigencia: ' . $e->getMessage());
             throw $e;
         }
     }

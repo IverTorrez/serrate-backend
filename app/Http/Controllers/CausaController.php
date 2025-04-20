@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Exception;
+use Carbon\Carbon;
 use App\Models\Causa;
 use App\Constants\Estado;
 use App\Models\TipoLegal;
@@ -36,6 +37,7 @@ use App\Services\ListadoCausasOrdenPronuncioAbogadoService;
 use App\Services\ListadoCausasOrdenPrePresupuestadasService;
 use App\Services\ListadoCausasOrdenCuentasConciliadasService;
 use App\Services\SeguimientoLider\ListadoCausasSeguimientoLiderService;
+use App\Services\ParametroVigenciaService;
 
 class CausaController extends Controller
 {
@@ -56,6 +58,7 @@ class CausaController extends Controller
     protected $listadoCausasOrdenCuentasConciliadaService;
     protected $listadoCausasOrdenVencidasLevesService;
     protected $listadoCausasOrdenVencidasGravesService;
+    protected $parametroVigenciaService;
     //Servicios para seguimiento para Lider
     protected $listadoCausasSeguimientoLiderService;
 
@@ -78,7 +81,8 @@ class CausaController extends Controller
         ListadoCausasOrdenVencidasLevesService $listadoCausasOrdenVencidasLevesService,
         ListadoCausasOrdenVencidasGravesService $listadoCausasOrdenVencidasGravesService,
         //Listado para user lider
-        ListadoCausasSeguimientoLiderService $listadoCausasSeguimientoLiderService
+        ListadoCausasSeguimientoLiderService $listadoCausasSeguimientoLiderService,
+        ParametroVigenciaService $parametroVigenciaService
     ) {
         $this->causaService = $causaService;
         $this->avancePlantillaService = $avancePlantillaService;
@@ -99,6 +103,7 @@ class CausaController extends Controller
         $this->listadoCausasOrdenVencidasGravesService = $listadoCausasOrdenVencidasGravesService;
         //Lista para user lider
         $this->listadoCausasSeguimientoLiderService = $listadoCausasSeguimientoLiderService;
+        $this->parametroVigenciaService = $parametroVigenciaService;
     }
     /**
      * Display a listing of the resource.
@@ -243,10 +248,11 @@ class CausaController extends Controller
     {
         DB::beginTransaction();
         try {
+            $fechaHoraSistema = Carbon::now('America/La_Paz')->format('Y-m-d H:i:s');
             $usuarioPmaestro = $this->userService->obtenerUnPMaestro();
             $idUser = Auth::user()->id;
             $tipoUsuario = Auth::user()->tipo;
-
+            $idUserParametroVigencia = $idUser;
             /*if (Auth::user()->tipo === TipoUsuario::ABOGADO_LIDER) {
                 $procuradorId = $request->procurador_id;
                 $abogadoId = $request->abogado_id;
@@ -256,6 +262,14 @@ class CausaController extends Controller
             }*/
             if ($tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE) {
                 $idUser = Auth::user()->abogado_id; //Id de su abogado lider
+                $idUserParametroVigencia = $idUser;
+            }
+            $parametroVigencia = $this->parametroVigenciaService->obtenerUnoPorUsuario($idUserParametroVigencia);
+            if ($fechaHoraSistema > $parametroVigencia->fecha_ultima_vigencia) {
+                return response()->json([
+                    'message' => 'No existe paquete vigente para hacer operaciones',
+                    'data' => null
+                ], 409);
             }
             //Asignacion de color
             if (empty($request->color)) {
@@ -791,4 +805,24 @@ class CausaController extends Controller
             ], 500);
         }
     }
+    public function dineroComprometidoCausa($causaId)
+    {
+        $totales = $this->causaService->obtenerDineroComprometidoCausa($causaId);
+
+        return response()->json([
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $totales
+        ], 200);
+    }
+    public function dineroComprometidoGeneral()
+    {
+        $idUser = Auth::user()->id;
+        $totales = $this->causaService->obtenerTotalComprometidoSinBilletera($idUser);
+
+        return response()->json([
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $totales
+        ], 200);
+    }
+
 }
