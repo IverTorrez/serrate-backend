@@ -69,8 +69,8 @@ Route::prefix('v1')->group(function () {
 
 
             Route::post('crear', [UserController::class, 'crearUsuario']);
-            Route::put('{user}', [UserController::class, 'actualizarUsuario']);
-            Route::delete('{user}', [UserController::class, 'eliminarUsuario']);
+            Route::patch('actualizar/{user}', [UserController::class, 'actualizarUsuario']);
+            Route::delete('eliminar/{user}', [UserController::class, 'eliminarUsuario']);
         });
 
         // Perfil del usuario autenticado
