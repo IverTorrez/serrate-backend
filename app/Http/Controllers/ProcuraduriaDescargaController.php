@@ -63,8 +63,9 @@ class ProcuraduriaDescargaController extends Controller
      */
     public function store(StoreProcuraduriaDescargaRequest $request)
     {
+        $gastoDescarga = $request->gastos;
         $orden = $this->ordenService->obtenerUno($request->orden_id);
-        if($this->causaService->cuasaNoEstaActiva($orden->causa_id)){
+        if ($this->causaService->cuasaNoEstaActiva($orden->causa_id)) {
             return response()->json([
                 'message' => 'No se puede realizar la descarga, porque la causa no está activa.',
                 'data' => null
@@ -77,23 +78,35 @@ class ProcuraduriaDescargaController extends Controller
                 'data' => null
             ], 409);
         }
+        $presupuesto = $this->presupuestoService->obtenerUnoPorOrdenId($request->orden_id);
+        if ($gastoDescarga > $presupuesto->monto) {
+            $montoProbable = $gastoDescarga - $presupuesto->monto;
+            if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, $montoProbable)) {
+                return response()->json([
+                    'message' => 'ALERTA!
+             Su solicitud no puede concretarse por falta de saldo en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                    'data' => null
+                ], 409);
+            }
+        }
+
         DB::beginTransaction();
         try {
             $now = Carbon::now('America/La_Paz');
             $fechaHora = $now->format('Y-m-d H:i:00');
 
-            $presupuesto = $this->presupuestoService->obtenerUnoPorOrdenId($request->orden_id);
-            $saldo = $presupuesto->monto - $request->gastos;
+            //$presupuesto = $this->presupuestoService->obtenerUnoPorOrdenId($request->orden_id);
+            $saldo = $presupuesto->monto - $gastoDescarga;
 
             $data = [
                 'detalle_informacion' => $request->detalle_informacion,
                 'detalle_documentacion' => $request->detalle_documentacion,
                 'ultima_foja' => $request->ultima_foja,
-                'gastos' => $request->gastos,
+                'gastos' => $gastoDescarga,
                 'saldo' => $saldo,
                 'detalle_gasto' => $request->detalle_gasto,
                 'fecha_descarga' => $fechaHora,
-                'compra_judicial' => $request->gastos,
+                'compra_judicial' => $gastoDescarga,
                 'orden_id' => $request->orden_id,
             ];
 

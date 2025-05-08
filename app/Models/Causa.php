@@ -152,7 +152,9 @@ class Causa extends Model
         foreach ($ordenesAbiertas as $orden) {
             $venta = $orden->cotizacion->venta ?? 0;
             $monto = $orden->presupuesto->monto ?? 0;
-            $total += $venta + $monto;
+            $saldoDescarga = $orden->descarga->saldo ?? 0;
+            $saldoDescargaFormateado = $saldoDescarga !== 0 ? $saldoDescarga * -1 : 0;
+            $total += $venta + $monto + $saldoDescargaFormateado;
         }
 
         return $total;

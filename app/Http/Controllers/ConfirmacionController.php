@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Carbon\Carbon;
+use App\Models\Orden;
 use App\Enums\MessageHttp;
 use App\Models\Confirmacion;
 use Illuminate\Http\Request;
 use App\Constants\EtapaOrden;
+use App\Constants\GlosaTransaccion;
+use App\Constants\TipoTransaccion;
+use App\Constants\TransaccionCausa;
 use App\Services\OrdenService;
 use Illuminate\Support\Facades\DB;
 use App\Services\CotizacionService;
@@ -16,6 +20,12 @@ use Illuminate\Support\Facades\Log;
 use App\Services\ConfirmacionService;
 use App\Services\ProcuraduriaDescargaService;
 use App\Http\Requests\UpdateConfirmacionRequest;
+use App\Models\Causa;
+use App\Services\BilleteraService;
+use App\Services\BilleteraTransaccionService;
+use App\Services\CausaService;
+use App\Services\TransaccionesCausaService;
+use Illuminate\Support\Facades\Auth;
 
 class ConfirmacionController extends Controller
 {
@@ -24,6 +34,10 @@ class ConfirmacionController extends Controller
     protected $procuraduriaDescargaService;
     protected $finalCostoService;
     protected $cotizacionService;
+    protected $transaccionesCausaService;
+    protected $billeteraService;
+    protected $billeteraTransaccionService;
+    protected $causaService;
 
 
     public function __construct(
@@ -31,13 +45,21 @@ class ConfirmacionController extends Controller
         OrdenService $ordenService,
         ProcuraduriaDescargaService $procuraduriaDescargaService,
         FinalCostoService $finalCostoService,
-        CotizacionService $cotizacionService
+        CotizacionService $cotizacionService,
+        TransaccionesCausaService $transaccionesCausaService,
+        BilleteraService $billeteraService,
+        BilleteraTransaccionService $billeteraTransaccionService,
+        CausaService $causaService,
     ) {
         $this->confirmacionService = $confirmacionService;
         $this->ordenService = $ordenService;
         $this->procuraduriaDescargaService = $procuraduriaDescargaService;
         $this->finalCostoService = $finalCostoService;
         $this->cotizacionService = $cotizacionService;
+        $this->transaccionesCausaService = $transaccionesCausaService;
+        $this->billeteraService = $billeteraService;
+        $this->billeteraTransaccionService = $billeteraTransaccionService;
+        $this->causaService = $causaService;
     }
     /**
      * Display a listing of the resource.
@@ -96,7 +118,7 @@ class ConfirmacionController extends Controller
     }
     public function pronuncioAbogado(UpdateConfirmacionRequest $request, Confirmacion $confirmacion)
     {
-        if($confirmacion->fecha_confir_abogado){
+        if ($confirmacion->fecha_confir_abogado) {
             return response()->json([
                 'message' => 'Error, esta descarga ya fue calificada.',
                 'data' => null
@@ -148,7 +170,7 @@ class ConfirmacionController extends Controller
 
     public function pronuncioContador(UpdateConfirmacionRequest $request, Confirmacion $confirmacion)
     {
-        if($confirmacion->fecha_confir_contador){
+        if ($confirmacion->fecha_confir_contador) {
             return response()->json([
                 'message' => 'Error, esta descarga ya hizo devolucion de saldo.',
                 'data' => null
@@ -235,6 +257,35 @@ class ConfirmacionController extends Controller
             'orden_id' => $ordenId,
         ];
         $finalCosto = $this->finalCostoService->store($dataFinalCosto);
+
+        //Registro de transacciones en la billetera general o independiente (segun sea)
+        $causa = Causa::findOrFail($orden->causa_id);
+        $idUser = Auth::user()->id;
+        if ($causa->tiene_billetera === 1) {
+            $glosaCausa = GlosaTransaccion::DEBITO_POR_EGRESO_ORDEN . $ordenId;
+            $dataTrnCausa = [
+                'monto' => $finalCosto->total_egreso,
+                'fecha_transaccion' => $fechaHora,
+                'tipo' => TipoTransaccion::DEBITO,
+                'transaccion' => TransaccionCausa::EGRESO_ORDEN,
+                'glosa' => $glosaCausa,
+                'causa_id' => $causa->id,
+                'causa_origen_destino' => 0,
+                'orden_id' => $ordenId,
+                'usuario_id' => $idUser,
+            ];
+            $transaccionCausa = $this->transaccionesCausaService->registrarTransaccionCausa($dataTrnCausa);
+        } else { //Se registra transaccion en billetera general
+            $codigoVisualCausa = $this->causaService->obtenerCodigoIdentificadorVisual($causa->id);
+            $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($causa->usuario_id);
+            $billeteraId = $billetera->id;
+            $monto = $finalCosto->total_egreso;
+            $tipoTransaccion = TipoTransaccion::DEBITO;
+            $glosa = GlosaTransaccion::DEBITO_EGRESO_ORDEN_BILL_GRAL . $ordenId . ' DE LA CAUSA ' . $codigoVisualCausa;
+            $ordenId = $ordenId;
+            $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa, $ordenId);
+        }
+
 
         return $orden;
     }

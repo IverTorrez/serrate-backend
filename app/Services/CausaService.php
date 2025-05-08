@@ -177,13 +177,16 @@ class CausaService
                 },
                 'ordenes.cotizacion',
                 'ordenes.presupuesto',
+                'ordenes.descarga',
             ])->get();
 
         foreach ($causas as $causa) {
             foreach ($causa->ordenes as $orden) {
                 $venta = $orden->cotizacion->venta ?? 0;
                 $monto = $orden->presupuesto->monto ?? 0;
-                $total += $venta + $monto;
+                $saldoDescarga = $orden->descarga->saldo ?? 0;
+                $saldoDescargaFormateado = $saldoDescarga !== 0 ? $saldoDescarga * -1 : 0;
+                $total += $venta + $monto + $saldoDescargaFormateado;
             }
         }
 
@@ -195,7 +198,7 @@ class CausaService
         $causa = Causa::findOrFail($causaId);
         $idUserCausa = $causa->usuario_id;
         $montoTotalProbableComprometido = 0;
-        $saldoTotal=0;
+        $saldoTotal = 0;
         //Si la causa tiene billetera individual, se hace un calculo de una causa
         if ($causa->tiene_billetera === 1) {
             $montoComprometido = $this->obtenerDineroComprometidoCausa($causaId);
@@ -207,6 +210,18 @@ class CausaService
             $montoTotalProbableComprometido = $montoComprometido + $montoProbable;
             $saldoTotal = $billetera->monto;
         }
+        return $montoTotalProbableComprometido > $saldoTotal;
+    }
+    //Funcion eape cuando se hace una transaccion directamente desde la billetera general
+    public function noPasoValidacionEAPEBilleteraGral($montoProbable): bool
+    {
+        $usuarioId = Auth::user()->id;
+        //se hace un calculo de las causas sin billeteras y billetera  del usuario
+        $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($usuarioId);
+        $montoComprometido = $this->obtenerTotalComprometidoSinBilletera($usuarioId);
+        $montoTotalProbableComprometido = $montoComprometido + $montoProbable;
+        $saldoTotal = $billetera->monto;
+
         return $montoTotalProbableComprometido > $saldoTotal;
     }
 }

@@ -9,6 +9,7 @@ use App\Enums\MessageHttp;
 use Illuminate\Http\Request;
 use App\Models\CompraPaquete;
 use App\Services\PaqueteService;
+use App\Services\CausaService;
 
 use App\Constants\TipoTransaccion;
 use App\Services\BilleteraService;
@@ -28,19 +29,22 @@ class CompraPaqueteController extends Controller
     protected $billeteraService;
     protected $billeteraTransaccionService;
     protected $parametroVigenciaService;
+    protected $causaService;
 
     public function __construct(
         CompraPaqueteService $compraPaqueteService,
         PaqueteService $paqueteService,
         BilleteraService $billeteraService,
         BilleteraTransaccionService $billeteraTransaccionService,
-        ParametroVigenciaService $parametroVigenciaService
+        ParametroVigenciaService $parametroVigenciaService,
+        CausaService $causaService
     ) {
         $this->compraPaqueteService = $compraPaqueteService;
         $this->paqueteService = $paqueteService;
         $this->billeteraService = $billeteraService;
         $this->billeteraTransaccionService = $billeteraTransaccionService;
         $this->parametroVigenciaService = $parametroVigenciaService;
+        $this->causaService = $causaService;
     }
     /**
      * Display a listing of the resource.
@@ -103,6 +107,14 @@ class CompraPaqueteController extends Controller
                 'data' => null
             ], 409);
         }
+        //Evaluacion EAPE
+        if ($this->causaService->noPasoValidacionEAPEBilleteraGral($request->monto)) {
+            return response()->json([
+                'message' => 'ALERTA!
+             Su solicitud no puede concretarse por falta de saldo en la billetera general. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                'data' => null
+            ], 409);
+        }
 
         DB::beginTransaction();
         try {
@@ -147,7 +159,8 @@ class CompraPaqueteController extends Controller
             $monto = $request->monto;
             $tipoTransaccion = TipoTransaccion::DEBITO;
             $glosa = GlosaTransaccion::DEBITO_POR_COMPRA_DEL_PAQUETE . " (" . $paquete->nombre . ")";
-            $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa);
+            $ordenId=0; //En este caso no existe
+            $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa, $ordenId);
 
             DB::commit();
             return response()->json([

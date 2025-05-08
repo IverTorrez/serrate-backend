@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('tipo', 20)->comment('tipo de transaccin, DEBITO, CREDITO');
             $table->string('glosa', 200)->comment('glosa de la transaccion, escrito por el sistema');
             $table->integer('billetera_id')->comment('id de la tabla billeteras');
+            $table->integer('orden_id')->nullable()->comment('id de tabla ordens, en caso que sea un egreso de orden, puede ser null');
             $table->integer('usuario_id')->comment('id de la tabla users, usuario quien hizo la transaccion');
             $table->string('estado', 20)->comment('estado ACTIVO,INACTIVO');
             $table->integer('es_eliminado')->comment('1 es eliminado, 0 no es eliminado');
