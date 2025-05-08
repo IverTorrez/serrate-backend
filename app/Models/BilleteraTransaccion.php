@@ -15,6 +15,7 @@ class BilleteraTransaccion extends Model
         'tipo',
         'glosa',
         'billetera_id',
+        'orden_id',
         'usuario_id',
         'estado',
         'es_eliminado'

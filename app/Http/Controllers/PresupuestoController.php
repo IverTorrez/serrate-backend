@@ -10,6 +10,7 @@ use App\Models\Presupuesto;
 use Illuminate\Http\Request;
 use App\Constants\EtapaOrden;
 use App\Services\OrdenService;
+use App\Services\CausaService;
 use App\Services\CotizacionService;
 use App\Services\PresupuestoService;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,7 @@ use App\Services\MatrizCotizacionService;
 use App\Http\Resources\PresupuestoCollection;
 use App\Http\Requests\StorePresupuestoRequest;
 use App\Http\Requests\UpdatePresupuestoRequest;
+use App\Models\Orden;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -26,16 +28,19 @@ class PresupuestoController extends Controller
     protected $ordenService;
     protected $matrizCotizacionService;
     protected $cotizacionService;
+    protected $causaService;
     public function __construct(
         PresupuestoService $presupuestoService,
         OrdenService $ordenService,
         MatrizCotizacionService $matrizCotizacionService,
-        CotizacionService $cotizacionService
+        CotizacionService $cotizacionService,
+        CausaService $causaService
     ) {
         $this->presupuestoService = $presupuestoService;
         $this->ordenService = $ordenService;
         $this->matrizCotizacionService = $matrizCotizacionService;
         $this->cotizacionService = $cotizacionService;
+        $this->causaService = $causaService;
     }
     /**
      * Display a listing of the resource.
@@ -68,6 +73,27 @@ class PresupuestoController extends Controller
                 'data' => null
             ], 409);
         }
+        $orden =  Orden::findOrFail($request->orden_id);
+        //Si se cambia la prioridad por otra
+        $diferenciaCotizacion = 0;
+        $montoTotalParaValidacion = 0;
+        if ($request->prioridad < $orden->prioridad) {
+            $cotizacion = $this->cotizacionService->obtenerPorIdOrden($request->orden_id);
+            $matrizCotizacion = $this->matrizCotizacionService->obtenerIdDePrioridadYCondicion($request->prioridad, $cotizacion->condicion);
+
+            $diferenciaCotizacion = $matrizCotizacion->precio_venta - $cotizacion->venta;
+        }
+        $montoTotalParaValidacion = $diferenciaCotizacion + $request->monto;
+        if ($montoTotalParaValidacion > 0) {
+            if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, $montoTotalParaValidacion)) {
+                return response()->json([
+                    'message' => 'ALERTA!
+                 Su solicitud no puede concretarse por falta de saldo en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                    'data' => null
+                ], 409);
+            }
+        }
+
         DB::beginTransaction();
         try {
             $now = Carbon::now('America/La_Paz');
@@ -148,6 +174,32 @@ class PresupuestoController extends Controller
             'detalle_presupuesto',
         ]);
         if (!$presupuesto->fecha_entrega) {
+            $montoDiferenciaPresupuestoNew = 0;
+            $diferenciaCotizacion = 0;
+            $totalDiferenciaMonto = 0;
+            //Si se aumenta en presupuesto 
+            if ($request->monto > $presupuesto->monto) {
+                $montoDiferenciaPresupuestoNew = $request->monto - $presupuesto->monto;
+            }
+
+            $orden =  Orden::findOrFail($presupuesto->orden_id);
+            //Si se cambia la prioridad por otra
+            if ($request->prioridad < $orden->prioridad) {
+                $cotizacion = $this->cotizacionService->obtenerPorIdOrden($presupuesto->orden_id);
+                $matrizCotizacion = $this->matrizCotizacionService->obtenerIdDePrioridadYCondicion($request->prioridad, $cotizacion->condicion);
+
+                $diferenciaCotizacion = $matrizCotizacion->precio_venta - $cotizacion->venta;
+            }
+            $totalDiferenciaMonto = $montoDiferenciaPresupuestoNew + $diferenciaCotizacion;
+            if ($totalDiferenciaMonto > 0) {
+                if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, $totalDiferenciaMonto)) {
+                    return response()->json([
+                        'message' => 'ALERTA!
+                     Su solicitud no puede concretarse por falta de saldo en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                        'data' => null
+                    ], 409);
+                }
+            }
 
 
             $presupuesto = $this->presupuestoService->update($data, $presupuesto->id);
@@ -173,7 +225,11 @@ class PresupuestoController extends Controller
                 $cotizacion = $this->cotizacionService->update($dataCotizacion, $cotizacion->id);
             }
         } else {
-            return 'Presupuesto entregado, no se puede modificar el presupuesto';
+            return response()->json([
+                'message' => 'ALERTA!
+                 Presupuesto entregado, no se puede modificar el presupuesto.',
+                'data' => null
+            ], 409);
         }
         $data = [
             'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,

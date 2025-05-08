@@ -26,6 +26,7 @@ class BilleteraTransaccionService
             'tipo' => $data['tipo'],
             'glosa' => $data['glosa'],
             'billetera_id' => $data['billetera_id'],
+            'orden_id' => $data['orden_id'],
             'usuario_id' => $data['usuario_id'],
             'estado' => Estado::ACTIVO,
             'es_eliminado' => 0
@@ -58,7 +59,7 @@ class BilleteraTransaccionService
         return $billeteraTransaccion;
     }
 
-    public function reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa)
+    public function reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa, $ordenId)
     {
         $idUser = Auth::id();
         $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
@@ -68,6 +69,7 @@ class BilleteraTransaccionService
             'tipo' => $tipoTransaccion,
             'glosa' => $glosa,
             'billetera_id' => $billeteraId,
+            'orden_id' => $ordenId, //Si es un egreso por orden
             'usuario_id' => $idUser,
         ];
         $billeteraTransaccion = $this->store($dataTransaccion);

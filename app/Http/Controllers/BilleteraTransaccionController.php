@@ -99,7 +99,8 @@ class BilleteraTransaccionController extends Controller
             $monto = $request->monto;
             $tipoTransaccion = TipoTransaccion::CREDITO;
             $glosa = GlosaTransaccion::CREDITO_DEPOSITO_A_BILLETERA;
-            $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa);
+            $ordenId = 0; //En este caso es cero
+            $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa, $ordenId);
 
 
             DB::commit();

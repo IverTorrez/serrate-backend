@@ -17,6 +17,7 @@ class TransaccionesCausa extends Model
         'glosa',
         'causa_id',
         'causa_origen_destino',
+        'orden_id',
         'usuario_id',
         'estado',
         'es_eliminado'

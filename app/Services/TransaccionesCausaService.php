@@ -3,12 +3,20 @@
 namespace App\Services;
 
 use App\Constants\Estado;
+use App\Constants\TipoTransaccion;
+use App\Models\Causa;
 use App\Models\TransaccionesCausa;
-use App\Models\Video;
 use Illuminate\Http\Request;
+use App\Services\CausaService;
 
 class TransaccionesCausaService
 {
+    protected $causaService;
+
+    public function __construct(CausaService $causaService)
+    {
+        $this->causaService = $causaService;
+    }
     public function store($data)
     {
         $transaccionesCausa = TransaccionesCausa::create([
@@ -19,6 +27,7 @@ class TransaccionesCausaService
             'glosa' => $data['glosa'],
             'causa_id' => $data['causa_id'],
             'causa_origen_destino' => $data['causa_origen_destino'],
+            'orden_id' => $data['orden_id'],
             'usuario_id' => $data['usuario_id'],
             'estado' => Estado::ACTIVO,
             'es_eliminado' => 0,
@@ -65,7 +74,7 @@ class TransaccionesCausaService
                 'causa_origen_destino',
                 'estado'
             ])->active()
-            ->where('estado', Estado::ACTIVO)
+                ->where('estado', Estado::ACTIVO)
                 ->where('es_eliminado', 0);
             $query->where('causa_id', $causaId);
 
@@ -86,5 +95,30 @@ class TransaccionesCausaService
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al obtener las transacciones de causa.'], 500);
         }
+    }
+    public function registrarTransaccionCausa($data)
+    {
+        $causaId = $data['causa_id'];
+        $monto = $data['monto'];
+        $tipo = $data['tipo'];
+        $causa = Causa::findOrFail($causaId);
+        $transaccionesCausa = $this->store($data);
+        //Actualizacion de saldo de la billetera de causa
+        if ($tipo === TipoTransaccion::CREDITO) {
+            $saldoActualizadoCausa = $causa->billetera + $monto;
+            $dataCausa = [
+                'billetera' => $saldoActualizadoCausa
+            ];
+            $causa = $this->causaService->update($dataCausa, $causa->id);
+        } else {
+            if ($tipo === TipoTransaccion::DEBITO) {
+                $saldoActualizadoCausa = $causa->billetera - $monto;
+                $dataCausa = [
+                    'billetera' => $saldoActualizadoCausa
+                ];
+                $causa = $this->causaService->update($dataCausa, $causa->id);
+            }
+        }
+        return $transaccionesCausa;
     }
 }

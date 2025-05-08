@@ -62,12 +62,22 @@ class TransaccionesCausaController extends Controller
         $esTransferenciaEntreCausas = 0;
         $usuarioId = Auth::user()->id;
         $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($usuarioId);
-        //Validacion cuando es transaccion desde billeta
-        if ($esTransaccionDesdeBilletera === 1 && $billetera->monto < $monto) {
-            return response()->json([
-                'message' => 'No tiene suficiente saldo en su billetera general.',
-                'data' => null
-            ], 409);
+        //Validacion cuando es transaccion desde billeta general
+        if ($esTransaccionDesdeBilletera === 1) {
+            if ($billetera->monto < $monto) {
+                return response()->json([
+                    'message' => 'No tiene suficiente saldo en su billetera general.',
+                    'data' => null
+                ], 409);
+            }
+            //Evaluacion EAPE
+            if ($this->causaService->noPasoValidacionEAPEBilleteraGral($monto)) {
+                return response()->json([
+                    'message' => 'ALERTA!
+                 Su solicitud no puede concretarse por falta de saldo en la billetera general. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                    'data' => null
+                ], 409);
+            }
         }
         //Validacion cuando es transaccion entre causas
         if ($esTransaccionDesdeBilletera === 0) {
@@ -85,6 +95,13 @@ class TransaccionesCausaController extends Controller
                     'data' => null
                 ], 409);
             }
+            if ($this->causaService->noPasoValidacionEAPECausa($request->causa_origen_destino, $monto)) {
+                return response()->json([
+                    'message' => 'ALERTA!
+                 Su solicitud no puede concretarse por falta de saldo en la billetera de causa. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                    'data' => null
+                ], 409);
+            }
         }
         DB::beginTransaction();
         try {
@@ -95,9 +112,10 @@ class TransaccionesCausaController extends Controller
                 //Actualizacion de saldo de billetera
                 $codigoCausa = $this->causaService->obtenerCodigoIdentificadorVisual($causaId);
                 $tipoTrn = TipoTransaccion::DEBITO;
-                $glosabilletera = GlosaTransaccion::DEBITO_DESDE_BILLETERA_POR_TRANSFERENCIA_A_CAUSA.": ".$codigoCausa;
+                $glosabilletera = GlosaTransaccion::DEBITO_DESDE_BILLETERA_POR_TRANSFERENCIA_A_CAUSA . ": " . $codigoCausa;
                 $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($usuarioId);
-                $billeterTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billetera->id, $monto, $tipoTrn, $glosabilletera);
+                $ordenId = 0;//En este caso no existe
+                $billeterTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billetera->id, $monto, $tipoTrn, $glosabilletera, $ordenId);
             } else {
                 $glosaDestino = GlosaTransaccion::CREDITO_DESDE_CAUSA;
                 $transaccionDestino = TransaccionCausa::TRANSFERENCIA_RECIBIDA;
@@ -118,6 +136,7 @@ class TransaccionesCausaController extends Controller
                 'glosa' => $glosaDestino,
                 'causa_id' => $causaId,
                 'causa_origen_destino' => $causa_origen_destino,
+                'orden_id' =>0,
                 'usuario_id' => $usuarioId
             ];
             $transaccionCausaDestino = $this->transaccionesCausaService->store($dataDestino);
@@ -138,6 +157,7 @@ class TransaccionesCausaController extends Controller
                     'glosa' => $glosaOrigen,
                     'causa_id' => $causa_origen_destino,
                     'causa_origen_destino' => $causaId,
+                    'orden_id'=>0,
                     'usuario_id' => Auth::user()->id
                 ];
                 $transaccionCausaOrigen = $this->transaccionesCausaService->store($dataOrigen);
@@ -166,50 +186,59 @@ class TransaccionesCausaController extends Controller
         }
     }
     public function devolucionABGeneral(StoreTransaccionCausaDevolucionABilleteraGran $request)
-    {//Devolucion de saldo a Billetera General desde billetera de causa
+    { //Devolucion de saldo a Billetera General desde billetera de causa
         $monto = $request->monto;
         $causaId = $request->causa_origen_destino;
         $usuarioId = Auth::user()->id;
-            //Valida el saldo de la causa origen
-            $causaOrigenSaldo = $this->causaService->obtenerUno($causaId);
-            if ($causaOrigenSaldo->billetera < $monto) {
-                return response()->json([
-                    'message' => 'Esta causa no tiene suficiente saldo en su billetera para hacer transferencias.',
-                    'data' => null
-                ], 409);
-            }
-       
+        //Valida el saldo de la causa origen
+        $causaOrigenSaldo = $this->causaService->obtenerUno($causaId);
+        if ($causaOrigenSaldo->billetera < $monto) {
+            return response()->json([
+                'message' => 'Esta causa no tiene suficiente saldo en su billetera para hacer transferencias.',
+                'data' => null
+            ], 409);
+        }
+        if ($this->causaService->noPasoValidacionEAPECausa($causaId, $monto)) {
+            return response()->json([
+                'message' => 'ALERTA!
+             Su solicitud no puede concretarse por falta de saldo en la billetera de causa. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                'data' => null
+            ], 409);
+        }
+
         DB::beginTransaction();
-        try {   
-                //Actualizacion de saldo de billetera general
-                $codigoCausa = $this->causaService->obtenerCodigoIdentificadorVisual($causaId);
-                $tipoTrn = TipoTransaccion::CREDITO;
-                $glosabilletera = GlosaTransaccion::CREDITO_DEVOLUCION_DE_CAUSA.": ".$codigoCausa;
-                $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($usuarioId);
-                $billeterGeneralTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billetera->id, $monto, $tipoTrn, $glosabilletera);
-                //Actualizacion de saldo de billetera de causa
-                $transaccionOrigen = TransaccionCausa::TRANSFERENCIA_ENVIADA;
-                $glosaOrigen = GlosaTransaccion::DEBITO_POR_DEVOLUCION_A_BILLETERA_GRAL;
-                $now = Carbon::now('America/La_Paz');
-                $fechaHora = $now->toDateTimeString();
-                $dataOrigen = [
-                    'monto' => $monto,
-                    'fecha_transaccion' => $fechaHora,
-                    'tipo' => TipoTransaccion::DEBITO,
-                    'transaccion' => $transaccionOrigen,
-                    'glosa' => $glosaOrigen,
-                    'causa_id' => $causaId,
-                    'causa_origen_destino' => 0,
-                    'usuario_id' => Auth::user()->id
-                ];
-                $transaccionCausaOrigen = $this->transaccionesCausaService->store($dataOrigen);
-                //Actualiza saldo de la causa origen
-                $causaOrigen = $this->causaService->obtenerUno($causaId);
-                $saldoCausaOrigen = $causaOrigen->billetera - $monto;
-                $dataCausaOrigen = [
-                    'billetera' => $saldoCausaOrigen
-                ];
-                $causaOrig = $this->causaService->update($dataCausaOrigen, $causaId);
+        try {
+            //Actualizacion de saldo de billetera general
+            $codigoCausa = $this->causaService->obtenerCodigoIdentificadorVisual($causaId);
+            $tipoTrn = TipoTransaccion::CREDITO;
+            $glosabilletera = GlosaTransaccion::CREDITO_DEVOLUCION_DE_CAUSA . ": " . $codigoCausa;
+            $ordenId=0; //En este caso no existe
+            $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($usuarioId);
+            $billeterGeneralTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billetera->id, $monto, $tipoTrn, $glosabilletera, $ordenId);
+            //Actualizacion de saldo de billetera de causa
+            $transaccionOrigen = TransaccionCausa::TRANSFERENCIA_ENVIADA;
+            $glosaOrigen = GlosaTransaccion::DEBITO_POR_DEVOLUCION_A_BILLETERA_GRAL;
+            $now = Carbon::now('America/La_Paz');
+            $fechaHora = $now->toDateTimeString();
+            $dataOrigen = [
+                'monto' => $monto,
+                'fecha_transaccion' => $fechaHora,
+                'tipo' => TipoTransaccion::DEBITO,
+                'transaccion' => $transaccionOrigen,
+                'glosa' => $glosaOrigen,
+                'causa_id' => $causaId,
+                'causa_origen_destino' => 0,
+                'orden_id'=>0,
+                'usuario_id' => Auth::user()->id
+            ];
+            $transaccionCausaOrigen = $this->transaccionesCausaService->store($dataOrigen);
+            //Actualiza saldo de la causa origen
+            $causaOrigen = $this->causaService->obtenerUno($causaId);
+            $saldoCausaOrigen = $causaOrigen->billetera - $monto;
+            $dataCausaOrigen = [
+                'billetera' => $saldoCausaOrigen
+            ];
+            $causaOrig = $this->causaService->update($dataCausaOrigen, $causaId);
 
             DB::commit();
             return response()->json([
