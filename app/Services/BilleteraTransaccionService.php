@@ -89,4 +89,9 @@ class BilleteraTransaccionService
 
         return $billeteraTransaccion;
     }
+    public function obtenerPorOrdenId($ordenId)
+    {
+        $billeteraTransaccion = BilleteraTransaccion::where('orden_id', $ordenId)->firstOrFail();
+        return $billeteraTransaccion;
+    }
 }

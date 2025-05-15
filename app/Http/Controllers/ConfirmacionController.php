@@ -21,6 +21,7 @@ use App\Services\ConfirmacionService;
 use App\Services\ProcuraduriaDescargaService;
 use App\Http\Requests\UpdateConfirmacionRequest;
 use App\Models\Causa;
+use App\Models\ProcuraduriaDescarga;
 use App\Services\BilleteraService;
 use App\Services\BilleteraTransaccionService;
 use App\Services\CausaService;
@@ -124,6 +125,18 @@ class ConfirmacionController extends Controller
                 'data' => null
             ], 409);
         }
+        if ($request->confir_abogado === 1 && $request->monto_propina > 0) {
+            $descarga = ProcuraduriaDescarga::findOrFail($confirmacion->descarga_id);
+            $orden = Orden::findOrFail($descarga->orden_id);
+            //Evaluacion EAP
+            if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, $request->monto_propina)) {
+                return response()->json([
+                    'message' => 'ALERTA!
+         Su solicitud no puede concretarse por falta de saldo en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                    'data' => null
+                ], 409);
+            }
+        }
         DB::beginTransaction();
         try {
             $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
@@ -139,6 +152,15 @@ class ConfirmacionController extends Controller
             $confirmacion = $this->confirmacionService->update($data, $confirmacion->id);
 
             $descarga = $this->procuraduriaDescargaService->obtenerUno($confirmacion->descarga_id);
+            //Verificacion si hay propina para registrarlo
+            if ($request->confir_abogado === 1 && $request->monto_propina > 0) {
+                $dataOrden = [
+                    'tiene_propina' => 1,
+                    'propina' => $request->monto_propina
+                ];
+                $orden = $this->ordenService->update($dataOrden, $descarga->orden_id);
+            }
+
             if ($confirmacion->fecha_confir_contador === NULL) {
                 //ACTUALIZA LA ETAPA DE LA ORDEN CON PRONUNCIAMIENTO DEL ABOGADO
                 $dataOrden = [
@@ -220,6 +242,7 @@ class ConfirmacionController extends Controller
 
     public function cerrarOrden($calificacionOrden, $ordenId)
     {
+        $montoPropina = 0;
         $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
         $calificacion = $calificacionOrden === 1 ? 'SUFICIENTE' : 'INSUFICIENTE';
         $dataOrden = [
@@ -257,14 +280,18 @@ class ConfirmacionController extends Controller
             'orden_id' => $ordenId,
         ];
         $finalCosto = $this->finalCostoService->store($dataFinalCosto);
+        if ($orden->tiene_propina === 1) {
+            $montoPropina = $orden->propina;
+        }
 
         //Registro de transacciones en la billetera general o independiente (segun sea)
         $causa = Causa::findOrFail($orden->causa_id);
         $idUser = Auth::user()->id;
         if ($causa->tiene_billetera === 1) {
             $glosaCausa = GlosaTransaccion::DEBITO_POR_EGRESO_ORDEN . $ordenId;
+            $totalEgresoTrn = $finalCosto->total_egreso + $montoPropina;
             $dataTrnCausa = [
-                'monto' => $finalCosto->total_egreso,
+                'monto' => $totalEgresoTrn,
                 'fecha_transaccion' => $fechaHora,
                 'tipo' => TipoTransaccion::DEBITO,
                 'transaccion' => TransaccionCausa::EGRESO_ORDEN,
@@ -279,13 +306,12 @@ class ConfirmacionController extends Controller
             $codigoVisualCausa = $this->causaService->obtenerCodigoIdentificadorVisual($causa->id);
             $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($causa->usuario_id);
             $billeteraId = $billetera->id;
-            $monto = $finalCosto->total_egreso;
+            $monto = $finalCosto->total_egreso + $montoPropina;
             $tipoTransaccion = TipoTransaccion::DEBITO;
             $glosa = GlosaTransaccion::DEBITO_EGRESO_ORDEN_BILL_GRAL . $ordenId . ' DE LA CAUSA ' . $codigoVisualCausa;
             $ordenId = $ordenId;
             $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa, $ordenId);
         }
-
 
         return $orden;
     }

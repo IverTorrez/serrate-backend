@@ -121,4 +121,9 @@ class TransaccionesCausaService
         }
         return $transaccionesCausa;
     }
+    public function obtenerPorOrdenId($ordenId)
+    {
+        $transaccionesCausa = TransaccionesCausa::where('orden_id', $ordenId)->firstOrFail();
+        return $transaccionesCausa;
+    }
 }
