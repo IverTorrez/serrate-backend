@@ -154,7 +154,8 @@ class Causa extends Model
             $monto = $orden->presupuesto->monto ?? 0;
             $saldoDescarga = $orden->descarga->saldo ?? 0;
             $saldoDescargaFormateado = $saldoDescarga !== 0 ? $saldoDescarga * -1 : 0;
-            $total += $venta + $monto + $saldoDescargaFormateado;
+            $propinaPrometida = $orden->propina ?? 0;
+            $total += $venta + $monto + $saldoDescargaFormateado + $propinaPrometida;
         }
 
         return $total;
