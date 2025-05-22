@@ -186,7 +186,8 @@ class CausaService
                 $monto = $orden->presupuesto->monto ?? 0;
                 $saldoDescarga = $orden->descarga->saldo ?? 0;
                 $saldoDescargaFormateado = $saldoDescarga !== 0 ? $saldoDescarga * -1 : 0;
-                $total += $venta + $monto + $saldoDescargaFormateado;
+                $propinaPrometida = $orden->propina ?? 0;
+                $total += $venta + $monto + $saldoDescargaFormateado + $propinaPrometida;
             }
         }
 
@@ -212,7 +213,7 @@ class CausaService
         }
         return $montoTotalProbableComprometido > $saldoTotal;
     }
-    //Funcion eape cuando se hace una transaccion directamente desde la billetera general
+    //Funcion eape cuando se hace una transaccion directamente desde la billetera general, (no hay causa de por medio)
     public function noPasoValidacionEAPEBilleteraGral($montoProbable): bool
     {
         $usuarioId = Auth::user()->id;
