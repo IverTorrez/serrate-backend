@@ -18,6 +18,7 @@ class TablaConfigSeeder extends Seeder
         TablaConfig::create([
             'caja_contador' => 0,
             'deuda_extarna' => 0,
+            'caja_admin' => 0,
             'ganancia_procesal_procuraduria' => 0,
             'titulo_index' => null,
             'texto_index' => null,

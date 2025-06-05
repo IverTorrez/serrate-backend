@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Carbon\Carbon;
+use App\Models\TablaConfig;
 use App\Constants\Estado;
 use App\Enums\MessageHttp;
 use App\Models\Presupuesto;
@@ -21,6 +22,10 @@ use App\Http\Requests\UpdatePresupuestoRequest;
 use App\Models\Orden;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Constants\GlosaTransaccion;
+use App\Constants\TipoTransaccion;
+use App\Constants\Transaccion;
+use App\Services\TransaccionesContadorService;
 
 class PresupuestoController extends Controller
 {
@@ -29,18 +34,21 @@ class PresupuestoController extends Controller
     protected $matrizCotizacionService;
     protected $cotizacionService;
     protected $causaService;
+    protected $transaccionesContadorService;
     public function __construct(
         PresupuestoService $presupuestoService,
         OrdenService $ordenService,
         MatrizCotizacionService $matrizCotizacionService,
         CotizacionService $cotizacionService,
-        CausaService $causaService
+        CausaService $causaService,
+        TransaccionesContadorService $transaccionesContadorService
     ) {
         $this->presupuestoService = $presupuestoService;
         $this->ordenService = $ordenService;
         $this->matrizCotizacionService = $matrizCotizacionService;
         $this->cotizacionService = $cotizacionService;
         $this->causaService = $causaService;
+        $this->transaccionesContadorService = $transaccionesContadorService;
     }
     /**
      * Display a listing of the resource.
@@ -270,5 +278,84 @@ class PresupuestoController extends Controller
             'data' => $presupuesto
         ];
         return response()->json($data);
+    }
+    public function entregarPresupuestosMasivo(Request $request)
+    {
+        $now = Carbon::now('America/La_Paz');
+        $fechaHora = $now->toDateTimeString();
+
+        $presupuestos = $request->validate([
+            '*.id' => 'required|integer|exists:presupuestos,id',
+            '*.monto' => 'required'
+        ]);
+        // Validación previa: ninguno debe tener fecha_entrega
+        foreach ($presupuestos as $item) {
+            $pres = Presupuesto::find($item['id']);
+            if ($pres->fecha_entrega !== null) {
+                return response()->json([
+                    'message' => "La orden {$pres->orden_id} ya tiene presupuesto entregado.",
+                    'data'    => null
+                ], 409);
+            }
+        }
+        //Suma de totales
+        $total = collect($presupuestos)
+            ->sum(function ($item) {
+                return (float) ($item['monto'] ?? 0);
+            });
+        //Validacion de caja del contador
+        $tablaConfig = TablaConfig::findOrFail(1);
+        if ($total > $tablaConfig->caja_contador) {
+            return response()->json([
+                'message' => 'Usted no tiene suficiente saldo para realizar esta accion, Saldo actual = ' . $tablaConfig->caja_contador,
+                'data' => null
+            ], 409);
+        }
+        DB::beginTransaction();
+
+        try {
+            $ordenesEntregadas = [];
+            foreach ($presupuestos as $item) {
+                $presupuesto = Presupuesto::find($item['id']);
+                // Entregar presupuesto
+                $dataPresupuesto = [
+                    'fecha_entrega' => $fechaHora
+                ];
+                $presupuesto = $this->presupuestoService->update($dataPresupuesto, $presupuesto->id);
+                // Actualizar orden
+                $dataOrden = [
+                    'etapa_orden' => EtapaOrden::DINERO_ENTREGADO,
+                ];
+                $orden = $this->ordenService->update($dataOrden, $presupuesto->orden_id);
+                $ordenesEntregadas[] = $presupuesto->orden_id;
+            }
+            //Registro de transaccion contador
+            if ($total > 0) {
+                $dataTrnContador = [
+                    'monto' => $total,
+                    'fecha_transaccion' => $fechaHora,
+                    'tipo' => TipoTransaccion::DEBITO,
+                    'transaccion' => Transaccion::EGRESO_POR_ENTREGA_PRESUPUESTO,
+                    'glosa' => GlosaTransaccion::DEBITO_POR_ENTREGA_PRESUPUESTO . '[' . implode(',', $ordenesEntregadas) . ']',
+                    'contador_id' => Auth::user()->id,
+                    'usuario_id' => Auth::user()->id
+                ];
+                $transaccionContador = $this->transaccionesContadorService->registrarTransaccionContador($dataTrnContador);
+            }
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Presupuestos entregados correctamente',
+                'data' => null
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error registrar entrega: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error registrar entrega',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
