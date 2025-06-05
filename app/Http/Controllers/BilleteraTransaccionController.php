@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Constants\GlosaTransaccion;
 use App\Constants\TipoTransaccion;
+use App\Constants\Transaccion;
 use App\Constants\TipoUsuario;
 use Exception;
 use Carbon\Carbon;
@@ -17,16 +18,19 @@ use App\Http\Resources\BilleteraTransaccionCollection;
 use App\Http\Requests\StoreBilleteraTransaccionRequest;
 use App\Services\BilleteraService;
 use App\Services\BilleteraTransaccionService;
+use App\Services\TransaccionesAdminService;
 
 class BilleteraTransaccionController extends Controller
 {
     protected $billeteraService;
     protected $billeteraTransaccionService;
+    protected $transaccionesAdminService;
 
-    public function __construct(BilleteraService $billeteraService, BilleteraTransaccionService $billeteraTransaccionService)
+    public function __construct(BilleteraService $billeteraService, BilleteraTransaccionService $billeteraTransaccionService, TransaccionesAdminService $transaccionesAdminService)
     {
         $this->billeteraService = $billeteraService;
         $this->billeteraTransaccionService = $billeteraTransaccionService;
+        $this->transaccionesAdminService = $transaccionesAdminService;
     }
     /**
      * Display a listing of the resource.
@@ -95,13 +99,23 @@ class BilleteraTransaccionController extends Controller
         }
         DB::beginTransaction();
         try {
+            $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
             $billeteraId = $request->billetera_id;
             $monto = $request->monto;
             $tipoTransaccion = TipoTransaccion::CREDITO;
             $glosa = GlosaTransaccion::CREDITO_DEPOSITO_A_BILLETERA;
             $ordenId = 0; //En este caso es cero
             $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa, $ordenId);
-
+            //TransaccionAdmin
+            $dataTrnAdmin = [
+                'monto' => $monto,
+                'fecha_transaccion' => $fechaHora,
+                'tipo' => TipoTransaccion::CREDITO,
+                'transaccion' => Transaccion::INGRESO_POR_DEPOSITO_ABOGADO,
+                'glosa' => GlosaTransaccion::CREDITO_POR_DEPOSITO_ABOGADO,
+                'usuario_id' => Auth::user()->id
+            ];
+            $transaccionesAdmin = $this->transaccionesAdminService->registrarTransaccionAdmin($dataTrnAdmin);
 
             DB::commit();
             return response()->json([

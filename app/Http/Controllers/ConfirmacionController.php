@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use Exception;
 use Carbon\Carbon;
 use App\Models\Orden;
+use App\Models\TablaConfig;
 use App\Enums\MessageHttp;
 use App\Models\Confirmacion;
 use Illuminate\Http\Request;
 use App\Constants\EtapaOrden;
 use App\Constants\GlosaTransaccion;
+use App\Constants\Transaccion;
 use App\Constants\TipoTransaccion;
 use App\Constants\TransaccionCausa;
 use App\Services\OrdenService;
@@ -27,6 +29,7 @@ use App\Services\BilleteraTransaccionService;
 use App\Services\CausaService;
 use App\Services\TransaccionesCausaService;
 use Illuminate\Support\Facades\Auth;
+use App\Services\TransaccionesContadorService;
 
 class ConfirmacionController extends Controller
 {
@@ -39,6 +42,7 @@ class ConfirmacionController extends Controller
     protected $billeteraService;
     protected $billeteraTransaccionService;
     protected $causaService;
+    protected $transaccionesContadorService;
 
 
     public function __construct(
@@ -51,6 +55,7 @@ class ConfirmacionController extends Controller
         BilleteraService $billeteraService,
         BilleteraTransaccionService $billeteraTransaccionService,
         CausaService $causaService,
+        TransaccionesContadorService $transaccionesContadorService
     ) {
         $this->confirmacionService = $confirmacionService;
         $this->ordenService = $ordenService;
@@ -61,6 +66,7 @@ class ConfirmacionController extends Controller
         $this->billeteraService = $billeteraService;
         $this->billeteraTransaccionService = $billeteraTransaccionService;
         $this->causaService = $causaService;
+        $this->transaccionesContadorService = $transaccionesContadorService;
     }
     /**
      * Display a listing of the resource.
@@ -235,6 +241,120 @@ class ConfirmacionController extends Controller
 
             return response()->json([
                 'message' => 'Error pronuncio contador',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function devolucionSaldoMasivo(Request $request)
+    {
+        $tipotrnEnDevolucion = 0;
+        $now = Carbon::now('America/La_Paz');
+        $fechaHora = $now->toDateTimeString();
+
+        $confirmaciones = $request->validate([
+            '*.id' => 'required|integer|exists:confirmacions,id',
+            '*.descarga_id' => 'required'
+        ]);
+        // Validación previa: ninguno debe tener fecha_confir_contador
+        foreach ($confirmaciones as $item) {
+            $confir = Confirmacion::find($item['id']);
+            if ($confir->fecha_confir_contador !== null) {
+                $descarga = ProcuraduriaDescarga::find($confir->descarga_id);
+                return response()->json([
+                    'message' => "La orden {$descarga->orden_id} ya tiene devolucion registrada.",
+                    'data'    => null
+                ], 409);
+            }
+        }
+        // 🔢 Obtener todos los IDs de descarga únicos
+        $descargaIds = collect($confirmaciones)->pluck('descarga_id')->unique();
+        // 📦 Obtener todas las descargas y sumar saldo
+        $descargas = ProcuraduriaDescarga::whereIn('id', $descargaIds)->get();
+        $totalSaldo = $descargas->sum('saldo');
+        //Verificacion si el saldo a devolver es negativos (cuando el contador debe devolver dinero al procurador)
+        if ($totalSaldo < 0) {
+            $tipotrnEnDevolucion = 1; //transaccion de egreso
+            $totalSaldo = $totalSaldo * (-1);
+            //Validacion de caja del contador
+            $tablaConfig = TablaConfig::findOrFail(1);
+            if ($totalSaldo > $tablaConfig->caja_contador) {
+                $totalSaldoFormateado = number_format($totalSaldo, 2, '.', ''); // como string
+                return response()->json([
+                    'message' => 'Usted no tiene suficiente saldo para realizar esta accion, Saldo actual = ' . $tablaConfig->caja_contador . ', saldo a devolver = ' . $totalSaldoFormateado,
+                    'data' => null
+                ], 409);
+            }
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $ordenesDevueltasPres = [];
+            //Recorrido de las confirmaciones
+            foreach ($confirmaciones as $item) {
+                $confirmacion = Confirmacion::find($item['id']);
+
+                $data['confir_contador'] = 1;
+                $data['fecha_confir_contador'] = $fechaHora;
+                $confirmacion = $this->confirmacionService->update($data, $confirmacion->id);
+                //VALIDA EL CONTADOR
+                $dataDescarga = [
+                    'es_validado' => 1
+                ];
+                $descarga = $this->procuraduriaDescargaService->update($dataDescarga, $confirmacion->descarga_id);
+                if ($confirmacion->fecha_confir_abogado === NULL) {
+                    //ACTUALIZA LA ETAPA DE LA ORDEN CON PRONUNCIAMIENTO DEL CONTADOR
+                    $dataOrden = [
+                        'etapa_orden' => EtapaOrden::PRONUNCIO_CONTADOR
+                    ];
+                    $orden = $this->ordenService->update($dataOrden, $descarga->orden_id);
+                } else {
+                    //CIERRE DE LA ORDEN
+                    $calificacionOrden = ($confirmacion->confir_abogado === 1 && $confirmacion->confir_sistema === 1) ? 1 : 0;
+                    $ordenCerrada = $this->cerrarOrden($calificacionOrden, $descarga->orden_id);
+                }
+                $ordenesDevueltasPres[] = $descarga->orden_id;
+            }
+            /**---------------------------------------------------------------- */
+            //Si hay saldo para la devolucion
+            if ($totalSaldo > 0) {
+                //Cuando el contador debe devolver al procurador
+                if ($tipotrnEnDevolucion === 1) {
+                    $dataTrnContador = [
+                        'monto' => $totalSaldo,
+                        'fecha_transaccion' => $fechaHora,
+                        'tipo' => TipoTransaccion::DEBITO,
+                        'transaccion' => Transaccion::EGRESO_POR_DEVOLUCION_PRESUPUESTO,
+                        'glosa' => GlosaTransaccion::DEBITO_POR_DEVOLUCION_PRESUPUESTO . '[' . implode(',', $ordenesDevueltasPres) . ']',
+                        'contador_id' => Auth::user()->id,
+                        'usuario_id' => Auth::user()->id
+                    ];
+                } else {
+                    $dataTrnContador = [
+                        'monto' => $totalSaldo,
+                        'fecha_transaccion' => $fechaHora,
+                        'tipo' => TipoTransaccion::CREDITO,
+                        'transaccion' => Transaccion::INGRESO_POR_DEVOLUCION_PRESUPUESTO,
+                        'glosa' => GlosaTransaccion::CREDITO_POR_DEVOLUCION_PRESUPUESTO . '[' . implode(',', $ordenesDevueltasPres) . ']',
+                        'contador_id' => Auth::user()->id,
+                        'usuario_id' => Auth::user()->id
+                    ];
+                }
+                //Registro de transaccion contador
+                $transaccionContador = $this->transaccionesContadorService->registrarTransaccionContador($dataTrnContador);
+            }
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Presupuestos devueltos correctamente',
+                'data' => null
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error registrar devolucion: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error registrar devolucion',
                 'error' => $e->getMessage()
             ], 500);
         }

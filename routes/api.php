@@ -41,7 +41,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BilleteraController;
 use App\Http\Controllers\ParametroVigenciaController;
+use App\Http\Controllers\TransaccionesAdminController;
 use App\Http\Controllers\TransaccionesCausaController;
+use App\Http\Controllers\TransaccionesContadorController;
 use App\Http\Controllers\VerificationController;
 
 Route::get('/user', function (Request $request) {
@@ -311,6 +313,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('presupuestos/{presupuesto}', [PresupuestoController::class, 'update']);
         Route::patch('presupuestos/eliminar/{presupuesto}', [PresupuestoController::class, 'destroy']);
         Route::patch('presupuestos/entregar/{presupuesto}', [PresupuestoController::class, 'entregarPresupuesto']);
+        Route::post('presupuestos/entregar-masivo', [PresupuestoController::class, 'entregarPresupuestosMasivo']);
         //Procuraduria Descarga
         Route::get('descargas', [ProcuraduriaDescargaController::class, 'index']);
         Route::post('descargas', [ProcuraduriaDescargaController::class, 'store']);
@@ -319,6 +322,7 @@ Route::prefix('v1')->group(function () {
         //Confirmacion
         Route::patch('confirmacion/pronuncio-abogado/{confirmacion}', [ConfirmacionController::class, 'pronuncioAbogado']);
         Route::patch('confirmacion/pronuncio-contador/{confirmacion}', [ConfirmacionController::class, 'pronuncioContador']);
+        Route::post('confirmacion/pronuncio-contador/devolucion-masivo', [ConfirmacionController::class, 'devolucionSaldoMasivo']);
         // Final Costo
         Route::patch('finalcostos/costo-judicial-venta/{finalCosto}', [FinalCostoController::class, 'colocarCostoJudicialVenta']);
         //Gestion Alternativa
@@ -385,5 +389,11 @@ Route::prefix('v1')->group(function () {
         Route::get('transacciones-causas/listado-causa/{causaId}', [TransaccionesCausaController::class, 'obtenerTransaccionesDeCausa']);
         //Parametro vigencia
         Route::get('parametro-vigencias/obtener', [ParametroVigenciaController::class, 'obtenerUnoUsuario']);
+        //Transacciones admin
+        Route::get('transacciones-admin/listado', [TransaccionesAdminController::class, 'obtenerTransaccionesDeAdmin']);
+        Route::post('transacciones-admin/trn-contador', [TransaccionesAdminController::class, 'depositoAContador']);
+        //Transacciones contador
+        Route::get('transacciones-contador/listado', [TransaccionesContadorController::class, 'obtenerTransaccionesDeContador']);
+        Route::post('transacciones-contador/devolucion-admin', [TransaccionesContadorController::class, 'devolucionAAdmin']);
     });
 });

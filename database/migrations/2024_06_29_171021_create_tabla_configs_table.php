@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->decimal('caja_contador', 10, 2)->nullable();
             $table->decimal('deuda_extarna', 10, 2)->nullable();
+            $table->decimal('caja_admin', 10, 2)->nullable();
             $table->decimal('ganancia_procesal_procuraduria', 10, 2)->nullable()->comment('es el sumado de ganacias de procuraduria y procesal');
             $table->text('titulo_index')->nullable()->comment('Titulo del texto del index');
             $table->text('texto_index')->nullable()->comment('texto informativo de la pagina index');

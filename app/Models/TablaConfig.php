@@ -11,6 +11,7 @@ class TablaConfig extends Model
     protected $fillable=[
         'caja_contador',
         'deuda_extarna',
+        'caja_admin',
         'ganancia_procesal_procuraduria',
         'titulo_index',
         'texto_index',
