@@ -50,4 +50,9 @@ class TablaConfigService
         $tablaConfig->update($dataSaldo);
         return $tablaConfig;
     }
+    public function obtenerDatos()
+    {
+        $tablaConfig = TablaConfig::findOrFail(1);
+        return $tablaConfig;
+    }
 }

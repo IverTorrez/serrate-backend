@@ -41,6 +41,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BilleteraController;
 use App\Http\Controllers\ParametroVigenciaController;
+use App\Http\Controllers\ProcuradorPagoController;
 use App\Http\Controllers\TransaccionesAdminController;
 use App\Http\Controllers\TransaccionesCausaController;
 use App\Http\Controllers\TransaccionesContadorController;
@@ -304,6 +305,7 @@ Route::prefix('v1')->group(function () {
         Route::get('orden/cuenta-conciliada-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenCuentaConciliadasDeLider']);
         Route::get('orden/vencidas-leves-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenVencidasLevesDeLider']);
         Route::get('orden/vencidas-graves-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenVencidasGravesDeLider']);
+        Route::get('orden/listado-para-pago-procurador/{procuradorId}', [OrdenController::class, 'ordenesListaOrdenCerradasParaPagoProcurador']);
         //Cotizacion
 
         //Presupuesto
@@ -395,5 +397,10 @@ Route::prefix('v1')->group(function () {
         //Transacciones contador
         Route::get('transacciones-contador/listado', [TransaccionesContadorController::class, 'obtenerTransaccionesDeContador']);
         Route::post('transacciones-contador/devolucion-admin', [TransaccionesContadorController::class, 'devolucionAAdmin']);
+        //ProcuradorPago
+        Route::get('procurador-pago', [ProcuradorPagoController::class, 'index']);
+        Route::post('procurador-pago', [ProcuradorPagoController::class, 'store']);
+        Route::get('procurador-pago/ultimo-pago/{procuradorId}', [ProcuradorPagoController::class, 'obtenerUltimoPagoDeProcurador']);
+        Route::get('procurador-pago/listado/{procuradorId}', [ProcuradorPagoController::class, 'obtenerPagosDeUnProcurador']);
     });
 });
