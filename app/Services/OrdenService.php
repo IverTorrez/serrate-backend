@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Constants\Estado;
+use App\Constants\EtapaOrden;
 use App\Models\Orden;
 
 class OrdenService
@@ -418,5 +419,64 @@ class OrdenService
     {
         $orden = Orden::findOrFail($ordenId);
         return $orden;
+    }
+    public function obtenerListaOrdenCerradasParaPagoProcurador($procuradorId, $fechaInicioConsulta, $fechaFinConsulta)
+    {
+        try {
+            $query = Orden::select([
+                'id',
+                'entrega_informacion',
+                'entrega_documentacion',
+                'fecha_inicio',
+                'fecha_fin',
+                'fecha_giro',
+                'plazo_hora',
+                'fecha_recepcion',
+                'etapa_orden',
+                'calificacion',
+                'prioridad',
+                'fecha_cierre',
+                'girada_por',
+                'fecha_ini_bandera',
+                'notificado',
+                'lugar_ejecucion',
+                'sugerencia_presupuesto',
+                'tiene_propina',
+                'propina',
+                'causa_id',
+                'procurador_id',
+                'matriz_id',
+                'estado',
+            ])
+                ->with([
+                    'causa:id,nombre,materia_id,tipolegal_id',
+                    'causa.materia:id,abreviatura',
+                    'causa.tipoLegal:id,abreviatura',
+                    'cotizacion:id,compra,penalizacion,condicion,orden_id',
+                    'presupuesto:id,monto,detalle_presupuesto,fecha_presupuesto,fecha_entrega,orden_id',
+                    'descarga:id,detalle_informacion,detalle_gasto,gastos,saldo,es_validado,orden_id',
+                    'descarga.confirmacion:id,confir_abogado,fecha_confir_abogado,justificacion_rechazo,descarga_id',
+                    'finalCostos:id,costo_procesal_compra,costo_procesal_venta,costo_procuraduria_compra,costo_procuraduria_venta,total_egreso,cancelado_procurador,orden_id'
+
+                ])
+                ->active()
+                ->whereHas('finalCostos', function ($query) {
+                    $query->where('cancelado_procurador', 0);
+                })
+                ->where('procurador_id', $procuradorId)
+                ->whereBetween('fecha_cierre', [$fechaInicioConsulta, $fechaFinConsulta])
+                ->where('estado', Estado::ACTIVO)
+                ->where('es_eliminado', 0)
+                ->where('etapa_orden', EtapaOrden::CERRADA);
+
+            $result = $query->get();
+
+            return [
+                'message' => 'Ordenes obtenidas correctamente',
+                'data' => $result
+            ];
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
+        }
     }
 }

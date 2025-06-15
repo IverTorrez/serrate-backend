@@ -732,4 +732,11 @@ class OrdenController extends Controller
             ], 500);
         }
     }
+    public function ordenesListaOrdenCerradasParaPagoProcurador($procuradorId, Request $request)
+    {
+        $fechaInicioConsulta = $request->query('fecha_inicio_consulta');
+        $fechaFinConsulta = $request->query('fecha_fin_consulta');
+        $data = $this->ordenService->obtenerListaOrdenCerradasParaPagoProcurador($procuradorId, $fechaInicioConsulta, $fechaFinConsulta);
+        return response()->json($data);
+    }
 }
