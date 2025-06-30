@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Constants\Estado;
+use App\Constants\EstadoCausa;
 use App\Constants\EtapaOrden;
+use App\Models\Causa;
 use App\Models\Orden;
 
 class OrdenService
@@ -478,5 +480,16 @@ class OrdenService
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al obtener las órdenes.'], 500);
         }
+    }
+    public function usuarioTieneOrdenesNoCerradas($usuarioId): bool
+    {
+        return Causa::where('usuario_id', $usuarioId)
+            ->where('es_eliminado', 0)
+            ->where('estado', '!=', EstadoCausa::TERMINADA)
+            ->whereHas('ordenes', function ($query) {
+                $query->where('es_eliminado', 0)
+                    ->where('etapa_orden', '!=', EtapaOrden::CERRADA);
+            })
+            ->exists();
     }
 }

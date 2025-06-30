@@ -42,6 +42,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BilleteraController;
 use App\Http\Controllers\ParametroVigenciaController;
 use App\Http\Controllers\ProcuradorPagoController;
+use App\Http\Controllers\RetiroController;
 use App\Http\Controllers\TransaccionesAdminController;
 use App\Http\Controllers\TransaccionesCausaController;
 use App\Http\Controllers\TransaccionesContadorController;
@@ -380,6 +381,7 @@ Route::prefix('v1')->group(function () {
         Route::get('videos/listado/usuarios', [VideoController::class, 'listarActivosSegunUsuario']);
         //Billetera
         Route::get('billetera/abogado/{abogadoId}', [BilleteraController::class, 'obtenerPorAbogadoId']);
+        Route::get('billetera/listado-usuarios', [BilleteraController::class, 'listarConUsuarios']);
         //Billetera Transacciones
         Route::get('billetera-transaccion', [BilleteraTransaccionController::class, 'index']);
         Route::get('billetera-transaccion/listado-billetera/{billeteraId}', [BilleteraTransaccionController::class, 'listadoPorBilletera']);
@@ -400,7 +402,11 @@ Route::prefix('v1')->group(function () {
         //ProcuradorPago
         Route::get('procurador-pago', [ProcuradorPagoController::class, 'index']);
         Route::post('procurador-pago', [ProcuradorPagoController::class, 'store']);
+        Route::post('procurador-pago/extraordinario', [ProcuradorPagoController::class, 'pagoExtraordinario']);
         Route::get('procurador-pago/ultimo-pago/{procuradorId}', [ProcuradorPagoController::class, 'obtenerUltimoPagoDeProcurador']);
         Route::get('procurador-pago/listado/{procuradorId}', [ProcuradorPagoController::class, 'obtenerPagosDeUnProcurador']);
+        //Retiros
+        Route::post('retiro', [RetiroController::class, 'store']);
+        Route::get('retiro', [RetiroController::class, 'index']);
     });
 });
