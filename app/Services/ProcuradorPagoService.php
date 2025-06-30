@@ -12,6 +12,7 @@ class ProcuradorPagoService
     {
         $procuradorPago = ProcuradorPago::create([
             'monto' => $data['monto'],
+            'tipo' => $data['tipo'],
             'fecha_pago' => $data['fecha_pago'],
             'fecha_inicio_consulta' => $data['fecha_inicio_consulta'],
             'fecha_fin_consulta' => $data['fecha_fin_consulta'],
@@ -49,6 +50,7 @@ class ProcuradorPagoService
             $query = ProcuradorPago::select([
                 'id',
                 'monto',
+                'tipo',
                 'fecha_pago',
                 'fecha_inicio_consulta',
                 'fecha_fin_consulta',
@@ -92,6 +94,7 @@ class ProcuradorPagoService
             $query = ProcuradorPago::select([
                 'id',
                 'monto',
+                'tipo',
                 'fecha_pago',
                 'fecha_inicio_consulta',
                 'fecha_fin_consulta',

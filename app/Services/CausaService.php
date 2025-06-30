@@ -111,8 +111,7 @@ class CausaService
     public function listarCausasConBilletera()
     {
         $usuarioId = Auth::user()->id;
-        $causas = Causa::where('estado', '!=', EstadoCausa::TERMINADA)
-            ->where('es_eliminado', 0)
+        $causas = Causa::where('es_eliminado', 0)
             ->where('tiene_billetera', 1)
             ->where('usuario_id', $usuarioId)
             ->with([
@@ -125,8 +124,7 @@ class CausaService
     public function listarCausasDestinoTransaccion()
     {
         $usuarioId = Auth::user()->id;
-        $causas = Causa::where('estado', '!=', EstadoCausa::TERMINADA)
-            ->where('es_eliminado', 0)
+        $causas = Causa::where('es_eliminado', 0)
             ->where('tiene_billetera', 1)
             ->where('usuario_id', $usuarioId)
             ->with([
@@ -139,8 +137,7 @@ class CausaService
     public function listadoDetallesCausasConBilleterasDeUsuario()
     {
         $usuarioId = Auth::user()->id;
-        $causas = Causa::where('estado', '!=', EstadoCausa::TERMINADA)
-            ->where('es_eliminado', 0)
+        $causas = Causa::where('es_eliminado', 0)
             ->where('tiene_billetera', 1)
             ->where('usuario_id', $usuarioId)
             ->with(['materia', 'tipoLegal', 'primerDemandante', 'primerDemandado', 'primerTribunal'])
@@ -224,5 +221,20 @@ class CausaService
         $saldoTotal = $billetera->monto;
 
         return $montoTotalProbableComprometido > $saldoTotal;
+    }
+    public function usuarioTieneCausasNoTerminadas($usuarioId): bool
+    {
+        return Causa::where('usuario_id', $usuarioId)
+            ->where('es_eliminado', 0)
+            ->where('estado', '!=', EstadoCausa::TERMINADA)
+            ->exists();
+    }
+    public function usuarioTieneCausasConSaldo($usuarioId): bool
+    {
+        return Causa::where('usuario_id', $usuarioId)
+            ->where('tiene_billetera', 1)
+            ->where('es_eliminado', 0)
+            ->where('billetera', '>', 0)
+            ->exists();
     }
 }

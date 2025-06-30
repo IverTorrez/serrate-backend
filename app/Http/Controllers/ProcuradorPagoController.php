@@ -115,6 +115,7 @@ class ProcuradorPagoController extends Controller
 
             $dataProcuradorPago = [
                 'monto' => $montoPago,
+                'tipo' => TipoTransaccion::DEBITO,
                 'fecha_pago' => $fechaHora,
                 'fecha_inicio_consulta' => $fechaInicioConsulta,
                 'fecha_fin_consulta' => $fechaFinConsulta,
@@ -214,6 +215,92 @@ class ProcuradorPagoController extends Controller
             return response()->json([
                 'message' => 'Error al obtener los pagos de procurador.',
                 'data' => null
+            ], 500);
+        }
+    }
+    public function pagoExtraordinario(StoreProcuradorPagoRequest $request)
+    {
+        $data = $request->validated();
+
+        $procuradorPago = $data['procuradorPago'];
+        $finalCostos = $data['finalCosto'];
+        $fechaInicioConsulta = $procuradorPago['fecha_inicio_consulta'];
+        $fechaFinConsulta = $procuradorPago['fecha_fin_consulta'];
+        $monto = $procuradorPago['monto'];
+        $procuradorId = $procuradorPago['procurador_id'];
+
+        foreach ($finalCostos as $costo) {
+            $finalCosto = FinalCosto::find($costo['id']);
+            if ($finalCosto->cancelado_procurador === 1) {
+                return response()->json([
+                    'message' => "La orden {$finalCosto->orden_id} ya se cancelo al procurador.",
+                    'data'    => null
+                ], 409);
+            }
+        }
+        // $tablaConfig = $this->tablaConfigService->obtenerDatos();
+        if ($monto < 1) {
+            return response()->json([
+                'message' => 'ALERTA!
+                 EL monto debe ser mayor a 1',
+                'data' => null
+            ], 409);
+        }
+        DB::beginTransaction();
+        try {
+            $fechaHora = FechaHelper::fechaHoraBolivia();
+            $ordenesCanceladas = [];
+            $montoPago = 0;
+            foreach ($finalCostos as $costo) {
+                $finalCosto = FinalCosto::find($costo['id']);
+                $orden = Orden::find($costo['orden_id']);
+                if ($orden->calificacion === CalificacionOrden::SUFICIENTE) {
+                    $montoPago = $montoPago + $finalCosto->costo_procuraduria_compra;
+                } else {
+                    $montoPago = $montoPago + $finalCosto->penalidad;
+                }
+
+                $dataFinalCosto = [
+                    'cancelado_procurador' => 1
+                ];
+                $this->finalCostoService->update($dataFinalCosto, $finalCosto->id);
+                $ordenesCanceladas[] = $orden->id;
+            }
+
+            $dataProcuradorPago = [
+                'monto' => $monto,
+                'tipo' => TipoTransaccion::CREDITO,
+                'fecha_pago' => $fechaHora,
+                'fecha_inicio_consulta' => $fechaInicioConsulta,
+                'fecha_fin_consulta' => $fechaFinConsulta,
+                'glosa' => GlosaTransaccion::PAGO_A_PROCURADOR_EXTRAORDINARIO . '[' . implode(',', $ordenesCanceladas) . ']',
+                'procurador_id' => $procuradorId,
+                'usuario_id' => Auth::user()->id
+            ];
+            $procuradorPago = $this->procuradorPagoService->store($dataProcuradorPago);
+            //Reg trn en caja admin  
+            $dataTrnAdmin = [
+                'monto' => $monto,
+                'fecha_transaccion' => $fechaHora,
+                'tipo' => TipoTransaccion::CREDITO,
+                'transaccion' => Transaccion::INGRESO_POR_PAGO_PROCURADURIA,
+                'glosa' => GlosaTransaccion::CREDITO_POR_PAGO_PROCURADURIA . '[' . implode(',', $ordenesCanceladas) . ']',
+                'usuario_id' => Auth::user()->id
+            ];
+            $trnAdmin = $this->transaccionesAdminService->registrarTransaccionAdmin($dataTrnAdmin);
+
+            DB::commit();
+            return response()->json([
+                'message' => MessageHttp::CREADO_CORRECTAMENTE,
+                'data' => $procuradorPago
+            ], 201);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error registrar pago procurador: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error registrar pago procurador',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

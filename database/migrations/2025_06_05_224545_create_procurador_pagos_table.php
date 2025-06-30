@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('procurador_pagos', function (Blueprint $table) {
             $table->id();
             $table->decimal('monto', 10, 2)->comment('monto de la transaccion');
+            $table->string('tipo', 30)->comment('tipo de transaccin, DEBITO, CREDITO');
             $table->timestamp('fecha_pago')->nullable()->comment('fecha de la transaccion');
             $table->timestamp('fecha_inicio_consulta')->nullable()->comment('fecha de la transaccion');
             $table->timestamp('fecha_fin_consulta')->nullable()->comment('fecha de la transaccion');

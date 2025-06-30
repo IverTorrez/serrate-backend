@@ -51,4 +51,19 @@ class BilleteraService
         $billetera->save();
         return $billetera;
     }
+    public function listarConUsuarios()
+    {
+        return Billetera::select(
+            'id',
+            'monto',
+            'abogado_id'
+        )
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->with([
+                'abogado:id,name',
+                'abogado.persona:id,nombre,apellido,usuario_id'
+            ])
+            ->get();
+    }
 }

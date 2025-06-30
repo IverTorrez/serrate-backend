@@ -79,4 +79,13 @@ class BilleteraController extends Controller
         ];
         return response()->json($data);
     }
+    public function listarConUsuarios()
+    {
+        $billetera = $this->billeteraService->listarConUsuarios();
+        $data=[
+            'message'=> MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data'=>$billetera
+        ];
+        return response()->json($data);
+    }
 }

@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
+use App\Traits\CommonScopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class DevolucionSaldo extends Model
 {
-    use HasFactory;
-    protected $fillable=[
+    use CommonScopes, HasFactory;
+    protected $fillable = [
         'fecha_devolucion',
-        'detalle_devolucion',
+        'glosa',
         'monto',
-        'causa_id',
+        'billetera_id',
+        'usuario_id',
         'estado',
         'es_eliminado'
     ];
@@ -22,8 +24,8 @@ class DevolucionSaldo extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function causa()
+    public function billetera()
     {
-        return $this->belongsTo(Causa::class, 'causa_id');
+        return $this->belongsTo(Billetera::class, 'billetera_id');
     }
 }

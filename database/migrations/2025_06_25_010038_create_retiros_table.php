@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('devolucion_saldos', function (Blueprint $table) {
+        Schema::create('retiros', function (Blueprint $table) {
             $table->id();
-            $table->timestamp('fecha_devolucion')->nullable();
-            $table->string('glosa', 200)->nullable();
-            $table->decimal('monto', 10, 2)->nullable();
-            $table->integer('billetera_id')->comment('id de la tabla billeteras');
-            $table->integer('usuario_id')->comment('id del usuario que hizo la devolucion');
+            $table->decimal('monto', 10, 2)->comment('monto del retiro');
+            $table->timestamp('fecha_retiro')->nullable()->comment('fecha del retiro');
+            $table->string('glosa', 300)->comment('glosa del retiro');
+            $table->integer('usuario_id')->comment('id de la tabla users, usuario quien hizo la transaccion');
             $table->string('estado', 20)->comment('estado ACTIVO,INACTIVO');
             $table->integer('es_eliminado')->comment('1 es eliminado, 0 no es eliminado');
             $table->timestamps();
@@ -29,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('devolucion_saldos');
+        Schema::dropIfExists('retiros');
     }
 };

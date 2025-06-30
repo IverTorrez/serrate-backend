@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
            CuerpoExpedienteSeeder::class,
            ParticipanteSeeder::class,
            DepositoSeeder::class,
-           DevolucionSaldoSeeder::class,
+           //DevolucionSaldoSeeder::class,
            TablaConfigSeeder::class, //Siempre se carga
            AvancePlantillaSeeder::class,
            PostaSeeder::class,
