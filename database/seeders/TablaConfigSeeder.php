@@ -24,6 +24,8 @@ class TablaConfigSeeder extends Seeder
             'texto_index' => null,
             'imagen_index' => null,
             'imagen_logo' => null,
+            'nombre' => '',
+            'archivo_url' => '',
             'estado' => $estado,
             'es_eliminado' => 0,
         ]);

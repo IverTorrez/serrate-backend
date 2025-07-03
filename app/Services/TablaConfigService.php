@@ -55,4 +55,10 @@ class TablaConfigService
         $tablaConfig = TablaConfig::findOrFail(1);
         return $tablaConfig;
     }
+    public function obtenerArancelAbogados()
+    {
+        return TablaConfig::select('id', 'nombre', 'archivo_url')
+            ->where('id', 1)
+            ->first(); 
+    }
 }
