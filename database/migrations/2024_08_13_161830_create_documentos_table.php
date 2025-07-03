@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('documentos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre', 100)->comment('nombre del archivo');
-            $table->text('archivo_url', 100)->comment('url del archivo');
+            $table->text('archivo_url', 300)->comment('url del archivo');
             $table->string('tipo', 50)->comment('tipo de la categoria TRAMITES, NORMAS');
             $table->integer('categoria_id')->nullable()->comment('id de la tabla categoria');
             $table->string('estado', 20)->comment('estado ACTIVO,INACTIVO');

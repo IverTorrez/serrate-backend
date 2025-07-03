@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\MessageHttp;
+use App\Http\Requests\UpdateArancelAbogadoRequest;
 use App\Models\TablaConfig;
 use Illuminate\Http\Request;
 use App\Services\TablaConfigService;
@@ -91,5 +92,28 @@ class TablaConfigController extends Controller
     public function destroy(TablaConfig $tablaConfig)
     {
         //
+    }
+
+    public function updataArancelesAbogado(UpdateArancelAbogadoRequest $request)
+    {
+        if ($request->hasFile('archivo_url')) {
+            $file = $request->file('archivo_url');
+            $pathArancel = $file->store('uploads/img/aranceles', 'public');
+            $data['archivo_url'] = $pathArancel;
+        }
+        $data['nombre'] = $request->nombre;
+        $tablaConfig = $this->tablaConfigService->update($data, 1);
+        return response()->json([
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $tablaConfig
+        ]);
+    }
+    public function obtenerArancelAbogados()
+    {
+        $datosAranceles = $this->tablaConfigService->obtenerArancelAbogados();
+        return response()->json([
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $datosAranceles
+        ]);
     }
 }

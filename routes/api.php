@@ -92,6 +92,7 @@ Route::prefix('v1')->group(function () {
 
     //Rutas sin autenticacion
     Route::get('tabla-config/datos', [TablaConfigController::class, 'show']);
+    Route::get('tabla-config/aranceles-doc', [TablaConfigController::class, 'obtenerArancelAbogados']);
     Route::get('paquetes/listado', [PaqueteController::class, 'listadoPaquetes']);
     //Documentos y categorias
     Route::get('documentos-categorias/tramites/listado', [DocumentosCategoriaController::class, 'listarCategoriasTramites']);
@@ -366,6 +367,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('documentos/eliminar/{documento}', [DocumentoController::class, 'destroy']);
         //Tabla config
         Route::post('tabla-config/actualizar', [TablaConfigController::class, 'update']);
+        Route::post('tabla-config/actualizar-arancel', [TablaConfigController::class, 'updataArancelesAbogado']);
         //Paquete Causas
         Route::post('paquete-causas', [PaqueteCausaController::class, 'store']);
         Route::get('paquete-causas/listado/compra-pquete/{compraPaqueteId}', [PaqueteCausaController::class, 'listadoActivosDeUnPaquete']);
