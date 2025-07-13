@@ -22,8 +22,10 @@ class StoreGestionAlternativaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'solicitud_gestion'=>['required','string'],
-            'orden_id'=>['required','exists:ordens,id'],
+            'solicitud_gestion' => ['required', 'string'],
+            'orden_id' => ['required', 'exists:ordens,id'],
+            'tribunal_id' => ['sometimes'],
+            'cuerpo_expediente_id' => ['sometimes'],
         ];
     }
 }

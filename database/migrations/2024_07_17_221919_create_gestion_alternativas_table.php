@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->text('solicitud_gestion')->nullable()->comment('redaccion del procurador solicitando gestion alternativa');
             $table->timestamp('fecha_solicitud')->nullable()->comment('fecha y hora de la solicitud del procurador');
+            $table->integer('tribunal_id')->nullable()->comment('id de la tabla tribunals');
+            $table->integer('cuerpo_expediente_id')->nullable()->comment('id de la tabla cuerpo_expedientes relacionado al triunal');
             $table->text('detalle_gestion')->nullable()->comment('respuesta del abogado');
             $table->timestamp('fecha_respuesta')->nullable()->comment('fecha y hora de la respuesta del abogado');
             $table->integer('orden_id')->nullable()->comment('id de la tabla ordens');

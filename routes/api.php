@@ -42,6 +42,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BilleteraController;
 use App\Http\Controllers\ParametroVigenciaController;
 use App\Http\Controllers\ProcuradorPagoController;
+use App\Http\Controllers\RegistroLlamadaController;
 use App\Http\Controllers\RetiroController;
 use App\Http\Controllers\TransaccionesAdminController;
 use App\Http\Controllers\TransaccionesCausaController;
@@ -70,6 +71,7 @@ Route::prefix('v1')->group(function () {
             Route::get('abogados-dependientes/{abogadoLiderId}', [UserController::class, 'listarAbogadosDependientes']);
             Route::get('abogados-dependientes/{abogadoLiderId}/paginado', [UserController::class, 'obtenerUsuariosDependientes']);
             Route::get('listar/{user?}', [UserController::class, 'show']);
+            Route::get('obtener-uno/{usuarioId}', [UserController::class, 'obtenerUnUsuario']);
 
 
             Route::post('crear', [UserController::class, 'crearUsuario']);
@@ -199,6 +201,7 @@ Route::prefix('v1')->group(function () {
         //Cuerpo Expediente
         Route::get('cuerpo-expedientes', [CuerpoExpedienteController::class, 'index']);
         Route::get('cuerpo-expedientes/tribunal/listar/{tribunalId}', [CuerpoExpedienteController::class, 'listadoPorTribunal']);
+        Route::get('cuerpo-expedientes/por-tribunal/{tribunalId}', [CuerpoExpedienteController::class, 'listarExpedientesDigitalDeTribunal']);
         Route::post('cuerpo-expedientes', [CuerpoExpedienteController::class, 'store']);
         Route::get('cuerpo-expedientes/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'show']);
         Route::post('cuerpo-expedientes/{cuerpoExpediente}', [CuerpoExpedienteController::class, 'update']);
@@ -334,6 +337,9 @@ Route::prefix('v1')->group(function () {
         Route::patch('gestion-alternativa/{gestionAlternativa}', [GestionAlternativaController::class, 'update']);
         Route::patch('gestion-alternativa/eliminar/{gestionAlternativa}', [GestionAlternativaController::class, 'destroy']);
         Route::get('gestion-alternativa/orden/{ordenId}', [GestionAlternativaController::class, 'obtenerPorOrdenId']);
+        Route::get('gestion-alternativa/obtener/{gestionId}', [GestionAlternativaController::class, 'obtenerUnoById']);
+        Route::get('gestion-alternativa/otras-gestiones/{gestionId}/{ordenId}', [GestionAlternativaController::class, 'contarGestionesPosteriores']);
+        
         //Paquetes
         Route::get('paquetes', [PaqueteController::class, 'index']);
         Route::get('paquetes/listado/segun-usuario', [PaqueteController::class, 'listadoPaquetesSegunUsuario']);
@@ -410,5 +416,8 @@ Route::prefix('v1')->group(function () {
         //Retiros
         Route::post('retiro', [RetiroController::class, 'store']);
         Route::get('retiro', [RetiroController::class, 'index']);
+        //Registro llamadas
+        Route::post('registro-llamadas', [RegistroLlamadaController::class, 'store']);
+        Route::get('registro-llamadas/por-gestion/{gestionId}', [RegistroLlamadaController::class, 'obtenerPorGestionId']);
     });
 });

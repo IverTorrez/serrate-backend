@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateGestionAlternativaRequest extends FormRequest
+class StoreRegistroLlamadaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,11 +22,8 @@ class UpdateGestionAlternativaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'detalle_gestion'=>['sometimes'],
-            'solicitud_gestion'=>['sometimes','string'],
-            'tribunal_id'=>['sometimes'],
-            'cuerpo_expediente_id'=>['sometimes']
-
+            'numero_telefono' => ['required', 'string'],
+            'gestion_id' => ['required']
         ];
     }
 }

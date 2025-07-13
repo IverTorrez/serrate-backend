@@ -116,4 +116,13 @@ class UserController extends Controller
         ];
         return response()->json($data);
     }
+    public function obtenerUnUsuario($usuarioId)
+    {
+        $usuario = $this->userService->obtenerUnUsuario($usuarioId);
+        $data = [
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $usuario
+        ];
+        return response()->json($data);
+    }
 }
