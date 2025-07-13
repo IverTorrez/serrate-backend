@@ -234,4 +234,15 @@ class UserService
             return 'No se encontró ningún usuario Procurador.';
         }
     }
+    public function obtenerUnUsuario($usuarioId)
+    {
+        $usuario = User::where('id', $usuarioId)
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->with([
+                'persona:id,nombre,apellido,telefono,usuario_id'
+            ])
+            ->first();
+        return $usuario;
+    }
 }

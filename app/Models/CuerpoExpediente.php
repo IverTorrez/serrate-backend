@@ -26,4 +26,8 @@ class CuerpoExpediente extends Model
     {
         return $this->belongsTo(Tribunal::class, 'tribunal_id');
     }
+    public function gestionAlternativas()
+    {
+        return $this->hasMany(GestionAlternativa::class, 'cuerpo_expediente_id', 'id');
+    }
 }

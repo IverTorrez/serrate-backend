@@ -44,4 +44,12 @@ class CuerpoExpedienteService
         $cuerpoExpediente->save();
         return $cuerpoExpediente;
     }
+    public function listarExpedientesDigitalDeTribunal($tribunalId)
+    {
+        $cuerpoExpedientes = CuerpoExpediente::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('tribunal_id', $tribunalId)
+            ->get();
+        return $cuerpoExpedientes;
+    }
 }

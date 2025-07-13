@@ -160,4 +160,12 @@ class CuerpoExpedienteController extends Controller
             'data' => $cuerpoExpediente
         ]);
     }
+    public function listarExpedientesDigitalDeTribunal($tribunalId)
+    {
+        $cuerpoExpedientes = $this->cuerpoExpedienteService->listarExpedientesDigitalDeTribunal($tribunalId);
+        return response()->json([
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $cuerpoExpedientes
+        ]);
+    }
 }

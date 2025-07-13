@@ -11,6 +11,8 @@ class GestionAlternativa extends Model
     protected $fillable=[
         'solicitud_gestion',
         'fecha_solicitud',
+        'tribunal_id',
+        'cuerpo_expediente_id',
         'detalle_gestion',
         'fecha_respuesta',
         'orden_id',
@@ -26,5 +28,18 @@ class GestionAlternativa extends Model
     public function orden()
     {
         return $this->belongsTo(Orden::class, 'orden_id');
+    }
+    public function tribunal()
+    {
+        return $this->belongsTo(Tribunal::class, 'tribunal_id');
+    }
+    public function cuerpoExpediente()
+    {
+        return $this->belongsTo(CuerpoExpediente::class, 'cuerpo_expediente_id');
+    }
+
+    public function registroLlamadas()
+    {
+        return $this->hasMany(RegistroLlamada::class, 'gestion_id');
     }
 }

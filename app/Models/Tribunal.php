@@ -50,4 +50,8 @@ class Tribunal extends Model
                     ->where('estado', Estado::ACTIVO)
                     ->where('es_eliminado', 0);
     }
+    public function gestionAlternativas()
+    {
+        return $this->hasMany(GestionAlternativa::class, 'tribunal_id', 'id');
+    }
 }
