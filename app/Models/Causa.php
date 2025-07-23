@@ -97,6 +97,14 @@ class Causa extends Model
     {
         return $this->hasMany(Orden::class, 'causa_id');
     }
+    public function ordenesUrgencias()
+    {
+        return $this->hasMany(Orden::class, 'causa_id')
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->whereDoesntHave('descarga'); // Aquí filtramos que no tenga descargas
+    }
+
     public function paqueteCausas()
     {
         return $this->hasMany(PaqueteCausa::class, 'causa_id');

@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Constants\EtapaOrden;
 use App\Services\UserService;
 use App\Constants\EstadoCausa;
+use App\Constants\FechaHelper;
 use App\Constants\TipoUsuario;
 use App\Services\CausaService;
 use App\Services\PostaService;
@@ -110,6 +111,7 @@ class CausaController extends Controller
      */
     public function index(Request $request)
     {
+        $fechaHoraSistema = FechaHelper::fechaHoraBolivia();
         $query = Causa::active();
 
         $usuario = Auth::user();
@@ -147,6 +149,31 @@ class CausaController extends Controller
         $causas->load('categoria');
         $causas->load('abogado.persona');
         $causas->load('procurador.persona');
+        //Listado para procuradores
+        if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+            $causas->load([
+                'ordenes' => function ($query) use ($usuario, $fechaHoraSistema) {
+                    $query->select('id', 'fecha_inicio', 'fecha_fin', 'prioridad', 'causa_id') // Incluye causa_id para la relación
+                        ->where('estado', Estado::ACTIVO)
+                        ->where('es_eliminado', 0)
+                        ->where('procurador_id', $usuario->id)
+                        ->where('fecha_inicio', '<=', $fechaHoraSistema)
+                        ->whereDoesntHave('descarga');
+                }
+            ]);
+        } else { //Listado para el resto de usuarios
+            $causas->load([
+                'ordenes' => function ($query) use ($fechaHoraSistema) {
+                    $query->select('id', 'fecha_inicio', 'fecha_fin', 'prioridad', 'causa_id') // Incluye causa_id para la relación
+                        ->where('estado', Estado::ACTIVO)
+                        ->where('es_eliminado', 0)
+                        ->where('fecha_inicio', '<=', $fechaHoraSistema)
+                        ->whereDoesntHave('descarga');
+                }
+            ]);
+        }
+
+
         return new CausaCollection($causas);
     }
     public function indexTerminadas(Request $request)
@@ -248,7 +275,7 @@ class CausaController extends Controller
     {
         DB::beginTransaction();
         try {
-            $fechaHoraSistema = Carbon::now('America/La_Paz')->format('Y-m-d H:i:s');
+            $fechaHoraSistema = FechaHelper::fechaHoraBolivia();
             $usuarioPmaestro = $this->userService->obtenerUnPMaestro();
             $idUser = Auth::user()->id;
             $tipoUsuario = Auth::user()->tipo;
@@ -824,5 +851,4 @@ class CausaController extends Controller
             'data' => $totales
         ], 200);
     }
-
 }
