@@ -3,21 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Constants\Estado;
+use App\Constants\TipoUsuario;
 use App\Enums\MessageHttp;
 use App\Models\Participante;
 use Illuminate\Http\Request;
 use App\Http\Resources\ParticipanteCollection;
 use App\Http\Requests\StoreParticipanteRequest;
 use App\Http\Requests\UpdateParticpanteRequest;
+use App\Services\CausaService;
 use App\Services\ParticipanteService;
+use Illuminate\Support\Facades\Auth;
 
 class ParticipanteController extends Controller
 {
     protected $participanteService;
+    protected $causaService;
 
-    public function __construct(ParticipanteService $participanteService)
+    public function __construct(ParticipanteService $participanteService, CausaService $causaService)
     {
         $this->participanteService = $participanteService;
+        $this->causaService = $causaService;
     }
     /**
      * Display a listing of the resource.
@@ -43,6 +48,12 @@ class ParticipanteController extends Controller
 
     public function listadoPorCausa(Request $request, $causaId)
     {
+        $tipoUsuario = Auth::user()->tipo;
+        if ($tipoUsuario === TipoUsuario::ABOGADO_INDEPENDIENTE || $tipoUsuario === TipoUsuario::ABOGADO_LIDER || $tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE) {
+            if (!$this->causaService->abogadoTienePermisoCausa($causaId)) {
+                return response()->json(['message' => 'No esta autorizado para ver estos datos'], 403);
+            }
+        }
         $query = Participante::active()
             ->where('causa_id', $causaId);
         // Manejo de búsqueda

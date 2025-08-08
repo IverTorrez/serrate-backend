@@ -155,6 +155,10 @@ Route::prefix('v1')->group(function () {
         Route::get('causas', [CausaController::class, 'index']);
         Route::get('causas/lista/administrar', [CausaController::class, 'indexCausasAdmin']);
         Route::get('causas/listado/terminadas', [CausaController::class, 'indexTerminadas']);
+        Route::get('causas/por-tipo-legal/{codigoLegal}', [CausaController::class, 'listadoPorCodigoLegal']);
+        Route::get('causas/por-abogado/{abogadoId}', [CausaController::class, 'listadoPorAbogado']);
+        Route::get('causas/por-categoria/{categoriaId}', [CausaController::class, 'listadoPorCategoria']);
+        Route::get('causas/por-procurador/{procuradorId}', [CausaController::class, 'listadoPorProcurador']);
         Route::post('causas', [CausaController::class, 'store']);
         Route::get('causas/{causa}', [CausaController::class, 'show']);
         Route::patch('causas/{causa}', [CausaController::class, 'update']);

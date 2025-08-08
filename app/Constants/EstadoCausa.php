@@ -7,4 +7,5 @@ class EstadoCausa
     const CONGELADA = 'CONGELADA';
     const TERMINADA = 'TERMINADA';
     const INACTIVA = 'INACTIVA';
+    const BLOQUEADA = 'BLOQUEADA';
 }

@@ -139,14 +139,15 @@ class TransaccionesCausaController extends Controller
                 'orden_id' =>0,
                 'usuario_id' => $usuarioId
             ];
-            $transaccionCausaDestino = $this->transaccionesCausaService->store($dataDestino);
+            //$transaccionCausaDestino = $this->transaccionesCausaService->store($dataDestino);
+            $transaccionCausaDestino = $this->transaccionesCausaService->registrarTransaccionCausa($dataDestino);
             //Actualiza saldo de la causa destino
-            $causaDestino = $this->causaService->obtenerUno($causaId);
+           /* $causaDestino = $this->causaService->obtenerUno($causaId);
             $saldoCausaDestino = $causaDestino->billetera + $monto;
             $dataCausaDestino = [
                 'billetera' => $saldoCausaDestino
             ];
-            $causaDest = $this->causaService->update($dataCausaDestino, $causaId);
+            $causaDest = $this->causaService->update($dataCausaDestino, $causaId);*/
 
             if ($esTransferenciaEntreCausas === 1) {
                 $dataOrigen = [
@@ -160,14 +161,15 @@ class TransaccionesCausaController extends Controller
                     'orden_id'=>0,
                     'usuario_id' => Auth::user()->id
                 ];
-                $transaccionCausaOrigen = $this->transaccionesCausaService->store($dataOrigen);
+                //$transaccionCausaOrigen = $this->transaccionesCausaService->store($dataOrigen);
+                $transaccionCausaDestino = $this->transaccionesCausaService->registrarTransaccionCausa($dataOrigen);
                 //Actualiza saldo de la causa origen
-                $causaOrigen = $this->causaService->obtenerUno($causa_origen_destino);
+                /*$causaOrigen = $this->causaService->obtenerUno($causa_origen_destino);
                 $saldoCausaOrigen = $causaOrigen->billetera - $monto;
                 $dataCausaOrigen = [
                     'billetera' => $saldoCausaOrigen
                 ];
-                $causaOrig = $this->causaService->update($dataCausaOrigen, $causa_origen_destino);
+                $causaOrig = $this->causaService->update($dataCausaOrigen, $causa_origen_destino);*/
             }
 
             DB::commit();
@@ -231,19 +233,20 @@ class TransaccionesCausaController extends Controller
                 'orden_id'=>0,
                 'usuario_id' => Auth::user()->id
             ];
-            $transaccionCausaOrigen = $this->transaccionesCausaService->store($dataOrigen);
+            //$transaccionCausaOrigen = $this->transaccionesCausaService->store($dataOrigen);
+            $transaccionCausaDestino = $this->transaccionesCausaService->registrarTransaccionCausa($dataOrigen);
             //Actualiza saldo de la causa origen
             $causaOrigen = $this->causaService->obtenerUno($causaId);
-            $saldoCausaOrigen = $causaOrigen->billetera - $monto;
+           /* $saldoCausaOrigen = $causaOrigen->billetera - $monto;
             $dataCausaOrigen = [
                 'billetera' => $saldoCausaOrigen
             ];
-            $causaOrig = $this->causaService->update($dataCausaOrigen, $causaId);
+            $causaOrig = $this->causaService->update($dataCausaOrigen, $causaId);*/
 
             DB::commit();
             return response()->json([
                 'message' => MessageHttp::CREADO_CORRECTAMENTE,
-                'data' => $causaOrig
+                'data' => $causaOrigen
             ], 201);
         } catch (Exception $e) {
             DB::rollBack();
