@@ -88,7 +88,7 @@ class UserController extends Controller
             //Lista abogados dependientes del usuario logueado
             $usuarios = $this->userService->abogadosDependientes();
         }
-        if ($tipoUsuario === TipoUsuario::ADMINISTRADOR || $tipoUsuario === TipoUsuario::CONTADOR || $tipoUsuario === TipoUsuario::PROCURADOR_MAESTRO) {
+        if ($tipoUsuario === TipoUsuario::ADMINISTRADOR || $tipoUsuario === TipoUsuario::CONTADOR || $tipoUsuario === TipoUsuario::PROCURADOR_MAESTRO || $tipoUsuario === TipoUsuario::PROCURADOR) {
             //Todos los abogados
             $usuarios = $this->userService->listarAbogados();
         }

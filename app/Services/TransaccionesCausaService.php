@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Constants\Estado;
+use App\Constants\EstadoCausa;
 use App\Constants\TipoTransaccion;
 use App\Models\Causa;
 use App\Models\TransaccionesCausa;
@@ -110,6 +111,10 @@ class TransaccionesCausaService
                 'billetera' => $saldoActualizadoCausa
             ];
             $causa = $this->causaService->update($dataCausa, $causa->id);
+            //Se activa la causa, si esta congelada
+            if ($causa->estado === EstadoCausa::BLOQUEADA) {
+                $this->causaService->activarCausa($causaId);
+            }
         } else {
             if ($tipo === TipoTransaccion::DEBITO) {
                 $saldoActualizadoCausa = $causa->billetera - $monto;

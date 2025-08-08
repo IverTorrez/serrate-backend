@@ -150,6 +150,12 @@ class OrdenController extends Controller
 
     public function listarPorCausa(Request $request, $idCausa = null)
     {
+        $tipoUsuario = Auth::user()->tipo;
+        if ($tipoUsuario === TipoUsuario::ABOGADO_INDEPENDIENTE || $tipoUsuario === TipoUsuario::ABOGADO_LIDER || $tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE) {
+            if (!$this->causaService->abogadoTienePermisoCausa($idCausa)) {
+                return response()->json(['message' => 'No esta autorizado para ver estos datos'], 403);
+            }
+        }
         $ordenCausa = $this->ordenService->listarPorCausa($request, $idCausa);
         return new OrdenCollection($ordenCausa);
     }
@@ -161,6 +167,10 @@ class OrdenController extends Controller
 
     public function store(StoreOrdenRequest $request)
     {
+        //hace la validacion para ver si es un abogado permitido para girar orden
+            if (!$this->causaService->abogadoTienePermisoCausa($request->causa_id)) {
+                return response()->json(['message' => 'No esta autorizado para realizar esta acción'], 403);
+            }
         if ($this->causaService->cuasaNoEstaActiva($request->causa_id)) {
             return response()->json([
                 'message' => 'No se puede girar orden, porque la causa no está activa.',
@@ -240,6 +250,12 @@ class OrdenController extends Controller
 
     public function show(Orden $orden = null)
     {
+        $tipoUsuario = Auth::user()->tipo;
+        if ($tipoUsuario === TipoUsuario::ABOGADO_INDEPENDIENTE || $tipoUsuario === TipoUsuario::ABOGADO_LIDER || $tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE) {
+            if (!$this->causaService->abogadoTienePermisoCausa($orden->causa_id)) {
+                return response()->json(['message' => 'No esta autorizado para ver estos datos'], 403);
+            }
+        }
         $data = $this->ordenService->listarOrden($orden);
 
         return response()->json($data);

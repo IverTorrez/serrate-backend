@@ -112,7 +112,290 @@ class CausaController extends Controller
     public function index(Request $request)
     {
         $fechaHoraSistema = FechaHelper::fechaHoraBolivia();
-        $query = Causa::active();
+        //$query = Causa::active();
+        $query = Causa::where('estado', '!=', EstadoCausa::TERMINADA)
+            ->where('es_eliminado', 0);
+
+        $usuario = Auth::user();
+        //Filtrado por usuario
+        if ($usuario->tipo === TipoUsuario::ABOGADO_LIDER || $usuario->tipo === TipoUsuario::ABOGADO_INDEPENDIENTE) {
+            $query->where('usuario_id', $usuario->id);
+        } else {
+            if ($usuario->tipo === TipoUsuario::ABOGADO_DEPENDIENTE) {
+                $query->where('abogado_id', $usuario->id);
+            } else {
+                if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+                    $query->where('procurador_id', $usuario->id);
+                }
+            }
+        }
+
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $causas = $query->paginate($perPage);
+
+        $causas->load('materia');
+        $causas->load('tipoLegal');
+        $causas->load('categoria');
+        $causas->load('abogado.persona');
+        $causas->load('procurador.persona');
+        //Listado para procuradores
+        if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+            $causas->load([
+                'ordenes' => function ($query) use ($usuario, $fechaHoraSistema) {
+                    $query->select('id', 'fecha_inicio', 'fecha_fin', 'prioridad', 'causa_id') // Incluye causa_id para la relación
+                        ->where('estado', Estado::ACTIVO)
+                        ->where('es_eliminado', 0)
+                        ->where('procurador_id', $usuario->id)
+                        ->where('fecha_inicio', '<=', $fechaHoraSistema)
+                        ->whereDoesntHave('descarga');
+                }
+            ]);
+        } else { //Listado para el resto de usuarios
+            $causas->load([
+                'ordenes' => function ($query) use ($fechaHoraSistema) {
+                    $query->select('id', 'fecha_inicio', 'fecha_fin', 'prioridad', 'causa_id') // Incluye causa_id para la relación
+                        ->where('estado', Estado::ACTIVO)
+                        ->where('es_eliminado', 0)
+                        ->where('fecha_inicio', '<=', $fechaHoraSistema)
+                        ->whereDoesntHave('descarga');
+                }
+            ]);
+        }
+
+
+        return new CausaCollection($causas);
+    }
+    public function listadoPorCodigoLegal(Request $request, $codigoLegal)
+    {
+        $fechaHoraSistema = FechaHelper::fechaHoraBolivia();
+        //$query = Causa::active();
+        $query = Causa::where('estado', '!=', EstadoCausa::TERMINADA)
+            ->where('es_eliminado', 0)
+            ->where('tipolegal_id', $codigoLegal);
+
+        $usuario = Auth::user();
+        //Filtrado por usuario
+        if ($usuario->tipo === TipoUsuario::ABOGADO_LIDER || $usuario->tipo === TipoUsuario::ABOGADO_INDEPENDIENTE) {
+            $query->where('usuario_id', $usuario->id);
+        } else {
+            if ($usuario->tipo === TipoUsuario::ABOGADO_DEPENDIENTE) {
+                $query->where('abogado_id', $usuario->id);
+            } else {
+                if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+                    $query->where('procurador_id', $usuario->id);
+                }
+            }
+        }
+
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $causas = $query->paginate($perPage);
+
+        $causas->load('materia');
+        $causas->load('tipoLegal');
+        $causas->load('categoria');
+        $causas->load('abogado.persona');
+        $causas->load('procurador.persona');
+        //Listado para procuradores
+        if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+            $causas->load([
+                'ordenes' => function ($query) use ($usuario, $fechaHoraSistema) {
+                    $query->select('id', 'fecha_inicio', 'fecha_fin', 'prioridad', 'causa_id') // Incluye causa_id para la relación
+                        ->where('estado', Estado::ACTIVO)
+                        ->where('es_eliminado', 0)
+                        ->where('procurador_id', $usuario->id)
+                        ->where('fecha_inicio', '<=', $fechaHoraSistema)
+                        ->whereDoesntHave('descarga');
+                }
+            ]);
+        } else { //Listado para el resto de usuarios
+            $causas->load([
+                'ordenes' => function ($query) use ($fechaHoraSistema) {
+                    $query->select('id', 'fecha_inicio', 'fecha_fin', 'prioridad', 'causa_id') // Incluye causa_id para la relación
+                        ->where('estado', Estado::ACTIVO)
+                        ->where('es_eliminado', 0)
+                        ->where('fecha_inicio', '<=', $fechaHoraSistema)
+                        ->whereDoesntHave('descarga');
+                }
+            ]);
+        }
+
+
+        return new CausaCollection($causas);
+    }
+    public function listadoPorAbogado(Request $request, $abogadoId)
+    {
+        $fechaHoraSistema = FechaHelper::fechaHoraBolivia();
+        //$query = Causa::active();
+        $query = Causa::where('estado', '!=', EstadoCausa::TERMINADA)
+            ->where('es_eliminado', 0)
+            ->where('abogado_id', $abogadoId);
+
+        $usuario = Auth::user();
+        //Filtrado por usuario
+        if ($usuario->tipo === TipoUsuario::ABOGADO_LIDER || $usuario->tipo === TipoUsuario::ABOGADO_INDEPENDIENTE) {
+            $query->where('usuario_id', $usuario->id);
+        } else {
+            if ($usuario->tipo === TipoUsuario::ABOGADO_DEPENDIENTE) {
+                $query->where('abogado_id', $usuario->id);
+            } else {
+                if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+                    $query->where('procurador_id', $usuario->id);
+                }
+            }
+        }
+
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $causas = $query->paginate($perPage);
+
+        $causas->load('materia');
+        $causas->load('tipoLegal');
+        $causas->load('categoria');
+        $causas->load('abogado.persona');
+        $causas->load('procurador.persona');
+        //Listado para procuradores
+        if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+            $causas->load([
+                'ordenes' => function ($query) use ($usuario, $fechaHoraSistema) {
+                    $query->select('id', 'fecha_inicio', 'fecha_fin', 'prioridad', 'causa_id') // Incluye causa_id para la relación
+                        ->where('estado', Estado::ACTIVO)
+                        ->where('es_eliminado', 0)
+                        ->where('procurador_id', $usuario->id)
+                        ->where('fecha_inicio', '<=', $fechaHoraSistema)
+                        ->whereDoesntHave('descarga');
+                }
+            ]);
+        } else { //Listado para el resto de usuarios
+            $causas->load([
+                'ordenes' => function ($query) use ($fechaHoraSistema) {
+                    $query->select('id', 'fecha_inicio', 'fecha_fin', 'prioridad', 'causa_id') // Incluye causa_id para la relación
+                        ->where('estado', Estado::ACTIVO)
+                        ->where('es_eliminado', 0)
+                        ->where('fecha_inicio', '<=', $fechaHoraSistema)
+                        ->whereDoesntHave('descarga');
+                }
+            ]);
+        }
+
+
+        return new CausaCollection($causas);
+    }
+    public function listadoPorCategoria(Request $request, $categoriaId)
+    {
+        $fechaHoraSistema = FechaHelper::fechaHoraBolivia();
+        //$query = Causa::active();
+        $query = Causa::where('estado', '!=', EstadoCausa::TERMINADA)
+            ->where('es_eliminado', 0)
+            ->where('categoria_id', $categoriaId);
+
+        $usuario = Auth::user();
+        //Filtrado por usuario
+        if ($usuario->tipo === TipoUsuario::ABOGADO_LIDER || $usuario->tipo === TipoUsuario::ABOGADO_INDEPENDIENTE) {
+            $query->where('usuario_id', $usuario->id);
+        } else {
+            if ($usuario->tipo === TipoUsuario::ABOGADO_DEPENDIENTE) {
+                $query->where('abogado_id', $usuario->id);
+            } else {
+                if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+                    $query->where('procurador_id', $usuario->id);
+                }
+            }
+        }
+
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $causas = $query->paginate($perPage);
+
+        $causas->load('materia');
+        $causas->load('tipoLegal');
+        $causas->load('categoria');
+        $causas->load('abogado.persona');
+        $causas->load('procurador.persona');
+        //Listado para procuradores
+        if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+            $causas->load([
+                'ordenes' => function ($query) use ($usuario, $fechaHoraSistema) {
+                    $query->select('id', 'fecha_inicio', 'fecha_fin', 'prioridad', 'causa_id') // Incluye causa_id para la relación
+                        ->where('estado', Estado::ACTIVO)
+                        ->where('es_eliminado', 0)
+                        ->where('procurador_id', $usuario->id)
+                        ->where('fecha_inicio', '<=', $fechaHoraSistema)
+                        ->whereDoesntHave('descarga');
+                }
+            ]);
+        } else { //Listado para el resto de usuarios
+            $causas->load([
+                'ordenes' => function ($query) use ($fechaHoraSistema) {
+                    $query->select('id', 'fecha_inicio', 'fecha_fin', 'prioridad', 'causa_id') // Incluye causa_id para la relación
+                        ->where('estado', Estado::ACTIVO)
+                        ->where('es_eliminado', 0)
+                        ->where('fecha_inicio', '<=', $fechaHoraSistema)
+                        ->whereDoesntHave('descarga');
+                }
+            ]);
+        }
+
+
+        return new CausaCollection($causas);
+    }
+
+    public function listadoPorProcurador(Request $request, $procuradorId)
+    {
+        $fechaHoraSistema = FechaHelper::fechaHoraBolivia();
+        //$query = Causa::active();
+        $query = Causa::where('estado', '!=', EstadoCausa::TERMINADA)
+            ->where('es_eliminado', 0)
+            ->where('procurador_id', $procuradorId);
 
         $usuario = Auth::user();
         //Filtrado por usuario
@@ -220,7 +503,7 @@ class CausaController extends Controller
     }
     public function indexCausasAdmin(Request $request)
     {
-        $query = Causa::whereIn('estado', [EstadoCausa::ACTIVA, EstadoCausa::CONGELADA, EstadoCausa::TERMINADA])
+        $query = Causa::whereIn('estado', [EstadoCausa::ACTIVA, EstadoCausa::CONGELADA, EstadoCausa::TERMINADA, EstadoCausa::BLOQUEADA])
             ->where('es_eliminado', 0);
         $usuario = Auth::user();
         //Filtrado por usuario
@@ -355,6 +638,12 @@ class CausaController extends Controller
      */
     public function show(Causa $causa)
     {
+        $tipoUsuario = Auth::user()->tipo;
+        if ($tipoUsuario === TipoUsuario::ABOGADO_INDEPENDIENTE || $tipoUsuario === TipoUsuario::ABOGADO_LIDER || $tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE) {
+            if (!$this->causaService->abogadoTienePermisoCausa($causa->id)) {
+                return response()->json(['message' => 'No esta autorizado para ver estos datos'], 403);
+            }
+        }
         $causa = $this->causaService->obtenerUno($causa->id);
         $data = [
             'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Constants\Estado;
 use App\Constants\EstadoCausa;
 use App\Constants\EtapaOrden;
+use App\Constants\TipoUsuario;
 use App\Models\Causa;
 use App\Models\Orden;
 use Illuminate\Http\Request;
@@ -14,10 +15,12 @@ use App\Services\BilleteraService;
 class CausaService
 {
     protected $billeteraService;
+    protected $parametroVigenciaService;
 
-    public function __construct(BilleteraService $billeteraService)
+    public function __construct(BilleteraService $billeteraService, ParametroVigenciaService $parametroVigenciaService)
     {
         $this->billeteraService = $billeteraService;
+        $this->parametroVigenciaService = $parametroVigenciaService;
     }
     public function store($data)
     {
@@ -104,7 +107,7 @@ class CausaService
     public function cuasaNoEstaActiva($causaId): bool
     {
         return Causa::where('id', $causaId)
-            ->whereIn('estado', [EstadoCausa::CONGELADA, EstadoCausa::TERMINADA])
+            ->whereIn('estado', [EstadoCausa::CONGELADA, EstadoCausa::TERMINADA, EstadoCausa::BLOQUEADA])
             ->where('es_eliminado', 0)
             ->exists();
     }
@@ -208,6 +211,13 @@ class CausaService
             $montoTotalProbableComprometido = $montoComprometido + $montoProbable;
             $saldoTotal = $billetera->monto;
         }
+        //Bloqueo de Causa cuando no pasa EAP
+        if ($montoTotalProbableComprometido > $saldoTotal) {
+            if ($causa->estado === EstadoCausa::ACTIVA) {
+                $motivoBloqueo = 'FALTA DE SALDO';
+                $this->bloquearCausa($causaId, $motivoBloqueo);
+            }
+        }
         return $montoTotalProbableComprometido > $saldoTotal;
     }
     //Funcion eape cuando se hace una transaccion directamente desde la billetera general, (no hay causa de por medio)
@@ -236,5 +246,40 @@ class CausaService
             ->where('es_eliminado', 0)
             ->where('billetera', '>', 0)
             ->exists();
+    }
+    public function bloquearCausa($causaId, $motivoBloqueo)
+    {
+        $causa = Causa::findOrFail($causaId);
+        $causa->estado = EstadoCausa::BLOQUEADA;
+        $causa->motivo_congelada = $motivoBloqueo;
+        $causa->save();
+        return $causa;
+    }
+    public function activarCausa($causaId)
+    {
+        $causa = Causa::findOrFail($causaId);
+        if ($this->parametroVigenciaService->hayPaqueteVigente($causa->usuario_id)) {
+            $causa->estado = EstadoCausa::ACTIVA;
+            $causa->motivo_congelada = '';
+            $causa->save();
+        }
+
+        return $causa;
+    }
+    public function abogadoTienePermisoCausa($causaId): bool
+    {
+        $causa = Causa::findOrFail($causaId);
+        $tipoUsuario = Auth::user()->tipo;
+        $idUsuario = Auth::user()->id;
+
+        if ($tipoUsuario === TipoUsuario::ABOGADO_INDEPENDIENTE || $tipoUsuario === TipoUsuario::ABOGADO_LIDER) {
+            return $idUsuario === $causa->usuario_id;
+        }
+
+        if ($tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE) {
+            return $idUsuario === $causa->abogado_id;
+        }
+
+        return false;
     }
 }
