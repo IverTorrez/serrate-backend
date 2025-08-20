@@ -315,6 +315,9 @@ Route::prefix('v1')->group(function () {
         Route::get('orden/vencidas-leves-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenVencidasLevesDeLider']);
         Route::get('orden/vencidas-graves-lider/causa/{idCausa}', [OrdenController::class, 'listadoOrdenVencidasGravesDeLider']);
         Route::get('orden/listado-para-pago-procurador/{procuradorId}', [OrdenController::class, 'ordenesListaOrdenCerradasParaPagoProcurador']);
+        Route::get('orden/listado-por-pisos', [OrdenController::class, 'listarOrdenPorPisos']);
+        Route::get('orden/listado-por-urgencias', [OrdenController::class, 'listadoOrdenPorUrgencias']);
+        Route::get('orden/listado-ejecutar', [OrdenController::class, 'listadoOrdenEjecutar']);
         //Cotizacion
 
         //Presupuesto
