@@ -161,16 +161,22 @@ class OrdenController extends Controller
     }
     public function listarPorCausaDeProcurador(Request $request, $idCausa, $procuradorId)
     {
-        $ordenCausa = $this->ordenService->getOrdenesProcurador($request, $idCausa, $procuradorId);
+        $tipoUsuario = Auth::user()->tipo;
+        if($tipoUsuario===TipoUsuario::PROCURADOR){
+            $ordenCausa = $this->ordenService->getOrdenesProcurador($request, $idCausa, $procuradorId);
+        }else{
+            $ordenCausa = $this->ordenService->getOrdenesTodosProcurador($request, $idCausa);
+        }
+        
         return new OrdenCollection($ordenCausa);
     }
 
     public function store(StoreOrdenRequest $request)
     {
         //hace la validacion para ver si es un abogado permitido para girar orden
-            if (!$this->causaService->abogadoTienePermisoCausa($request->causa_id)) {
-                return response()->json(['message' => 'No esta autorizado para realizar esta acción'], 403);
-            }
+        if (!$this->causaService->abogadoTienePermisoCausa($request->causa_id)) {
+            return response()->json(['message' => 'No esta autorizado para realizar esta acción'], 403);
+        }
         if ($this->causaService->cuasaNoEstaActiva($request->causa_id)) {
             return response()->json([
                 'message' => 'No se puede girar orden, porque la causa no está activa.',
@@ -754,5 +760,42 @@ class OrdenController extends Controller
         $fechaFinConsulta = $request->query('fecha_fin_consulta');
         $data = $this->ordenService->obtenerListaOrdenCerradasParaPagoProcurador($procuradorId, $fechaInicioConsulta, $fechaFinConsulta);
         return response()->json($data);
+    }
+    public function listarOrdenPorPisos()
+    {
+        
+        $tipoUsuario = Auth::user()->tipo;
+        if ($tipoUsuario == TipoUsuario::PROCURADOR) {
+            $userId = Auth::user()->id;
+            $ordenes = $this->ordenService->listarOrdenesActivasPorPisoProcurador($userId);
+        } else {
+            $ordenes = $this->ordenService->listarOrdenesActivasPorPiso();
+        }
+
+        return response()->json($ordenes);
+    }
+    public function listadoOrdenPorUrgencias()
+    {
+        $tipoUsuario = Auth::user()->tipo;
+        if ($tipoUsuario == TipoUsuario::PROCURADOR) {
+            $userId = Auth::user()->id;
+            $ordenes = $this->ordenService->obtenerOrdenesPorUrgenciasProcurador($userId);
+        } else {
+            $ordenes = $this->ordenService->obtenerOrdenesPorUrgencias();
+        }
+
+        return response()->json($ordenes);
+    }
+    public function listadoOrdenEjecutar()
+    {
+        $tipoUsuario = Auth::user()->tipo;
+        if ($tipoUsuario == TipoUsuario::PROCURADOR) {
+            $userId = Auth::user()->id;
+            $ordenes = $this->ordenService->obtenerOrdenesEjecutarProcurador($userId);
+        } else {
+            $ordenes = $this->ordenService->obtenerOrdenesEjecutar();
+        }
+
+        return response()->json($ordenes);
     }
 }

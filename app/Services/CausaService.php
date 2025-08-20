@@ -212,12 +212,12 @@ class CausaService
             $saldoTotal = $billetera->monto;
         }
         //Bloqueo de Causa cuando no pasa EAP
-        if ($montoTotalProbableComprometido > $saldoTotal) {
+        /*if ($montoTotalProbableComprometido > $saldoTotal) {
             if ($causa->estado === EstadoCausa::ACTIVA) {
                 $motivoBloqueo = 'FALTA DE SALDO';
                 $this->bloquearCausa($causaId, $motivoBloqueo);
             }
-        }
+        }*/
         return $montoTotalProbableComprometido > $saldoTotal;
     }
     //Funcion eape cuando se hace una transaccion directamente desde la billetera general, (no hay causa de por medio)
