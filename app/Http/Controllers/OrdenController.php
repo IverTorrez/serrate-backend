@@ -162,12 +162,12 @@ class OrdenController extends Controller
     public function listarPorCausaDeProcurador(Request $request, $idCausa, $procuradorId)
     {
         $tipoUsuario = Auth::user()->tipo;
-        if($tipoUsuario===TipoUsuario::PROCURADOR){
+        if ($tipoUsuario === TipoUsuario::PROCURADOR) {
             $ordenCausa = $this->ordenService->getOrdenesProcurador($request, $idCausa, $procuradorId);
-        }else{
+        } else {
             $ordenCausa = $this->ordenService->getOrdenesTodosProcurador($request, $idCausa);
         }
-        
+
         return new OrdenCollection($ordenCausa);
     }
 
@@ -270,6 +270,41 @@ class OrdenController extends Controller
 
     public function update(UpdateOrdenRequest $request, Orden $orden)
     {
+        
+        //hace la validacion para ver si es un abogado permitido para girar orden
+        if (!$this->causaService->abogadoTienePermisoCausa($request->causa_id)) {
+            return response()->json(['message' => 'No esta autorizado para realizar esta acción'], 403);
+        }
+        if ($this->causaService->cuasaNoEstaActiva($request->causa_id)) {
+            return response()->json([
+                'message' => 'No se puede girar orden, porque la causa no está activa.',
+                'data' => null
+            ], 409);
+        }
+        $presupuesto = $orden->presupuesto;
+        if ($presupuesto) {
+            return response()->json([
+                'message' => 'No se puede actualizar la orden, porque la orden ya tiene presupuesto.',
+                'data' => null
+            ], 409);
+        }
+
+        //Obtiene la cotizacion con los datos de la orden
+        $response = $this->obtenetMatrizCotizacion($request->fecha_inicio, $request->fecha_fin, $request->prioridad);
+        $matrizCotizacion = $response['matrizCotizacion'];
+        //Cotizacion anteriormente guardada
+        $cotizacion = $this->cotizacionService->obtenerPorIdOrden($orden->id);
+        $diferenciaCotizacion = $matrizCotizacion->precio_venta - $cotizacion->venta;
+        if ($diferenciaCotizacion > 0) {
+            if ($this->causaService->noPasoValidacionEAPECausa($request->causa_id, $diferenciaCotizacion)) {
+                return response()->json([
+                    'message' => 'ALERTA!
+                 Su solicitud no puede concretarse por falta de saldo en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                    'data' => null
+                ], 409);
+            }
+        }
+
         DB::beginTransaction();
         try {
             $response = $this->obtenetMatrizCotizacion($request->fecha_inicio, $request->fecha_fin, $request->prioridad);
@@ -763,7 +798,7 @@ class OrdenController extends Controller
     }
     public function listarOrdenPorPisos()
     {
-        
+
         $tipoUsuario = Auth::user()->tipo;
         if ($tipoUsuario == TipoUsuario::PROCURADOR) {
             $userId = Auth::user()->id;
