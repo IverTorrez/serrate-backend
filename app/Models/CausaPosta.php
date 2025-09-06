@@ -33,8 +33,8 @@ class CausaPosta extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function informePostas()
+    public function informePosta()
     {
-        return $this->hasMany(InformePosta::class, 'causaposta_id');
+        return $this->hasOne(InformePosta::class, 'causaposta_id');
     }
 }

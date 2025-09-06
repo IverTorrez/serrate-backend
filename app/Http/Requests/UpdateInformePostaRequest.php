@@ -23,14 +23,13 @@ class UpdateInformePostaRequest extends FormRequest
     {
         return [
             'foja_informe'=>['sometimes','string','max:20'],
-            'fecha_informe'=>['sometimes','date_format:Y-m-d H:i:s'],
-            'calculo_gasto'=>['sometimes','numeric'],
+            'fecha_informe'=>['sometimes','date_format:Y-m-d'],
             'honorario_informe'=>['sometimes','string'],
 
-            'foja_truncamiento'=>['sometimes','string','max:20'],
-            'honorario_informe_truncamiento'=>['sometimes','string'],
-            'tipoposta_id'=>['sometimes'],
-            'causaposta_id'=>['sometimes']
+            'foja_truncamiento'=>['sometimes'],
+            'fecha_truncamiento'=>['sometimes'],
+            'honorario_informe_truncamiento'=>['sometimes'],
+            'tipoposta_id'=>['sometimes']
         ];
     }
 }

@@ -14,11 +14,6 @@ class TipoPostaSeeder extends Seeder
      */
     public function run(): void
     {
-       TipoPosta::create([
-            'nombre'=>'Avance Normal',
-            'estado'=>Estado::ACTIVO,
-            'es_eliminado'=>0
-        ]);
         TipoPosta::create([
             'nombre'=>'Perención de Instancia',
             'estado'=>Estado::ACTIVO,

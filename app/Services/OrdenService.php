@@ -8,6 +8,7 @@ use App\Constants\EtapaOrden;
 use App\Constants\FechaHelper;
 use App\Models\Causa;
 use App\Models\Orden;
+use Carbon\Carbon;
 
 class OrdenService
 {
@@ -946,5 +947,20 @@ class OrdenService
                     )->ultima_foja,
                 ];
             });
+    }
+    public function sumatoriaGastoPorCausaYFecha($causaId, $fechaCierre)
+    { $fechaStr = urldecode($fechaCierre);
+      $hasta = Carbon::parse($fechaStr)->endOfDay(); 
+        $ordenes = Orden::with('finalCostos')
+            ->where('causa_id', $causaId)
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('etapa_orden', EtapaOrden::CERRADA)
+            ->where('fecha_cierre', '<=', $hasta)
+            ->get();
+
+        return $ordenes->sum(function ($orden) {
+            return ($orden->finalCostos->total_egreso ?? 0) + ($orden->propina ?? 0);
+        });
     }
 }
