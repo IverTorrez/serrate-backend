@@ -23,13 +23,13 @@ class StoreInformePostaRequest extends FormRequest
     {
         return [
             'foja_informe'=>['required','string','max:20'],
-            'fecha_informe'=>['required','date_format:Y-m-d H:i:s'],
-            'calculo_gasto'=>['required','numeric'],
+            'fecha_informe'=>['required','date_format:Y-m-d'],
+           // 'calculo_gasto'=>['required','numeric'],
             'honorario_informe'=>['required','string'],
 
-            'foja_truncamiento'=>['required','string','max:20'],
-            'honorario_informe_truncamiento'=>['required','string'],
-            'tipoposta_id'=>['required'],
+           // 'foja_truncamiento'=>['required','string','max:20'],
+           // 'honorario_informe_truncamiento'=>['required','string'],
+            'tipoposta_id'=>['sometimes'],
             'causaposta_id'=>['required']
         ];
     }

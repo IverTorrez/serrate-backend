@@ -256,8 +256,11 @@ Route::prefix('v1')->group(function () {
         Route::get('causa-postas/{causaPosta}', [CausaPostaController::class, 'show']);
         Route::patch('causa-postas/{causaPosta}', [CausaPostaController::class, 'update']);
         Route::patch('causa-postas/eliminar/{causaPosta}', [CausaPostaController::class, 'destroy']);
+        Route::get('causa-postas/litado/causa/{causaId}', [CausaPostaController::class, 'listadoActivosPorCausa']);
+        Route::patch('causa-postas/eliminar-todo/{causaId}', [CausaPostaController::class, 'eliminarTodoPorCausa']);
         //Tipo posta
         Route::get('tipo-postas', [TipoPostaController::class, 'index']);
+        Route::get('tipo-postas/listado', [TipoPostaController::class, 'listarActivos']);
         Route::post('tipo-postas', [TipoPostaController::class, 'store']);
         Route::get('tipo-postas/{tipoPosta}', [TipoPostaController::class, 'show']);
         Route::patch('tipo-postas/{tipoPosta}', [TipoPostaController::class, 'update']);
@@ -267,6 +270,7 @@ Route::prefix('v1')->group(function () {
         Route::post('informe-postas', [InformePostaController::class, 'store']);
         Route::get('informe-postas/{informePosta}', [InformePostaController::class, 'show']);
         Route::patch('informe-postas/{informePosta}', [InformePostaController::class, 'update']);
+        Route::patch('informe-postas/delete-truncamiento/{informePosta}', [InformePostaController::class, 'deleteTruncamiento']);
         Route::patch('informe-postas/eliminar/{informePosta}', [InformePostaController::class, 'destroy']);
         //Matriz cotizacion
         Route::get('matriz-cotizacion', [MatrizCotizacionController::class, 'index']);
@@ -318,6 +322,7 @@ Route::prefix('v1')->group(function () {
         Route::get('orden/listado-por-pisos', [OrdenController::class, 'listarOrdenPorPisos']);
         Route::get('orden/listado-por-urgencias', [OrdenController::class, 'listadoOrdenPorUrgencias']);
         Route::get('orden/listado-ejecutar', [OrdenController::class, 'listadoOrdenEjecutar']);
+        Route::get('orden/sumatoria-gastos-fecha/{causaId}/{fechaCierre}', [OrdenController::class, 'sumatoriaGastoPorCausaYFecha']);
         //Cotizacion
 
         //Presupuesto

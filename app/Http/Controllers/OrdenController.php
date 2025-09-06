@@ -833,4 +833,13 @@ class OrdenController extends Controller
 
         return response()->json($ordenes);
     }
+    public function sumatoriaGastoPorCausaYFecha($causaId,$fechaCierre)
+    {
+        $sumatoria = $this->ordenService->sumatoriaGastoPorCausaYFecha($causaId,$fechaCierre);
+        // return response()->json($sumatoria);
+         return response()->json([
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+            'data' => $sumatoria
+        ], 200);
+    }
 }

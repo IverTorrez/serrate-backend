@@ -93,4 +93,13 @@ class PostaService
       ->get();
     return $postas;
   }
+  public function listarActivasPorPlantillaId($avancePlantillaId)
+  {
+    $postas = Posta::where('plantilla_id', $avancePlantillaId)
+      ->where('estado', Estado::ACTIVO)
+      ->where('es_eliminado', 0)
+      ->orderBy('numero_posta', 'asc')
+      ->get();
+    return $postas;
+  }
 }
