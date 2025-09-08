@@ -40,6 +40,7 @@ use App\Http\Controllers\VideoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BilleteraController;
+use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\ParametroVigenciaController;
 use App\Http\Controllers\ProcuradorPagoController;
 use App\Http\Controllers\RegistroLlamadaController;
@@ -431,5 +432,10 @@ Route::prefix('v1')->group(function () {
         //Registro llamadas
         Route::post('registro-llamadas', [RegistroLlamadaController::class, 'store']);
         Route::get('registro-llamadas/por-gestion/{gestionId}', [RegistroLlamadaController::class, 'obtenerPorGestionId']);
+        //Notificacion
+        Route::post('notificacion', [NotificacionController::class, 'store']);
+        Route::get('notificacion', [NotificacionController::class, 'index']);
+        Route::patch('notificacion/{notificacion}', [NotificacionController::class, 'update']);
+        Route::patch('notificacion/eliminar/{notificacion}', [NotificacionController::class, 'destroy']);
     });
 });
