@@ -11,6 +11,7 @@ class ParametroVigencia extends Model
     protected $fillable = [
         'fecha_ultima_vigencia',
         'usuario_id',
+        'esta_vigente',
         'estado',
         'es_eliminado'
     ];

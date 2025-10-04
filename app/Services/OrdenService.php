@@ -949,8 +949,9 @@ class OrdenService
             });
     }
     public function sumatoriaGastoPorCausaYFecha($causaId, $fechaCierre)
-    { $fechaStr = urldecode($fechaCierre);
-      $hasta = Carbon::parse($fechaStr)->endOfDay(); 
+    {
+        $fechaStr = urldecode($fechaCierre);
+        $hasta = Carbon::parse($fechaStr)->endOfDay();
         $ordenes = Orden::with('finalCostos')
             ->where('causa_id', $causaId)
             ->where('estado', Estado::ACTIVO)
@@ -962,5 +963,40 @@ class OrdenService
         return $ordenes->sum(function ($orden) {
             return ($orden->finalCostos->total_egreso ?? 0) + ($orden->propina ?? 0);
         });
+    }
+    public function obtenerOrdenesDetalleFinancieroDeCausa($causaId)
+    {
+        return Orden::query()
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('causa_id', '=', $causaId)
+            // Ordenadas por id ascendente
+            ->orderBy('id', 'asc')
+
+            // Eager load relaciones necesarias
+            ->with([
+                'presupuesto:id,orden_id,detalle_presupuesto',
+                'cotizacion:id,orden_id,condicion,venta',
+                'descarga:id,orden_id,detalle_informacion,compra_judicial',
+                'finalCostos:id,orden_id,costo_procesal_venta,total_egreso,es_validado'
+            ])
+            ->get()
+            ->map(function ($orden) {
+                return [
+                    'id'                  => $orden->id,
+                    'entrega_informacion'        => $orden->entrega_informacion,
+                    'detalle_informacion' => optional($orden->descarga)->detalle_informacion,
+                    'fecha_fin'           => $orden->fecha_fin,
+                    'prioridad'        => $orden->prioridad,
+                    'condicion'        => optional($orden->cotizacion)->condicion,
+                    'compra_judicial' => optional($orden->descarga)->compra_judicial,
+                    'costo_procesal_venta' => optional($orden->finalCostos)->costo_procesal_venta,
+                    'venta' => optional($orden->cotizacion)->venta,
+                    'costo_procuraduria_venta' => optional($orden->finalCostos)->costo_procuraduria_venta,
+                    'total_egreso' => optional($orden->finalCostos)->total_egreso,
+                    'etapa_orden' => $orden->etapa_orden,
+                    'es_validado' => optional($orden->finalCostos)->es_validado,
+                ];
+            });
     }
 }

@@ -61,4 +61,8 @@ class User extends Authenticatable
     {
         return $this->hasOne(Billetera::class, 'abogado_id');
     }
+    public function causas()
+    {
+        return $this->hasMany(Causa::class, 'usuario_id');
+    }
 }

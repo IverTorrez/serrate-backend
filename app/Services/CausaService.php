@@ -282,4 +282,47 @@ class CausaService
 
         return false;
     }
+    public function obtenerUnaCausa($causaId)
+    {
+        $causa = Causa::findOrFail($causaId);
+        return $causa;
+    }
+    public function actualizarEstadoPorUsuario($usuarioId)
+    {
+        return Causa::where('usuario_id', $usuarioId)
+            ->where('estado', EstadoCausa::ACTIVA)
+            ->where('es_eliminado', 0)
+            ->update([
+                'estado' => EstadoCausa::CONGELADA,
+                'motivo_congelada' => 'FALTA DE PAQUETE'
+            ]);
+    }
+    public function activarEstadoPorUsuario($usuarioId)
+    {
+        return Causa::where('usuario_id', $usuarioId)
+            ->where('estado', EstadoCausa::CONGELADA)
+            ->where('es_eliminado', 0)
+            ->update([
+                'estado' => EstadoCausa::ACTIVA,
+                'motivo_congelada' => ''
+            ]);
+    }
+    public function listadoCausasActivasConBilleteras()
+    {
+        $causas = Causa::where('es_eliminado', 0)
+            ->where('estado', EstadoCausa::ACTIVA)
+            ->where('tiene_billetera', 1)
+            ->with(['materia', 'tipoLegal', 'usuario.persona'])
+            ->get();
+        return $causas;
+    }
+    public function listadoCausasTerminadasConBilleteras()
+    {
+        $causas = Causa::where('es_eliminado', 0)
+            ->where('estado', EstadoCausa::TERMINADA)
+            ->where('tiene_billetera', 1)
+            ->with(['materia', 'tipoLegal', 'usuario.persona'])
+            ->get();
+        return $causas;
+    }
 }
