@@ -43,6 +43,7 @@ use App\Services\ContadorOrdenDineroEntregadoService;
 use App\Services\ContadorOrdenPrePresupuestadaService;
 use App\Services\ContadorOrdenPronuncioAbogadoService;
 use App\Services\ContadorOrdenCuentasConciliadaService;
+use App\Services\ParametroVigenciaService;
 use App\Services\SeguimientoLider\ContadorOrdenesDeLiderService;
 use App\Services\SeguimientoLider\ListadoOrdenesSeguimientoDeLiderService;
 
@@ -76,6 +77,7 @@ class OrdenController extends Controller
     protected $listaOrdenVencidasGravesService;
     protected $contadorOrdenesDeLiderService;
     protected $listadoOrdenesSeguimientoDeLiderService;
+    protected $parametroVigenciaService;
 
     public function __construct(
         MatrizCotizacionService $matrizCotizacionService,
@@ -106,7 +108,8 @@ class OrdenController extends Controller
         ListaOrdenVencidasGravesService $listaOrdenVencidasGravesService,
         //Orden de lider
         ContadorOrdenesDeLiderService $contadorOrdenesDeLiderService,
-        ListadoOrdenesSeguimientoDeLiderService $listadoOrdenesSeguimientoDeLiderService
+        ListadoOrdenesSeguimientoDeLiderService $listadoOrdenesSeguimientoDeLiderService,
+        ParametroVigenciaService $parametroVigenciaService
     ) {
         $this->matrizCotizacionService = $matrizCotizacionService;
         $this->cotizacionService = $cotizacionService;
@@ -139,6 +142,7 @@ class OrdenController extends Controller
         //ordenes de lider
         $this->contadorOrdenesDeLiderService = $contadorOrdenesDeLiderService;
         $this->listadoOrdenesSeguimientoDeLiderService = $listadoOrdenesSeguimientoDeLiderService;
+        $this->parametroVigenciaService = $parametroVigenciaService;
     }
 
     public function index(Request $request)
@@ -177,9 +181,21 @@ class OrdenController extends Controller
         if (!$this->causaService->abogadoTienePermisoCausa($request->causa_id)) {
             return response()->json(['message' => 'No esta autorizado para realizar esta acción'], 403);
         }
+        //hace la validacion para ver si la causa esta activa
         if ($this->causaService->cuasaNoEstaActiva($request->causa_id)) {
             return response()->json([
                 'message' => 'No se puede girar orden, porque la causa no está activa.',
+                'data' => null
+            ], 409);
+        }
+        //Validacion si hay ppaquete vigente
+        $causa = $this->causaService->obtenerUnaCausa($request->causa_id);
+        $idUsuario = $causa->usuario_id;
+
+        if (!$this->parametroVigenciaService->hayPaqueteVigente($idUsuario)) {
+            $causas = $this->causaService->actualizarEstadoPorUsuario($idUsuario);
+            return response()->json([
+                'message' => 'No se puede girar orden, porque no hay paquetes vigentes.',
                 'data' => null
             ], 409);
         }
@@ -270,7 +286,7 @@ class OrdenController extends Controller
 
     public function update(UpdateOrdenRequest $request, Orden $orden)
     {
-        
+
         //hace la validacion para ver si es un abogado permitido para girar orden
         if (!$this->causaService->abogadoTienePermisoCausa($request->causa_id)) {
             return response()->json(['message' => 'No esta autorizado para realizar esta acción'], 403);
@@ -833,13 +849,18 @@ class OrdenController extends Controller
 
         return response()->json($ordenes);
     }
-    public function sumatoriaGastoPorCausaYFecha($causaId,$fechaCierre)
+    public function sumatoriaGastoPorCausaYFecha($causaId, $fechaCierre)
     {
-        $sumatoria = $this->ordenService->sumatoriaGastoPorCausaYFecha($causaId,$fechaCierre);
+        $sumatoria = $this->ordenService->sumatoriaGastoPorCausaYFecha($causaId, $fechaCierre);
         // return response()->json($sumatoria);
-         return response()->json([
+        return response()->json([
             'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data' => $sumatoria
         ], 200);
+    }
+    public function listadoDetalleFinancieroCausa($causaId)
+    {
+        $ordenes = $this->ordenService->obtenerOrdenesDetalleFinancieroDeCausa($causaId);
+        return response()->json($ordenes);
     }
 }

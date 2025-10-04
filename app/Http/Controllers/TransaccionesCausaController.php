@@ -114,7 +114,7 @@ class TransaccionesCausaController extends Controller
                 $tipoTrn = TipoTransaccion::DEBITO;
                 $glosabilletera = GlosaTransaccion::DEBITO_DESDE_BILLETERA_POR_TRANSFERENCIA_A_CAUSA . ": " . $codigoCausa;
                 $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($usuarioId);
-                $ordenId = 0;//En este caso no existe
+                $ordenId = 0; //En este caso no existe
                 $billeterTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billetera->id, $monto, $tipoTrn, $glosabilletera, $ordenId);
             } else {
                 $glosaDestino = GlosaTransaccion::CREDITO_DESDE_CAUSA;
@@ -136,13 +136,13 @@ class TransaccionesCausaController extends Controller
                 'glosa' => $glosaDestino,
                 'causa_id' => $causaId,
                 'causa_origen_destino' => $causa_origen_destino,
-                'orden_id' =>0,
+                'orden_id' => 0,
                 'usuario_id' => $usuarioId
             ];
             //$transaccionCausaDestino = $this->transaccionesCausaService->store($dataDestino);
             $transaccionCausaDestino = $this->transaccionesCausaService->registrarTransaccionCausa($dataDestino);
             //Actualiza saldo de la causa destino
-           /* $causaDestino = $this->causaService->obtenerUno($causaId);
+            /* $causaDestino = $this->causaService->obtenerUno($causaId);
             $saldoCausaDestino = $causaDestino->billetera + $monto;
             $dataCausaDestino = [
                 'billetera' => $saldoCausaDestino
@@ -158,7 +158,7 @@ class TransaccionesCausaController extends Controller
                     'glosa' => $glosaOrigen,
                     'causa_id' => $causa_origen_destino,
                     'causa_origen_destino' => $causaId,
-                    'orden_id'=>0,
+                    'orden_id' => 0,
                     'usuario_id' => Auth::user()->id
                 ];
                 //$transaccionCausaOrigen = $this->transaccionesCausaService->store($dataOrigen);
@@ -214,7 +214,7 @@ class TransaccionesCausaController extends Controller
             $codigoCausa = $this->causaService->obtenerCodigoIdentificadorVisual($causaId);
             $tipoTrn = TipoTransaccion::CREDITO;
             $glosabilletera = GlosaTransaccion::CREDITO_DEVOLUCION_DE_CAUSA . ": " . $codigoCausa;
-            $ordenId=0; //En este caso no existe
+            $ordenId = 0; //En este caso no existe
             $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($usuarioId);
             $billeterGeneralTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billetera->id, $monto, $tipoTrn, $glosabilletera, $ordenId);
             //Actualizacion de saldo de billetera de causa
@@ -230,14 +230,14 @@ class TransaccionesCausaController extends Controller
                 'glosa' => $glosaOrigen,
                 'causa_id' => $causaId,
                 'causa_origen_destino' => 0,
-                'orden_id'=>0,
+                'orden_id' => 0,
                 'usuario_id' => Auth::user()->id
             ];
             //$transaccionCausaOrigen = $this->transaccionesCausaService->store($dataOrigen);
             $transaccionCausaDestino = $this->transaccionesCausaService->registrarTransaccionCausa($dataOrigen);
             //Actualiza saldo de la causa origen
             $causaOrigen = $this->causaService->obtenerUno($causaId);
-           /* $saldoCausaOrigen = $causaOrigen->billetera - $monto;
+            /* $saldoCausaOrigen = $causaOrigen->billetera - $monto;
             $dataCausaOrigen = [
                 'billetera' => $saldoCausaOrigen
             ];
@@ -302,5 +302,22 @@ class TransaccionesCausaController extends Controller
                 'data' => null
             ], 500);
         }
+    }
+    public function obtenerDepositosDeCausa(Request $request, $causaId)
+    {
+        try {
+            $data = $this->transaccionesCausaService->obtenerDepositosDeCausa($request, $causaId);
+            return new TransaccionesCausaCollection($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los depositos de causa.',
+                'data' => null
+            ], 500);
+        }
+    }
+    public function trnEnvioRecibidoCausa($causaId)
+    {
+        $trnEnvioRecib = $this->transaccionesCausaService->trnEnvioRecibidoCausa($causaId);
+        return response()->json($trnEnvioRecib);
     }
 }

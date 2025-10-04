@@ -195,6 +195,9 @@ Route::prefix('v1')->group(function () {
         Route::get('causas/listado/orden-vencidas-graves/lider', [CausaController::class, 'listadoCausasOrdenVencidasGravesDeLider']);
         Route::get('causas/dinero-comprometido/{causaId}', [CausaController::class, 'dineroComprometidoCausa']);
         Route::get('causas/general-comprometido/saldos', [CausaController::class, 'dineroComprometidoGeneral']);
+        Route::get('causas/listado/costos-operativos', [CausaController::class, 'indexTodas']);
+        Route::get('causas/listado/saldos-activos', [CausaController::class, 'listadoCausasActivasConBilleteras']);
+        Route::get('causas/listado/saldos-terminados', [CausaController::class, 'listadoCausasTerminadasConBilleteras']);
         //Tribunal
         Route::get('tribunal', [TribunalController::class, 'index']);
         Route::post('tribunal', [TribunalController::class, 'store']);
@@ -324,6 +327,7 @@ Route::prefix('v1')->group(function () {
         Route::get('orden/listado-por-urgencias', [OrdenController::class, 'listadoOrdenPorUrgencias']);
         Route::get('orden/listado-ejecutar', [OrdenController::class, 'listadoOrdenEjecutar']);
         Route::get('orden/sumatoria-gastos-fecha/{causaId}/{fechaCierre}', [OrdenController::class, 'sumatoriaGastoPorCausaYFecha']);
+        Route::get('orden/detalle-financiero/causa/{causaId}', [OrdenController::class, 'listadoDetalleFinancieroCausa']);
         //Cotizacion
 
         //Presupuesto
@@ -412,6 +416,8 @@ Route::prefix('v1')->group(function () {
         Route::post('transacciones-causas', [TransaccionesCausaController::class, 'store']);
         Route::post('transacciones-causas/devolucion', [TransaccionesCausaController::class, 'devolucionABGeneral']);
         Route::get('transacciones-causas/listado-causa/{causaId}', [TransaccionesCausaController::class, 'obtenerTransaccionesDeCausa']);
+        Route::get('transacciones-causas/depositos/{causaId}', [TransaccionesCausaController::class, 'obtenerDepositosDeCausa']);
+        Route::get('transacciones-causas/trn-send-receib/{causaId}', [TransaccionesCausaController::class, 'trnEnvioRecibidoCausa']);
         //Parametro vigencia
         Route::get('parametro-vigencias/obtener', [ParametroVigenciaController::class, 'obtenerUnoUsuario']);
         //Transacciones admin

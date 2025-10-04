@@ -98,6 +98,7 @@ class AuthService
             ParametroVigencia::create([
                 'fecha_ultima_vigencia' => null,
                 'usuario_id'   => $user->id,
+                'esta_vigente'   => 0,
                 'estado'       => Estado::ACTIVO,
                 'es_eliminado' => 0,
             ]);

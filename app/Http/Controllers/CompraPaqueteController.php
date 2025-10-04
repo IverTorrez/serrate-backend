@@ -161,6 +161,8 @@ class CompraPaqueteController extends Controller
             $glosa = GlosaTransaccion::DEBITO_POR_COMPRA_DEL_PAQUETE . " (" . $paquete->nombre . ")";
             $ordenId=0; //En este caso no existe
             $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa, $ordenId);
+            //Se activan las causas que estaban congeladas
+            $causas= $this->causaService->activarEstadoPorUsuario($idUser);
 
             DB::commit();
             return response()->json([

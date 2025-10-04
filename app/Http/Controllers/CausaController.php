@@ -1140,4 +1140,61 @@ class CausaController extends Controller
             'data' => $totales
         ], 200);
     }
+    public function indexTodas(Request $request)
+    {
+        $query = Causa::where('es_eliminado', 0);
+
+        $usuario = Auth::user();
+        //Filtrado por usuario
+        if ($usuario->tipo === TipoUsuario::ABOGADO_LIDER || $usuario->tipo === TipoUsuario::ABOGADO_INDEPENDIENTE) {
+            $query->where('usuario_id', $usuario->id);
+        } else {
+            if ($usuario->tipo === TipoUsuario::ABOGADO_DEPENDIENTE) {
+                $query->where('abogado_id', $usuario->id);
+            } else {
+                if ($usuario->tipo === TipoUsuario::PROCURADOR) {
+                    $query->where('procurador_id', $usuario->id);
+                }
+            }
+        }
+
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $causas = $query->paginate($perPage);
+
+        $causas->load('materia');
+        $causas->load('tipoLegal');
+        $causas->load('categoria');
+        $causas->load('abogado.persona');
+        $causas->load('procurador.persona');
+        return new CausaCollection($causas);
+    }
+    public function listadoCausasActivasConBilleteras()
+    {
+        $causas = $this->causaService->listadoCausasActivasConBilleteras();
+        return response()->json([
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $causas
+        ], 200);
+    }
+    public function listadoCausasTerminadasConBilleteras()
+    {
+        $causas = $this->causaService->listadoCausasTerminadasConBilleteras();
+        return response()->json([
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $causas
+        ], 200);
+    }
 }

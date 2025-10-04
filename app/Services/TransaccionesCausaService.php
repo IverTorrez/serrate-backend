@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Constants\Estado;
 use App\Constants\EstadoCausa;
 use App\Constants\TipoTransaccion;
+use App\Constants\Transaccion;
+use App\Constants\TransaccionCausa;
 use App\Models\Causa;
 use App\Models\TransaccionesCausa;
 use Illuminate\Http\Request;
@@ -130,5 +132,72 @@ class TransaccionesCausaService
     {
         $transaccionesCausa = TransaccionesCausa::where('orden_id', $ordenId)->firstOrFail();
         return $transaccionesCausa;
+    }
+    public function obtenerDepositosDeCausa(Request $request, $causaId)
+    {
+        try {
+            $query = TransaccionesCausa::select([
+                'id',
+                'monto',
+                'fecha_transaccion',
+                'tipo',
+                'transaccion',
+                'glosa',
+                'causa_id',
+                'causa_origen_destino',
+                'estado'
+            ])->active()
+                ->where('estado', Estado::ACTIVO)
+                ->where('es_eliminado', 0)
+                ->where('tipo', TipoTransaccion::CREDITO)
+                ->where('transaccion', TransaccionCausa::DEPOSITO);
+            $query->where('causa_id', $causaId);
+
+            if ($request->has('search')) {
+                $search = json_decode($request->input('search'), true);
+                $query->search($search);
+            }
+
+            if ($request->has('sort')) {
+                $sort = json_decode($request->input('sort'), true);
+                $query->sort($sort);
+            }
+
+            $perPage = $request->input('perPage', 10);
+            return $query->paginate($perPage);
+
+            //$result = $query->get();
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al obtener las transacciones de causa.'], 500);
+        }
+    }
+    public function trnEnvioRecibidoCausa($causaId)
+    {
+        return TransaccionesCausa::query()
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->whereIn('transaccion', [
+                TransaccionCausa::TRANSFERENCIA_ENVIADA,
+                TransaccionCausa::TRANSFERENCIA_RECIBIDA
+            ])
+            ->where('causa_id', '=', $causaId)
+            // Ordenadas por id ascendente
+            ->orderBy('id', 'asc')
+            ->get()
+            ->map(function ($trnCausa) {
+                return [
+                    'id'                  => $trnCausa->id,
+                    'monto'        => $trnCausa->monto,
+                    'fecha_transaccion' => $trnCausa->fecha_transaccion,
+                    'tipo'           => $trnCausa->tipo,
+                    'transaccion'        => $trnCausa->transaccion,
+                    'glosa'        => $trnCausa->glosa,
+                    'causa_id' => $trnCausa->causa_id,
+                    'causa_origen_destino' => $trnCausa->causa_origen_destino,
+                    'orden_id' => $trnCausa->orden_id,
+                    'usuario_id' => $trnCausa->usuario_id,
+                    'estado' => $trnCausa->estado,
+                ];
+            });
     }
 }

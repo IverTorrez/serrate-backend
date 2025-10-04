@@ -83,6 +83,7 @@ class UsuarioSeeder extends Seeder
         ParametroVigencia::create([
             'fecha_ultima_vigencia' => null,
             'usuario_id' => $user->id,
+            'esta_vigente' => 0,
             'estado' => $estado,
             'es_eliminado' => 0
         ]);
@@ -118,6 +119,7 @@ class UsuarioSeeder extends Seeder
         ParametroVigencia::create([
             'fecha_ultima_vigencia' => null,
             'usuario_id' => $userlider->id,
+            'esta_vigente' => 0,
             'estado' => $estado,
             'es_eliminado' => 0
         ]);

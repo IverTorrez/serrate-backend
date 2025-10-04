@@ -62,6 +62,10 @@ class Causa extends Model
     {
         return $this->belongsTo(User::class, 'procurador_id');
     }
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'usuario_id');
+    }
     /**
      * Get all of the comments for the Causa
      *
