@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\MessageHttp;
+use App\Http\Requests\UpdateAcuerdosUsuariosRequest;
 use App\Http\Requests\UpdateArancelAbogadoRequest;
 use App\Models\TablaConfig;
 use Illuminate\Http\Request;
@@ -114,6 +115,29 @@ class TablaConfigController extends Controller
         return response()->json([
             'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
             'data' => $datosAranceles
+        ]);
+    }
+    public function updataAcuerdosUsuarios(UpdateAcuerdosUsuariosRequest $request)
+    {
+        if ($request->hasFile('url_acuerdo_lider')) {
+            $file = $request->file('url_acuerdo_lider');
+            $pathArancel = $file->store('uploads/img/acuerdos', 'public');
+            $data['url_acuerdo_lider'] = $pathArancel;
+        }
+        if ($request->hasFile('url_acuerdo_indep')) {
+            $file = $request->file('url_acuerdo_indep');
+            $pathArancel = $file->store('uploads/img/acuerdos', 'public');
+            $data['url_acuerdo_indep'] = $pathArancel;
+        }
+        if ($request->hasFile('url_acuerdo_proc')) {
+            $file = $request->file('url_acuerdo_proc');
+            $pathArancel = $file->store('uploads/img/acuerdos', 'public');
+            $data['url_acuerdo_proc'] = $pathArancel;
+        }
+        $tablaConfig = $this->tablaConfigService->update($data, 1);
+        return response()->json([
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $tablaConfig
         ]);
     }
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class TablaConfig extends Model
 {
     use HasFactory;
-    protected $fillable=[
+    protected $fillable = [
         'caja_contador',
         'deuda_extarna',
         'caja_admin',
@@ -19,6 +19,9 @@ class TablaConfig extends Model
         'imagen_logo',
         'nombre',
         'archivo_url',
+        'url_acuerdo_lider',
+        'url_acuerdo_indep',
+        'url_acuerdo_proc',
         'estado',
         'es_eliminado'
     ];

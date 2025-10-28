@@ -1197,4 +1197,24 @@ class CausaController extends Controller
             'data' => $causas
         ], 200);
     }
+    public function obtenerNombreTribunalDominante($causaId)
+    {
+        $causa = Causa::with(['tribunales.claseTribunal'])
+            ->find($causaId);
+
+        if (!$causa) {
+            return [
+                'procurador_id' => null,
+                'tribunal_dominante' => null,
+            ];
+        }
+
+        $tribunalDominante = $causa->tribunales
+            ->firstWhere('tribunal_dominante', 1);
+
+        return [
+            'procurador_id' => $causa->procurador_id,
+            'tribunal_dominante' => $tribunalDominante?->claseTribunal?->nombre,
+        ];
+    }
 }
