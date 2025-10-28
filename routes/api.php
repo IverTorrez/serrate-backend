@@ -198,6 +198,7 @@ Route::prefix('v1')->group(function () {
         Route::get('causas/listado/costos-operativos', [CausaController::class, 'indexTodas']);
         Route::get('causas/listado/saldos-activos', [CausaController::class, 'listadoCausasActivasConBilleteras']);
         Route::get('causas/listado/saldos-terminados', [CausaController::class, 'listadoCausasTerminadasConBilleteras']);
+        Route::get('causas/datos-tribunal/{causaId}', [CausaController::class, 'obtenerNombreTribunalDominante']);
         //Tribunal
         Route::get('tribunal', [TribunalController::class, 'index']);
         Route::post('tribunal', [TribunalController::class, 'store']);
@@ -391,6 +392,7 @@ Route::prefix('v1')->group(function () {
         //Tabla config
         Route::post('tabla-config/actualizar', [TablaConfigController::class, 'update']);
         Route::post('tabla-config/actualizar-arancel', [TablaConfigController::class, 'updataArancelesAbogado']);
+        Route::post('tabla-config/actualizar-acuerdos', [TablaConfigController::class, 'updataAcuerdosUsuarios']);
         //Paquete Causas
         Route::post('paquete-causas', [PaqueteCausaController::class, 'store']);
         Route::get('paquete-causas/listado/compra-pquete/{compraPaqueteId}', [PaqueteCausaController::class, 'listadoActivosDeUnPaquete']);
